@@ -240,9 +240,10 @@ async function validateJSONLD() {
   let total = 0;
 
   const resumePages = [
-    { path: 'build/resume/index.html', title: 'Default resume' },
-    { path: 'build/resume/ops/index.html', title: 'Ops variant' },
-    { path: 'build/resume/builder/index.html', title: 'Builder variant' }
+    { path: 'build/index.html', title: 'Home page', fields: ['@context', '@type', 'Person', 'name', 'worksFor', 'sameAs'] },
+    { path: 'build/resume/index.html', title: 'Default resume', fields: ['@context', '@type', 'Person', 'name', 'hasOccupation', 'alumniOf'] },
+    { path: 'build/resume/ops/index.html', title: 'Ops variant', fields: ['@context', '@type', 'Person', 'name', 'hasOccupation', 'alumniOf'] },
+    { path: 'build/resume/builder/index.html', title: 'Builder variant', fields: ['@context', '@type', 'Person', 'name', 'hasOccupation', 'alumniOf'] }
   ];
 
   for (const page of resumePages) {
@@ -254,12 +255,19 @@ async function validateJSONLD() {
 
     const content = fs.readFileSync(page.path, 'utf-8');
     
-    if (!content.includes('application/ld+json')) {
+    const jsonldMatches = content.match(/<script[^>]*type=["']application\/ld\+json["'][^>]*>/gi);
+    
+    if (!jsonldMatches || jsonldMatches.length === 0) {
       error(`${page.title} missing JSON-LD script tag`);
       continue;
     }
 
-    const requiredFields = ['@context', '@type', 'Person', 'name', 'jobTitle', 'email'];
+    if (jsonldMatches.length > 1) {
+      error(`${page.title} has multiple (${jsonldMatches.length}) JSON-LD script tags - should have exactly one`);
+      continue;
+    }
+
+    const requiredFields = page.fields;
     let hasAllFields = true;
 
     for (const field of requiredFields) {
@@ -270,7 +278,7 @@ async function validateJSONLD() {
     }
 
     if (hasAllFields) {
-      success(`${page.title} has JSON-LD with required fields`);
+      success(`${page.title} has exactly one JSON-LD with required fields`);
       passed++;
     }
   }
