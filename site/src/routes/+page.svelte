@@ -9,6 +9,8 @@
   export let data: PageData;
   const { resume } = data;
 
+  const currentJob = resume.experience[0];
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Person",
@@ -31,12 +33,12 @@
     },
     "worksFor": {
       "@type": "Organization",
-      "name": "Amazon Web Services"
+      "name": currentJob.company
     },
     "hasOccupation": {
       "@type": "Occupation",
-      "name": resume.jobTitles[0],
-      "description": resume.summary
+      "name": currentJob.role,
+      "description": currentJob.description
     }
   };
 
@@ -57,7 +59,7 @@
 </script>
 
 <svelte:head>
-  <link rel="canonical" href="/">
+  <link rel="canonical" href="https://briananderson.xyz/">
   {@html `<script type="application/ld+json">${JSON.stringify(jsonLd, null, 2)}</script>`}
 </svelte:head>
 

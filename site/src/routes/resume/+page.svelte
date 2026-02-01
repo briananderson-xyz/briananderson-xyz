@@ -71,7 +71,7 @@
 </script>
 
 <svelte:head>
-  <link rel="canonical" href="/resume/">
+  <link rel="canonical" href="https://briananderson.xyz/resume/">
   {@html `<script type="application/ld+json">${JSON.stringify(jsonLd, null, 2)}</script>`}
 </svelte:head>
 
