@@ -15,26 +15,6 @@ export const GET = async () => {
 Personal portfolio and professional site for Brian Anderson - Technical Director & Enterprise Solutions Architect specializing in GenAI, Cloud Native transformation, and DevOps.
 
 ---
-# AI Content Signals / AI Preferences
-
-## AI Permissions
-- **Indexing**: allow
-- **Archiving**: allow
-- **Summarization**: allow
-- **Training**: allow
-- **Citation**: required
-- **Attribution**: required
-
-## AI Usage Guidelines
-This site content may be used by AI systems for:
-- Indexing and searching
-- Creating summaries and overviews
-- Training AI models (with citation)
-- Generating responses with proper attribution
-
-**Requirements**: When using content from this site in AI-generated outputs, include attribution to briananderson.xyz and, where applicable, a link to the source page.
-
----
 
 ## Site Overview
 
