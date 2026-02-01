@@ -325,6 +325,107 @@ async function validateContentTypes() {
   return { passed, total };
 }
 
+async function validateContentSignals() {
+  section('=== Content Signals / AI Preferences ===');
+
+  let passed = 0;
+  let total = 0;
+
+  // Check llms.txt for AI Content Signals section
+  total++;
+  const llmsPath = path.resolve('build/llms.txt');
+  if (fs.existsSync(llmsPath)) {
+    const llmsContent = fs.readFileSync(llmsPath, 'utf-8');
+    if (llmsContent.includes('AI Content Signals') || llmsContent.includes('AI Permissions')) {
+      success('llms.txt contains AI Content Signals section');
+      passed++;
+    } else {
+      error('llms.txt missing AI Content Signals section');
+    }
+  } else {
+    error('llms.txt not found');
+  }
+
+  // Check HTML pages for AI preference meta tags
+  total++;
+  const indexPath = path.resolve('build/index.html');
+  if (fs.existsSync(indexPath)) {
+    const htmlContent = fs.readFileSync(indexPath, 'utf-8');
+    const hasAiPrefs = htmlContent.includes('ai-preferences') || 
+                       htmlContent.includes('ai-crawler') ||
+                       htmlContent.includes('AI-Preferences');
+    if (hasAiPrefs) {
+      success('index.html contains AI preference meta tags');
+      passed++;
+    } else {
+      error('index.html missing AI preference meta tags');
+    }
+  } else {
+    error('index.html not found');
+  }
+
+  // Check robots.txt for AI crawler directives
+  total++;
+  const robotsPath = path.resolve('build/robots.txt');
+  if (fs.existsSync(robotsPath)) {
+    const robotsContent = fs.readFileSync(robotsPath, 'utf-8');
+    const hasAiCrawlers = robotsContent.includes('GPTBot') || 
+                         robotsContent.includes('Google-Extended') ||
+                         robotsContent.includes('ClaudeBot');
+    if (hasAiCrawlers) {
+      success('robots.txt contains AI crawler directives');
+      passed++;
+    } else {
+      error('robots.txt missing AI crawler directives');
+    }
+  } else {
+    error('robots.txt not found');
+  }
+
+  // Check for AI permission headers in hooks.server.ts
+  total++;
+  const hooksPath = path.resolve('src/hooks.server.ts');
+  if (fs.existsSync(hooksPath)) {
+    const hooksContent = fs.readFileSync(hooksPath, 'utf-8');
+    const hasAiHeaders = hooksContent.includes('AI-Preferences') ||
+                         hooksContent.includes('X-AI-');
+    if (hasAiHeaders) {
+      success('hooks.server.ts contains AI preference headers');
+      passed++;
+    } else {
+      error('hooks.server.ts missing AI preference headers');
+    }
+  } else {
+    error('hooks.server.ts not found');
+  }
+
+  // Check llms.txt for required AI permission fields
+  total++;
+  if (fs.existsSync(llmsPath)) {
+    const llmsContent = fs.readFileSync(llmsPath, 'utf-8');
+    const content = llmsContent.toLowerCase();
+    const requiredFields = [
+      { field: 'index', variants: ['index', 'indexing'] },
+      { field: 'archive', variants: ['archive', 'archiving'] },
+      { field: 'summarize', variants: ['summarize', 'summarization', 'summarizing'] },
+      { field: 'train', variants: ['train', 'training'] }
+    ];
+    const hasRequiredFields = requiredFields.every(({ variants }) => 
+      variants.some(variant => content.includes(variant))
+    );
+    if (hasRequiredFields) {
+      success('llms.txt contains required AI permission fields');
+      passed++;
+    } else {
+      error('llms.txt missing some required AI permission fields');
+    }
+  } else {
+    error('llms.txt not found');
+  }
+
+  return { passed, total };
+}
+
 async function main() {
   info('\n=== AI Compatibility Validation ===\n');
 
@@ -334,7 +435,8 @@ async function main() {
     validateResumeJSON(),
     validateSitemap(),
     validateJSONLD(),
-    validateContentTypes()
+    validateContentTypes(),
+    validateContentSignals()
   ]);
 
   const totalPassed = results.reduce((sum, r) => sum + r.passed, 0);

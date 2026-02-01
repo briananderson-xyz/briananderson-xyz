@@ -14,6 +14,8 @@ export const GET = async () => {
 
 Personal portfolio and professional site for Brian Anderson - Technical Director & Enterprise Solutions Architect specializing in GenAI, Cloud Native transformation, and DevOps.
 
+---
+
 ## Site Overview
 
 **Owner:** Brian Anderson

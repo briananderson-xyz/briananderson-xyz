@@ -1,9 +1,12 @@
 <script lang="ts">
   import type { Resume } from "$lib/types";
   import { getDuration } from "$lib/utils/date";
+  import { formatJobTitles } from "$lib/utils/formatters";
   import "$lib/components/ui/glowing-green.css";
 
   export let resume: Resume;
+
+  $: formattedTitle = formatJobTitles(resume.jobTitles);
 </script>
 
 <!-- Header -->
@@ -22,7 +25,7 @@
       <p
         class="text-xl text-skin-accent mb-4 print:text-black print:text-lg print:mb-2 print:font-bold print:font-serif"
       >
-        {resume.title}
+        {formattedTitle}
       </p>
       <div
         class="flex flex-col gap-1 text-sm text-skin-muted print:text-black print:text-[10px] print:flex-row print:gap-4 print:font-serif"

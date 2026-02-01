@@ -55,6 +55,8 @@
 
 <svelte:head>
   <title>Brian Anderson</title>
+  <link rel="llms" href="/llms.txt">
+  <link rel="alternate" type="application/json" href="/resume.json">
 </svelte:head>
 
 <div

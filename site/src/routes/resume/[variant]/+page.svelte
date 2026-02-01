@@ -10,7 +10,7 @@
     "@context": "https://schema.org",
     "@type": "Person",
     "name": resume.name,
-    "jobTitle": resume.title,
+    "jobTitle": resume.jobTitles,
     "email": resume.email,
     "address": {
       "@type": "PostalAddress",

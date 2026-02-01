@@ -2,9 +2,12 @@ name: Brian Anderson
 meta:
   order: 1
 title: Site Reliability Architect & DevOps Platform Engineer
+jobTitles:
+  - Site Reliability Architect
+  - DevOps Platform Engineer
 tagline: >
-  Specializing in Cloud Native Transformation, Platform Engineering, and Production Reliability. 
-  Expert in designing 'Paved Road' automation, high-availability architectures, and observability 
+  Specializing in Cloud Native Transformation, Platform Engineering, and Production Reliability.
+  Expert in designing 'Paved Road' automation, high-availability architectures, and observability
   systems that ensure resilient production environments at scale.
 mission: Driving operational excellence and engineering velocity through platform automation, reliability engineering, and infrastructure as code.
 email: brian@briananderson.xyz
