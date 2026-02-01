@@ -9,6 +9,39 @@
   export let data: PageData;
   const { resume } = data;
 
+  const currentJob = resume.experience[0];
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": resume.name,
+    "description": resume.tagline,
+    "url": "https://briananderson.xyz",
+    "sameAs": [
+      "https://github.com/briananderson1222",
+      "https://www.linkedin.com/in/brian--anderson/"
+    ],
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": resume.location.split(", ")[0],
+      "addressRegion": resume.location.split(", ")[1]
+    },
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "email": resume.email,
+      "contactType": "work"
+    },
+    "worksFor": {
+      "@type": "Organization",
+      "name": currentJob.company
+    },
+    "hasOccupation": {
+      "@type": "Occupation",
+      "name": currentJob.role,
+      "description": currentJob.description
+    }
+  };
+
   let mounted = false;
   let openCategories: Record<string, boolean> = {};
   let showAllExperience = false;
@@ -24,6 +57,11 @@
 
   $: formattedTitle = formatJobTitles(resume.jobTitles);
 </script>
+
+<svelte:head>
+  <link rel="canonical" href="https://briananderson.xyz/">
+  {@html `<script type="application/ld+json">${JSON.stringify(jsonLd, null, 2)}</script>`}
+</svelte:head>
 
 <section class="py-12 md:py-20 px-4">
   <div class="max-w-4xl mx-auto">
