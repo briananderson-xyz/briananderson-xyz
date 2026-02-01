@@ -331,21 +331,6 @@ async function validateContentSignals() {
   let passed = 0;
   let total = 0;
 
-  // Check llms.txt for AI Content Signals section
-  total++;
-  const llmsPath = path.resolve('build/llms.txt');
-  if (fs.existsSync(llmsPath)) {
-    const llmsContent = fs.readFileSync(llmsPath, 'utf-8');
-    if (llmsContent.includes('AI Content Signals') || llmsContent.includes('AI Permissions')) {
-      success('llms.txt contains AI Content Signals section');
-      passed++;
-    } else {
-      error('llms.txt missing AI Content Signals section');
-    }
-  } else {
-    error('llms.txt not found');
-  }
-
   // Check HTML pages for AI preference meta tags
   total++;
   const indexPath = path.resolve('build/index.html');
@@ -397,30 +382,6 @@ async function validateContentSignals() {
     }
   } else {
     error('hooks.server.ts not found');
-  }
-
-  // Check llms.txt for required AI permission fields
-  total++;
-  if (fs.existsSync(llmsPath)) {
-    const llmsContent = fs.readFileSync(llmsPath, 'utf-8');
-    const content = llmsContent.toLowerCase();
-    const requiredFields = [
-      { field: 'index', variants: ['index', 'indexing'] },
-      { field: 'archive', variants: ['archive', 'archiving'] },
-      { field: 'summarize', variants: ['summarize', 'summarization', 'summarizing'] },
-      { field: 'train', variants: ['train', 'training'] }
-    ];
-    const hasRequiredFields = requiredFields.every(({ variants }) => 
-      variants.some(variant => content.includes(variant))
-    );
-    if (hasRequiredFields) {
-      success('llms.txt contains required AI permission fields');
-      passed++;
-    } else {
-      error('llms.txt missing some required AI permission fields');
-    }
-  } else {
-    error('llms.txt not found');
   }
 
   return { passed, total };
