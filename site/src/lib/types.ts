@@ -46,7 +46,8 @@ export interface ResumeEarlyCareer {
 
 export interface Resume {
   name: string;
-  title: string;
+  title?: string;
+  jobTitles: string[];
   tagline: string;
   mission?: string;
   email: string;

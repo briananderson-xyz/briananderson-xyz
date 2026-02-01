@@ -14,7 +14,7 @@ export const GET = async () => {
 		$schema: 'https://raw.githubusercontent.com/jsonresume/resume-schema/v1.0.0/schema.json',
 		basics: {
 			name: resume.name,
-			label: resume.title,
+			label: resume.jobTitles.join(' & '),
 			email: resume.email,
 			url: 'https://briananderson.xyz',
 			summary: resume.summary,

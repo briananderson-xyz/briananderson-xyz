@@ -14,7 +14,7 @@
     "@context": "https://schema.org",
     "@type": "Person",
     "name": resume.name,
-    "jobTitle": resume.title,
+    "jobTitle": resume.jobTitles,
     "email": resume.email,
     "address": {
       "@type": "PostalAddress",
@@ -32,6 +32,7 @@
 </script>
 
 <svelte:head>
+  <link rel="canonical" href="https://briananderson.xyz/resume/">
   {@html `<script type="application/ld+json">${JSON.stringify(jsonLd, null, 2)}</script>`}
 </svelte:head>
 

@@ -425,6 +425,8 @@
       {@const isSwipeTarget = index === swipeTargetIndex}
 
       {@const opacity = Math.max(0, 1 - Math.abs(transformX) / 50)}
+      {@const isAriaHidden = !(isCurrentSlide && !isAnimating)}
+      {@const tabindexValue = isCurrentSlide && !isAnimating ? 0 : -1}
       <div
         class="resume-slide pl-5 {isCurrentSlide && !isAnimating
           ? 'current'
@@ -434,6 +436,8 @@
           index}; opacity: {opacity};"
         data-index={index}
         data-transform={transformX}
+        aria-hidden={isAriaHidden ? "true" : "false"}
+        tabindex={tabindexValue}
       >
         <ResumeContent resume={item.resume} />
       </div>
