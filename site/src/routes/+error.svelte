@@ -1,6 +1,9 @@
 <script lang="ts">
   import { page } from '$app/stores';
   import Button from '$lib/components/ui/button.svelte';
+  import { getCanonicalVariantPath } from '$lib/utils/variantLink';
+  
+  $: rebootUrl = getCanonicalVariantPath('/', $page.url.searchParams.get('v'));
 </script>
 
 <div class="max-w-3xl mx-auto px-4 py-24 flex flex-col items-center justify-center min-h-[60vh] text-center font-mono">
@@ -25,7 +28,7 @@
         <div class="animate-pulse mt-2">> _</div>
       </div>
 
-      <Button href="/" class="bg-red-600 hover:bg-red-700 text-white border-none w-full sm:w-auto">
+      <Button href={rebootUrl} class="bg-red-600 hover:bg-red-700 text-white border-none w-full sm:w-auto">
         INITIATE_SYSTEM_REBOOT
       </Button>
     </div>

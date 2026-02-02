@@ -1,10 +1,9 @@
 <script lang="ts">
   import { getCanonicalUrl } from '$lib/utils/variantLink';
   import ResumeContent from '$lib/components/ResumeContent.svelte';
-  import type { Resume } from '$lib/types';
   import { page } from '$app/stores';
 
-  export let data: { resume: Resume };
+  export let data;
   const resume = data.resume;
 
   const formatSkillsAsDefinedTerms = (skills: Record<string, any[]>) => {
@@ -68,7 +67,7 @@
 </script>
 
 <svelte:head>
-  <link rel="canonical" href={getCanonicalUrl('/resume/')} />
+  <link rel="canonical" href={getCanonicalUrl('/builder/resume/')} />
   {@html `<script type="application/ld+json">${JSON.stringify(jsonLd, null, 2)}</script>`}
 </svelte:head>
 
@@ -81,8 +80,8 @@
       Print / Save as PDF
     </button>
     <a
-      href="/resume.json"
-      download="brian-anderson-resume.json"
+      href="/builder/resume.json"
+      download="brian-anderson-resume-builder.json"
       class="inline-flex items-center justify-center font-mono text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-skin-accent/50 disabled:opacity-50 disabled:pointer-events-none uppercase tracking-wider px-5 py-2.5 border border-skin-accent text-skin-accent hover:bg-skin-accent hover:text-skin-accent-contrast"
     >
       Download JSON Resume

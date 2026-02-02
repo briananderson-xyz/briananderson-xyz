@@ -2,11 +2,14 @@
   import type { Resume } from "$lib/types";
   import { getDuration } from "$lib/utils/date";
   import { formatJobTitles } from "$lib/utils/formatters";
+  import { addVariant } from "$lib/utils/variantLink";
   import "$lib/components/ui/glowing-green.css";
 
   export let resume: Resume;
+  export let variant: string | null = null;
 
   $: formattedTitle = formatJobTitles(resume.jobTitles);
+  $: siteUrl = addVariant('/', variant);
 </script>
 
 <!-- Header -->
@@ -37,7 +40,7 @@
           >{resume.email}</a
         >
         <a
-          href="https://briananderson.xyz"
+          href={siteUrl}
           class="hover:text-skin-accent transition-colors print:no-underline print:text-black"
           >https://briananderson.xyz</a
         >
