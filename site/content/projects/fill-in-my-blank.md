@@ -22,13 +22,13 @@ Taking cues from popular party games, **Fill In My Blank** was a mobile game tha
 
 ### Visual Archive
 <div class="grid grid-cols-2 md:grid-cols-3 gap-4 not-prose mt-8">
-  <div class="border border-zinc-800 bg-zinc-900 p-2">
+  <div class="border border-skin-border bg-skin-page p-2 rounded-lg">
     <img src="/projects/fimb/logo.png" alt="Logo" class="w-full h-auto grayscale hover:grayscale-0 transition-all"/>
   </div>
-  <div class="border border-zinc-800 bg-zinc-900 p-2">
+  <div class="border border-skin-border bg-skin-page p-2 rounded-lg">
     <img src="/projects/fimb/home.png" alt="Home Screen" class="w-full h-auto grayscale hover:grayscale-0 transition-all"/>
   </div>
-  <div class="border border-zinc-800 bg-zinc-900 p-2">
+  <div class="border border-skin-border bg-skin-page p-2 rounded-lg">
     <img src="/projects/fimb/my%20game.png" alt="Gameplay" class="w-full h-auto grayscale hover:grayscale-0 transition-all"/>
   </div>
 </div>

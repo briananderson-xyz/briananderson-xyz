@@ -3,16 +3,42 @@ import { variants } from '$lib/data/variants';
 const defaultVariant = 'default';
 const basePath = 'https://briananderson.xyz';
 
+// Routes that have specific canonical variant paths
+const canonicalRoutes = ['/', '/resume', '/resume/'];
+
 export function addVariant(path: string, variant: string | null | undefined): string {
   if (!variant || variant === defaultVariant) return path;
+
+  // Handle canonical paths
+  if (path === '/' || path === '/index.html') {
+    return `/${variant}/`;
+  }
+  if (path === '/resume' || path === '/resume/') {
+    return `/${variant}/resume/`;
+  }
+
+  // Handle hash-only paths on the homepage (e.g., /#contact -> /ops/#contact)
+  if (path.startsWith('/#')) {
+    return `/${variant}/${path.slice(1)}`;
+  }
+
+  // Ensure we don't add duplicate query params
+  if (path.includes(`v=${variant}`)) return path;
+
   const separator = path.includes('?') ? '&' : '?';
   return `${path}${separator}v=${variant}`;
 }
 
 export function removeVariant(path: string): string {
-  const url = new URL(path, 'http://temp.com');
-  url.searchParams.delete('v');
-  return url.pathname + url.search;
+  try {
+    // If path is relative, we need a base to use URL API
+    const url = new URL(path, 'http://temp.com');
+    url.searchParams.delete('v');
+    // Return path + search (without v) + hash
+    return url.pathname + url.search + url.hash;
+  } catch (e) {
+    return path;
+  }
 }
 
 export function getVariant(url: URL): string | null {
@@ -28,38 +54,36 @@ export function getVariant(url: URL): string | null {
 }
 
 export function getCanonicalVariantPath(path: string, variant: string | null | undefined): string {
-  if (!variant || variant === defaultVariant) {
-    return removeVariantFromPath(path);
-  }
-
-  return addVariantToPath(path, variant);
+  const cleanPath = removeVariantFromPath(path);
+  return addVariant(cleanPath, variant);
 }
 
 function removeVariantFromPath(path: string): string {
-  const nonDefaultVariants = variants.filter(v => v.key !== defaultVariant);
-  
-  if (path === '/' || path === '/index.html') return '/';
+  let clean = path;
 
-  for (const variant of nonDefaultVariants) {
-    if (path === `/${variant.key}/` || path === `/${variant.key}/resume/`) {
-      return path.replace(`/${variant.key}`, '');
+  // First remove query param variant
+  clean = removeVariant(clean);
+
+  // Then remove path prefix variants
+  // We check specifically for our known variants to avoid false positives
+  for (const v of variants) {
+    if (v.key === defaultVariant) continue;
+
+    // Check for /variant/ (e.g. /ops/resume/)
+    // or /variant (e.g. /ops)
+    const prefixSlash = `/${v.key}/`;
+    const exactMatch = `/${v.key}`;
+
+    if (clean.startsWith(prefixSlash)) {
+      // /ops/resume/ -> /resume/
+      clean = '/' + clean.slice(prefixSlash.length);
+    } else if (clean === exactMatch) {
+      // /ops -> /
+      clean = '/';
     }
   }
 
-  return removeVariant(path);
-}
-
-function addVariantToPath(path: string, variant: string): string {
-  if (path === '/' || path === '/index.html') {
-    return `/${variant}/`;
-  }
-
-  const parts = path.split('/').filter(Boolean);
-  if (parts.length > 0 && !variants.find(v => v.key === parts[0])) {
-    return `/${variant}${path}`;
-  }
-
-  return addVariant(path, variant);
+  return clean;
 }
 
 export function getRedirectTarget(path: string, variant: string | null | undefined): string | null {
@@ -67,8 +91,16 @@ export function getRedirectTarget(path: string, variant: string | null | undefin
     return null;
   }
 
-  const canonicalPath = addVariantToPath(path, variant);
-  return canonicalPath !== path ? canonicalPath : null;
+  // Only redirect for specifically planned canonical routes
+  // Logic: If on generic route (e.g. /) with variant (ops) -> redirect to /ops/
+  if (path === '/' || path === '/index.html') {
+    return `/${variant}/`;
+  }
+  if (path === '/resume' || path === '/resume/') {
+    return `/${variant}/resume/`;
+  }
+
+  return null;
 }
 
 export function getCanonicalUrl(path: string): string {
