@@ -1,4 +1,7 @@
 <script lang="ts">
+  import { page } from '$app/stores';
+  import { addVariant } from '$lib/utils/variantLink';
+
   const modules = import.meta.glob('/content/projects/**/*.md', { eager: true });
   type Item = { metadata: any; route: string };
   let projects: Item[] = [];
@@ -7,6 +10,10 @@
     projects.push({ metadata: mod.metadata, route: path.replace('/content','').replace('.md','') });
   }
   projects.sort((a, b) => (a.metadata.date > b.metadata.date ? -1 : 1));
+
+  function getVariant(): string | null {
+    return $page?.url?.searchParams.get('v') || null;
+  }
 </script>
 
 <section class="mx-auto max-w-6xl px-4 py-16">
@@ -18,7 +25,7 @@
   
   <div class="grid md:grid-cols-2 gap-6">
     {#each projects as p}
-      <a href={p.route} class="group block border border-skin-border bg-skin-base/5 p-6 hover:border-skin-accent hover:shadow-[0_0_10px_rgba(var(--color-accent),0.1)] transition-all duration-300 rounded-lg">
+      <a href={addVariant(p.route, getVariant())} class="group block border border-skin-border bg-skin-base/5 p-6 hover:border-skin-accent hover:shadow-[0_0_10px_rgba(var(--color-accent),0.1)] transition-all duration-300 rounded-lg">
         <div class="flex justify-between items-start mb-2">
           <h2 class="font-bold text-lg font-mono text-skin-base group-hover:text-skin-accent transition-colors">
             {p.metadata.title}
@@ -27,7 +34,7 @@
             {new Date(p.metadata.date).getFullYear()}
           </span>
         </div>
-        
+
         {#if p.metadata.summary}
           <p class="text-skin-muted text-sm mb-4 font-mono leading-relaxed">
             {p.metadata.summary}

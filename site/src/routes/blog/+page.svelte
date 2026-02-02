@@ -1,12 +1,19 @@
 <script lang="ts">
+  import { page } from '$app/stores';
+  import { addVariant } from '$lib/utils/variantLink';
+
   const modules = import.meta.glob('/content/blog/**/*.md', { eager: true });
-  type Post = { metadata: any; route: string };
-  let posts: Post[] = [];
+  type Item = { metadata: any; route: string };
+  let posts: Item[] = [];
   for (const [path, mod] of Object.entries(modules)) {
     // @ts-ignore
     posts.push({ metadata: mod.metadata, route: path.replace('/content','').replace('.md','') });
   }
   posts.sort((a, b) => (a.metadata.date > b.metadata.date ? -1 : 1));
+
+  function getVariant(): string | null {
+    return $page?.url?.searchParams.get('v') || null;
+  }
 </script>
 
 <section class="mx-auto max-w-4xl px-4 py-16">
@@ -23,7 +30,7 @@
     </div>
     
     {#each posts as post}
-      <a href={post.route} class="group grid grid-cols-12 gap-4 items-baseline p-4 hover:bg-skin-base/5 border-l-2 border-transparent hover:border-skin-accent transition-all rounded-r-lg">
+      <a href={addVariant(post.route, getVariant())} class="group grid grid-cols-12 gap-4 items-baseline p-4 hover:bg-skin-base/5 border-l-2 border-transparent hover:border-skin-accent transition-all rounded-r-lg">
         <div class="col-span-3 md:col-span-2 text-xs text-skin-muted pt-1">
           {new Date(post.metadata.date).toISOString().split('T')[0]}
         </div>
