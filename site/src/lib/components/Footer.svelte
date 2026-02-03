@@ -1,5 +1,6 @@
 <script lang="ts">
   import { page } from "$app/stores";
+  import VariantSwitcher from "$lib/components/VariantSwitcher.svelte";
 
   $: isError = $page.status >= 400;
 </script>
@@ -24,9 +25,10 @@
       </span>
       <span class="mx-2 opacity-50">|</span>
       <span class="opacity-50 text-[10px]">v1.0.0</span>
+      <VariantSwitcher />
     </div>
 
-    <div class="flex gap-4">
+    <div class="flex items-center gap-4">
       <a
         href="https://github.com/briananderson1222"
         target="_blank"

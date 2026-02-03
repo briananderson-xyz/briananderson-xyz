@@ -23,15 +23,15 @@ Personal portfolio and professional site for Brian Anderson - Technical Director
 **Email:** ${resume.email}
 **Purpose:** Portfolio showcasing technical expertise, projects, writings, and resume variants
 
-## AI-Readable Endpoints
+ ## AI-Readable Endpoints
 
-### Resume Data
-- **Resume Page:** ${PUBLIC_SITE_URL}/resume/ - Human-readable resume with JSON-LD schema markup
-- **JSON Resume:** ${PUBLIC_SITE_URL}/resume.json - JSONResume 1.0.0 schema for programmatic parsing
-- **Resume Variants:**
-  - Leader: ${PUBLIC_SITE_URL}/resume/ - Focus on leadership and architecture
-  - Ops: ${PUBLIC_SITE_URL}/resume/ops/ - Focus on DevOps/SRE
-  - Builder: ${PUBLIC_SITE_URL}/resume/builder/ - Focus on hands-on technical work
+ ### Resume Data
+ - **Resume Page:** ${PUBLIC_SITE_URL}/resume/ - Human-readable resume with JSON-LD schema markup
+ - **JSON Resume:** ${PUBLIC_SITE_URL}/resume.json - JSONResume 1.0.0 schema for programmatic parsing
+ - **Resume Variants:**
+   - Leader: ${PUBLIC_SITE_URL}/resume/ - Focus on leadership and architecture
+   - Ops: ${PUBLIC_SITE_URL}/ops/resume/ - Focus on DevOps/SRE
+   - Builder: ${PUBLIC_SITE_URL}/builder/resume/ - Focus on hands-on technical work
 
 ### Content
 - **Blog:** ${PUBLIC_SITE_URL}/blog/ - Technical articles and tutorials

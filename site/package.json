@@ -7,6 +7,8 @@
     "dev": "vite dev --host",
     "build": "vite build",
     "preview": "vite preview",
+    "generate-variants": "node scripts/generate-variants.js",
+    "prebuild": "npm run generate-variants",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "format": "prettier --write .",
     "test:ui": "node scripts/validate-ui.js",
@@ -44,7 +46,7 @@
     "gray-matter": "^4.0.3",
     "lucide-svelte": "^0.462.0",
     "posthog-js": "^1.319.0",
-    "swiper": "^12.1.0",
+
     "zod": "^4.3.6"
   }
 }

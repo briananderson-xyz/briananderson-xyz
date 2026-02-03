@@ -1,19 +1,18 @@
 import fs from 'fs';
 import yaml from 'js-yaml';
 import path from 'path';
-import { redirect } from '@sveltejs/kit';
 import type { Resume } from '$lib/types';
 
 export const prerender = true;
 
 export const load = async () => {
   try {
-    const filePath = path.resolve('content/resume.yaml');
+    const filePath = path.resolve('content/resume-builder.yaml');
     const fileContents = fs.readFileSync(filePath, 'utf8');
     const resume = yaml.load(fileContents) as Resume;
     return { resume };
   } catch (e) {
-    console.error('Error loading resume.yaml:', e);
+    console.error('Error loading resume-builder.yaml:', e);
     return { resume: {} as Resume };
   }
 };

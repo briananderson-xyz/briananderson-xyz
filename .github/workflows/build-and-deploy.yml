@@ -48,6 +48,7 @@ jobs:
         working-directory: site
         run: |
           echo "PUBLIC_SITE_URL=https://briananderson.xyz" > .env
+          echo "PUBLIC_ENV=prod" >> .env
           echo "PUBLIC_POSTHOG_KEY=${{ secrets.PUBLIC_POSTHOG_KEY }}" >> .env
           echo "PUBLIC_POSTHOG_HOST=${{ secrets.PUBLIC_POSTHOG_HOST }}" >> .env
       - name: Debug .env creation
@@ -105,6 +106,7 @@ jobs:
         working-directory: site
         run: |
           echo "PUBLIC_SITE_URL=https://dev.briananderson.xyz" > .env
+          echo "PUBLIC_ENV=dev" >> .env
           echo "PUBLIC_POSTHOG_KEY=${{ secrets.PUBLIC_POSTHOG_KEY }}" >> .env
           echo "PUBLIC_POSTHOG_HOST=${{ secrets.PUBLIC_POSTHOG_HOST }}" >> .env
       - name: Build for Dev
@@ -191,6 +193,7 @@ jobs:
         working-directory: site
         run: |
           echo "PUBLIC_SITE_URL=https://briananderson.xyz" > .env
+          echo "PUBLIC_ENV=prod" >> .env
           echo "PUBLIC_POSTHOG_KEY=${{ secrets.PUBLIC_POSTHOG_KEY }}" >> .env
           echo "PUBLIC_POSTHOG_HOST=${{ secrets.PUBLIC_POSTHOG_HOST }}" >> .env
       - name: Build for Prod

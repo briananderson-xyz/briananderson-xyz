@@ -242,8 +242,8 @@ async function validateJSONLD() {
   const resumePages = [
     { path: 'build/index.html', title: 'Home page', fields: ['@context', '@type', 'Person', 'name', 'worksFor', 'sameAs'] },
     { path: 'build/resume/index.html', title: 'Default resume', fields: ['@context', '@type', 'Person', 'name', 'hasOccupation', 'alumniOf'] },
-    { path: 'build/resume/ops/index.html', title: 'Ops variant', fields: ['@context', '@type', 'Person', 'name', 'hasOccupation', 'alumniOf'] },
-    { path: 'build/resume/builder/index.html', title: 'Builder variant', fields: ['@context', '@type', 'Person', 'name', 'hasOccupation', 'alumniOf'] }
+    { path: 'build/ops/resume/index.html', title: 'Ops variant', fields: ['@context', '@type', 'Person', 'name', 'hasOccupation', 'alumniOf'] },
+    { path: 'build/builder/resume/index.html', title: 'Builder variant', fields: ['@context', '@type', 'Person', 'name', 'hasOccupation', 'alumniOf'] }
   ];
 
   for (const page of resumePages) {

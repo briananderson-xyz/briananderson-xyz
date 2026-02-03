@@ -1,11 +1,26 @@
 <script lang="ts">
   import { Menu, Terminal } from "lucide-svelte";
   import { slide } from "svelte/transition";
+  import { onMount } from "svelte";
   import ThemeToggle from "$lib/components/ThemeToggle.svelte";
   import { page } from "$app/stores";
-  let open = false;
+  import { addVariant, getVariant } from "$lib/utils/variantLink";
 
-  $: activeRoute = $page.url.pathname;
+  let open = false;
+  let activeRoute = "/";
+  let variant: string | null = null;
+  let mounted = false;
+
+  onMount(() => {
+    mounted = true;
+    activeRoute = $page.url.pathname;
+    variant = getVariant($page.url);
+  });
+
+  $: if (mounted) {
+    activeRoute = $page.url.pathname;
+    variant = getVariant($page.url);
+  }
 </script>
 
 <header
@@ -15,7 +30,7 @@
     class="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between gap-4"
   >
     <a
-      href="/"
+      href={addVariant("/", variant)}
       class="text-sm md:text-base font-bold tracking-tight text-skin-base flex items-center gap-2 group"
     >
       <span class="text-skin-accent group-hover:animate-pulse"
@@ -26,22 +41,20 @@
 
     <nav class="hidden md:flex gap-6 text-sm items-center">
       <a
-        class="hover:text-skin-accent transition-colors text-skin-muted"
-        href="/#about">./about</a
-      >
-      <a
-        class="hover:text-skin-accent transition-colors {activeRoute ===
-        '/resume'
+        class="hover:text-skin-accent transition-colors {activeRoute.includes(
+          '/resume',
+        )
           ? 'text-skin-accent'
           : 'text-skin-muted'}"
-        href="/resume/">./resume</a
+        href={addVariant("/resume/", variant)}>./resume</a
       >
       <a
-        class="hover:text-skin-accent transition-colors {activeRoute ===
-        '/projects'
+        class="hover:text-skin-accent transition-colors {activeRoute.startsWith(
+          '/projects',
+        )
           ? 'text-skin-accent'
           : 'text-skin-muted'}"
-        href="/projects/">./projects</a
+        href={addVariant("/projects/", variant)}>./projects</a
       >
       <a
         class="hover:text-skin-accent transition-colors {activeRoute.startsWith(
@@ -49,11 +62,11 @@
         )
           ? 'text-skin-accent'
           : 'text-skin-muted'}"
-        href="/blog/">./blog</a
+        href={addVariant("/blog/", variant)}>./blog</a
       >
       <a
         class="hover:text-skin-accent transition-colors text-skin-muted"
-        href="/#contact">./contact</a
+        href={addVariant("/#contact", variant)}>./contact</a
       >
       <ThemeToggle />
     </nav>
@@ -76,29 +89,30 @@
         class="mx-auto max-w-6xl px-4 py-3 flex flex-col gap-3 font-mono text-sm"
       >
         <a
-          class="text-skin-muted hover:text-skin-accent"
+          class="hover:text-skin-accent {activeRoute.includes('/resume')
+            ? 'text-skin-accent'
+            : 'text-skin-muted'}"
           on:click={() => (open = false)}
-          href="/#about">./about</a
+          href={addVariant("/resume/", variant)}>./resume</a
+        >
+        <a
+          class="hover:text-skin-accent {activeRoute.startsWith('/projects')
+            ? 'text-skin-accent'
+            : 'text-skin-muted'}"
+          on:click={() => (open = false)}
+          href={addVariant("/projects/", variant)}>./projects</a
+        >
+        <a
+          class="hover:text-skin-accent {activeRoute.startsWith('/blog')
+            ? 'text-skin-accent'
+            : 'text-skin-muted'}"
+          on:click={() => (open = false)}
+          href={addVariant("/blog/", variant)}>./blog</a
         >
         <a
           class="text-skin-muted hover:text-skin-accent"
           on:click={() => (open = false)}
-          href="/resume/">./resume</a
-        >
-        <a
-          class="text-skin-muted hover:text-skin-accent"
-          on:click={() => (open = false)}
-          href="/projects/">./projects</a
-        >
-        <a
-          class="text-skin-muted hover:text-skin-accent"
-          on:click={() => (open = false)}
-          href="/blog/">./blog</a
-        >
-        <a
-          class="text-skin-muted hover:text-skin-accent"
-          on:click={() => (open = false)}
-          href="/#contact">./contact</a
+          href={addVariant("/#contact", variant)}>./contact</a
         >
         <div
           class="pt-2 border-t border-skin-border mt-2 flex justify-between items-center"

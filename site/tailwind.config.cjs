@@ -14,7 +14,7 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Lato', 'ui-sans-serif','system-ui','-apple-system','Segoe UI','Roboto','Inter','Noto Sans','Ubuntu','Cantarell','Helvetica Neue','Arial','sans-serif'],
+        sans: ['Lato', 'ui-sans-serif', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'Inter', 'Noto Sans', 'Ubuntu', 'Cantarell', 'Helvetica Neue', 'Arial', 'sans-serif'],
         mono: ['"Fira Code"', '"JetBrains Mono"', '"Courier New"', 'Courier', 'monospace']
       },
       colors: {
@@ -43,7 +43,82 @@ module.exports = {
       },
       animation: {
         'terminal-blink': 'terminal-blink 1s step-end infinite',
-      }
+      },
+      typography: ({ theme }) => ({
+        DEFAULT: {
+          css: {
+            '--tw-prose-body': 'rgb(var(--color-text-base))',
+            '--tw-prose-headings': 'rgb(var(--color-text-base))',
+            '--tw-prose-links': 'rgb(var(--color-accent))',
+            '--tw-prose-bold': 'rgb(var(--color-accent))',
+            '--tw-prose-counters': 'rgb(var(--color-text-muted))',
+            '--tw-prose-bullets': 'rgb(var(--color-text-muted))',
+            '--tw-prose-hr': 'rgb(var(--color-border))',
+            '--tw-prose-quotes': 'rgb(var(--color-text-base))',
+            '--tw-prose-quote-borders': 'rgb(var(--color-accent))',
+            '--tw-prose-captions': 'rgb(var(--color-text-muted))',
+            '--tw-prose-code': 'rgb(var(--color-accent))',
+            '--tw-prose-pre-code': 'rgb(var(--color-text-base))',
+            '--tw-prose-pre-bg': 'rgb(var(--color-bg-page))',
+            '--tw-prose-th-borders': 'rgb(var(--color-border))',
+            '--tw-prose-td-borders': 'rgb(var(--color-border))',
+            // Invert variants (used for dark mode)
+            '--tw-prose-invert-body': 'rgb(var(--color-text-base))',
+            '--tw-prose-invert-headings': 'rgb(var(--color-text-base))',
+            '--tw-prose-invert-links': 'rgb(var(--color-accent))',
+            '--tw-prose-invert-bold': 'rgb(var(--color-accent))',
+            '--tw-prose-invert-counters': 'rgb(var(--color-text-muted))',
+            '--tw-prose-invert-bullets': 'rgb(var(--color-text-muted))',
+            '--tw-prose-invert-hr': 'rgb(var(--color-border))',
+            '--tw-prose-invert-quotes': 'rgb(var(--color-text-base))',
+            '--tw-prose-invert-quote-borders': 'rgb(var(--color-accent))',
+            '--tw-prose-invert-captions': 'rgb(var(--color-text-muted))',
+            '--tw-prose-invert-code': 'rgb(var(--color-accent))',
+            '--tw-prose-invert-pre-code': 'rgb(var(--color-text-base))',
+            '--tw-prose-invert-pre-bg': 'rgb(var(--color-bg-page))',
+            '--tw-prose-invert-th-borders': 'rgb(var(--color-border))',
+            '--tw-prose-invert-td-borders': 'rgb(var(--color-border))',
+            // Direct element styling
+            color: 'rgb(var(--color-text-base))',
+            strong: {
+              color: 'rgb(var(--color-accent))',
+              fontWeight: '700',
+            },
+            'h1, h2, h3, h4': {
+              color: 'rgb(var(--color-text-base))',
+              fontFamily: theme('fontFamily.mono'),
+            },
+            code: {
+              color: 'rgb(var(--color-accent))',
+              fontFamily: theme('fontFamily.mono'),
+            },
+            a: {
+              color: 'rgb(var(--color-accent))',
+              textDecoration: 'none',
+              '&:hover': {
+                textDecoration: 'underline',
+              },
+            },
+            blockquote: {
+              color: 'rgb(var(--color-text-base))',
+              borderLeftColor: 'rgb(var(--color-accent))',
+            },
+            'ul > li::marker': {
+              color: 'rgb(var(--color-text-muted))',
+            },
+            'ol > li::marker': {
+              color: 'rgb(var(--color-text-muted))',
+            },
+            hr: {
+              borderColor: 'rgb(var(--color-border))',
+            },
+            pre: {
+              backgroundColor: 'rgb(var(--color-bg-page))',
+              color: 'rgb(var(--color-text-base))',
+            },
+          },
+        },
+      }),
     }
   },
   plugins: [require('@tailwindcss/typography'), require('tailwindcss-animate')]
