@@ -1,5 +1,4 @@
 name: Brian Anderson
-title: Technical Director & Enterprise Solutions Architect
 jobTitles:
   - Technical Director
   - Enterprise Solutions Architect
@@ -16,14 +15,22 @@ skills:
     - name: Cross-Functional Leadership
   Cloud Platforms:
     - name: AWS
+      url: https://aws.amazon.com/
     - name: Google Cloud
+      url: https://cloud.google.com/
     - name: OpenShift
+      url: https://www.redhat.com/en/technologies/openshift-platform
   Infrastructure & IaC:
     - name: Terraform
       url: https://www.terraform.io
-    - name: AWS CDK
+    - name: Terraform Cloud
+      url: https://www.terraform.io/cloud
+    - name: AWS CDK / CloudFormation
+      url: https://aws.amazon.com/cdk/
     - name: Kubernetes (EKS/GKE)
+      url: https://kubernetes.io/
     - name: Networking (VPC/TGW)
+      url: https://aws.amazon.com/networking/
   DevOps & CI/CD:
     - name: GitHub Actions
       url: https://github.com/actions
@@ -32,6 +39,7 @@ skills:
     - name: Helm
       url: https://helm.sh/
     - name: Jenkins
+      url: https://www.jenkins.io/
     - name: Spinnaker
       url: https://spinnaker.io/
   Languages:
@@ -73,12 +81,16 @@ skills:
     - name: Amazon Bedrock
       url: https://docs.aws.amazon.com/bedrock/
     - name: RAG
+      url: https://docs.aws.amazon.com/bedrock/latest/userguide/rag-overview.html
     - name: Prompt Engineering
+      url: https://docs.aws.amazon.com/bedrock/latest/userguide/prompt-engineering.html
     - name: Model Context Protocol (MCP)
+      url: https://modelcontextprotocol.io/
   AI Agent Frameworks:
     - name: LangGraph
       url: https://langchain-ai.github.io/langgraph
     - name: Agentcore
+      url: https://aws.amazon.com/bedrock/agentcore/
     - name: Strands SDK
       url: https://strandsagents.com/
     - name: VoltAgent SDK
@@ -89,8 +101,8 @@ skills:
       url: https://kiro.dev/
     - name: Claude Code
       url: https://www.anthropic.com/
-    - name: Cursor
-      url: https://cursor.com/
+    - name: Antigravity
+      url: https://antigravity.google/
     - name: Codex
       url: https://openai.com/codex/
     - name: SpecKit
@@ -113,40 +125,31 @@ experience:
     location: Denver, CO
     description: Led cloud modernization for a mission-critical credit card portfolio to OpenShift.
     highlights:
-      - "Cloud Modernization Strategy: Partnered with C-suite stakeholders to lead migration of a mission-critical Credit Card portfolio from legacy Websphere and PCF environments to OpenShift (OCP). Orchestrated transition of 6 core applications with zero downtime."
-      - 'Engineering Excellence: Pioneered a "Quality First" mandate by implementing TDD and automated CI/CD guardrails. Reduced deployment cycles from monthly releases to multiple on-demand daily deployments while maintaining strict financial sector change management compliance.'
-      - 'Scalable Architecture & Enablement: Standardized enterprise-wide integration patterns using Helm Charts and Kubernetes Operators. This enabled seamless, "first-class" adoption of observability tools (Datadog/Instana) and AWS services (e.g., RDS for PostgreSQL) across multiple delivery teams.'
+      - "Strategic Enterprise Modernization (Discover Financial): Partnered with client Directors and VPs to architect the migration of 14 mission-critical credit card applications from legacy WebSphere/PCF to OpenShift (OCP). Instilled executive confidence through transparent delivery roadmaps and zero-defect migration strategies."
+      - "Engineering Excellence & Cultural Leadership: Pioneered a 'Quality First' mandate by implementing TDD and automation as a standard. Scaled organizational expertise by serving as a primary architectural resource, enabling dozens of additional teams to meet aggressive migration deadlines."
+      - "Scalable Architecture & Enablement: Directed the implementation of standardized integration patterns using Helm Charts and Kubernetes Operators. Enabled 'first-class' adoption of AWS services (RDS for PostgreSQL) and observability suites (Instana/Datadog) via shared, configurable CI/CD pipelines."
     start_date: March 2024
     end_date: September 2024
-  - role: Principal Architect
-    company: Valtech | Kin + Carta
-    location: Denver, CO
-    description: Led strategic digital transformation initiatives for Fortune 500 enterprises, driving measurable ROI through cloud-native migration and data modernization.
-    highlights:
-      - "Strategic Digital Transformation (Gordon Food Service): Orchestrated a multi-year cloud-native strategy for a $1B+ food distributor, migrating a legacy on-premise ecosystem to Google Cloud Platform (GCP). This initiative directly enabled real-time inventory visibility and scaled their e-commerce capabilities to meet unprecedented demand."
-      - "Data Modernization Strategy: Led the architectural redesign of an enterprise data platform, replacing siloed legacy systems with a unified GCP data lake. Resulted in a 30% improvement in data-driven decision speed for executive leadership."
-      - "Enterprise Platform Engineering (Discover): Defined the \"Golden Path\" strategy for a global financial services leader, establishing standardized CI/CD patterns through the Trident Pipeline. Reduced organizational friction and accelerated time-to-market for hundreds of internal engineering teams."
-    start_date: January 2020
-    end_date: December 2024
   - role: Senior Technical Principal
     company: Kin + Carta
     location: Denver, CO
-    description: Designed 'Golden Path' for cloud adoption and standardized CI/CD templates.
+    description: Orchestrated enterprise cloud adoption strategy and established governance for Gordon Food Service.
     highlights:
-      - 'Enterprise Platform Engineering: Designed and evangelized a "Golden Path" for cloud adoption for a major Food Distributor, standardizing product provisioning and CI/CD templates across GitLab, SonarCloud, NexusIQ and Apigee to enable rapid, secure deployment cycles.'
-      - "Infrastructure as Code (IaC) & Governance: Developed a comprehensive library of shared Terraform Modules and Liquibase patterns, ensuring infrastructure consistency, security compliance and automated budgetary guardrails across all enterprise product teams."
-    start_date: November 2021
+      - "Architectural Governance & Provisioning (Gordon Food Service): Engineered a standardized 'Golden Path' for enterprise cloud adoption by architecting a centralized Terraform module library. This automated the provisioning of fragmented tools (GitLab, SonarCloud, Apigee, NexusIQ) across the enterprise, ensuring security compliance and budgetary guardrails."
+      - "Data Modernization Strategy: Led the architectural redesign of fragmented legacy systems into a unified GCP Data Lake. This strategic consolidation eliminated data silos and delivered a 30% improvement in decision-making velocity for executive leadership."
+      - "Operational Excellence: Developed common CI/CD Pipeline Templates to standardize integration across current and future product teams, enabling rapid testing and deployment while maintaining rigorous compliance and security."
+    start_date: February 2020
     end_date: March 2024
   - role: Technical Principal
     company: Solstice | Kin + Carta
     location: Denver, CO
-    description: Architected high-concurrency ordering platforms on GKE and mobile architecture for agriculture.
+    description: Architected high-concurrency ordering platforms and geospatial data solutions for agriculture.
     highlights:
-      - "Google Cloud Ecommerce Transformation: Architected a high-concurrency ordering platform using Angular and Java Spring Boot microservices on Google Kubernetes Engine (GKE). Integrated Firestore, Pub/Sub and Memorystore, scaling team to 60+ developers and achieving 8–9 production deployments per day via Spinnaker."
-      - "Mobile Architecture (Agriculture): Led Android architecture for a global satellite/drone data solution, ensuring implementation parity with iOS. Built a dual-platform CD pipeline using Fastlane, Jenkins, and Docker, integrating AWS Device Farm for automated testing and Mapbox for complex geospatial data visualization."
-      - "Innovation Leadership: Engineered an internal DevOps framework for standardized cross-platform mobile distribution, reducing release overhead from 4 weeks to 1 week for 6 production-supported applications."
+      - "Google Cloud Ecommerce Architecture (Gordon Food Service): Architected a high-concurrency platform using Angular and Java Spring Boot on GKE, leveraging Firestore, Pub/Sub, and Memorystore. Scaled the organization to 60+ developers across 5 teams, achieving 8–9 production deployments per day."
+      - "Mobile Architecture: Served as Solution Architect and Android Lead for a geospatial field-mapping solution for a large agriculture company. Engineered the architecture to visualize satellite/drone data and integrated a proprietary Nitrogen simulation analysis tool. Built a dual-platform CD pipeline using Fastlane, Docker, and AWS Device Farm to ensure feature parity."
+      - "Innovation Leadership: Engineered an internal DevOps framework for standardized distribution of Android, iOS, and Cordova Hybrid applications. Reduced release overhead from 4 weeks to 1 week for 6 production-supported applications via Fabric Beta."
     start_date: January 2017
-    end_date: November 2021
+    end_date: February 2020
   - role: Senior Technical Consultant
     company: Solstice | Kin + Carta
     location: Chicago, IL
@@ -188,7 +191,7 @@ education:
     start_date: August 2009
     end_date: May 2013
 certificates:
-  - name: AWS Certified Advanced Networking – Specialty
+  - name: AWS Certified Advanced Networking - Specialty
     url: https://www.credly.com/badges/03e0f406-6962-49b3-9c05-d3ffb271a31d
     start_date: January 2026
     end_date: January 2029

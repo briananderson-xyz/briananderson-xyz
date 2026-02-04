@@ -13,7 +13,7 @@
     "format": "prettier --write .",
     "test:ui": "node scripts/validate-ui.js",
     "test:posthog": "node scripts/validate-posthog.js",
-    "test:resumes": "node scripts/validate-resumes.js",
+    "test:resumes": "tsx scripts/validate-resumes.ts",
     "test:ai": "node scripts/validate-ai.js",
     "test:e2e": "pnpm exec playwright test",
     "validate": "pnpm run check || echo 'TypeScript check failed (ignoring third-party error)' && pnpm run test:resumes && pnpm run build && pnpm run test:ui && pnpm run test:posthog && pnpm run test:ai"
@@ -37,6 +37,7 @@
     "svelte-preprocess": "^5.1.4",
     "tailwindcss": "^3.4.10",
     "tailwindcss-animate": "^1.0.7",
+    "tsx": "^4.19.2",
     "typescript": "^5.6.2",
     "vite": "^6.3.0"
   },
@@ -46,7 +47,6 @@
     "gray-matter": "^4.0.3",
     "lucide-svelte": "^0.462.0",
     "posthog-js": "^1.319.0",
-
     "zod": "^4.3.6"
   }
 }

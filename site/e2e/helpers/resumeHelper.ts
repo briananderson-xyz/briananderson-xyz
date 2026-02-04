@@ -1,10 +1,12 @@
-import fs from 'fs';
-import path from 'path';
-import yaml from 'js-yaml';
+import fs from "fs";
+import path from "path";
+import yaml from "js-yaml";
+import { formatJobTitles } from "../../src/lib/utils/formatters.js";
 
 interface Resume {
   name: string;
-  title: string;
+  title?: string;
+  jobTitles: string[];
   tagline: string;
   mission: string;
   email: string;
@@ -42,15 +44,16 @@ interface Resume {
   }>;
 }
 
-export function loadResume(variant: string = 'default'): Resume {
-  const fileName = variant === 'default' ? 'resume.yaml' : `resume-${variant}.yaml`;
-  const filePath = path.resolve('content', fileName);
+export function loadResume(variant: string = "default"): Resume {
+  const fileName =
+    variant === "default" ? "resume.yaml" : `resume-${variant}.yaml`;
+  const filePath = path.resolve("content", fileName);
 
   if (!fs.existsSync(filePath)) {
     throw new Error(`Resume file not found: ${filePath}`);
   }
 
-  const content = fs.readFileSync(filePath, 'utf-8');
+  const content = fs.readFileSync(filePath, "utf-8");
 
   // Parse YAML
   const resume = yaml.load(content) as Resume;
@@ -58,15 +61,21 @@ export function loadResume(variant: string = 'default'): Resume {
   return resume;
 }
 
-export function getExpectedContent(variant: string): { title: string; skillCategory: string } {
+export function getExpectedContent(variant: string): {
+  title: string;
+  skillCategory: string;
+} {
   const resume = loadResume(variant);
 
   // Extract first skill category name
   const skillCategories = Object.keys(resume.skills);
-  const firstSkillCategory = skillCategories[0] || '';
+  const firstSkillCategory = skillCategories[0] || "";
+
+  // Use title if present, otherwise format jobTitles
+  const title = resume.title || formatJobTitles(resume.jobTitles);
 
   return {
-    title: resume.title,
+    title,
     skillCategory: firstSkillCategory,
   };
 }
