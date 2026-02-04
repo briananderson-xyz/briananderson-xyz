@@ -84,10 +84,20 @@ experience:
       - "Application Migration: Migrated 6 core credit card applications from legacy Websphere to OpenShift, refactoring Java Spring Boot services and implementing Helm-based deployments with zero downtime."
       - "Testing Excellence: Implemented TDD practices and automated testing guardrails, significantly reducing production bugs and increasing deployment confidence for the engineering team."
       - "Integration Development: Built standardized integration patterns using Kubernetes Operators, enabling seamless connectivity with Datadog, Instana, and AWS RDS across multiple applications."
-    start_date: March 2024
-    end_date: September 2024
-  - role: Senior Technical Principal
-    company: Kin + Carta
+     start_date: March 2024
+     end_date: September 2024
+   - role: Principal Architect
+     company: Valtech | Kin + Carta
+     location: Denver, CO
+     description: Hands-on technical leadership building high-throughput systems and modernization platforms, focusing on implementation and technical depth.
+     highlights:
+       - "GCP Data Ingestion Engine (Gordon Food Service): Hands-on lead for building a high-throughput data migration engine. Developed custom integration logic in Python/Go to bridge legacy SQL and Mainframe data into BigQuery and Dataflow, handling millions of daily transactions."
+       - "Trident Pipeline Integration (Discover): Engineered the core integration components of the Trident pipeline. Developed modular automation scripts and standardized API interfaces that allowed disparate engineering teams to adopt \"Golden Path\" deployments seamlessly."
+       - "E-commerce Cloud Migration: Refactored monolith applications into containerized microservices (GKE). Focused on optimizing database performance and implementing pub/sub architectures to handle real-time inventory updates across the GFS digital footprint."
+    start_date: January 2020
+    end_date: December 2024
+   - role: Senior Technical Principal
+     company: Kin + Carta
     location: Denver, CO
     description: Built developer platform tooling and shared component libraries.
     highlights:

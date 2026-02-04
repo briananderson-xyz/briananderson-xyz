@@ -118,6 +118,16 @@ experience:
       - 'Scalable Architecture & Enablement: Standardized enterprise-wide integration patterns using Helm Charts and Kubernetes Operators. This enabled seamless, "first-class" adoption of observability tools (Datadog/Instana) and AWS services (e.g., RDS for PostgreSQL) across multiple delivery teams.'
     start_date: March 2024
     end_date: September 2024
+  - role: Principal Architect
+    company: Valtech | Kin + Carta
+    location: Denver, CO
+    description: Led strategic digital transformation initiatives for Fortune 500 enterprises, driving measurable ROI through cloud-native migration and data modernization.
+    highlights:
+      - "Strategic Digital Transformation (Gordon Food Service): Orchestrated a multi-year cloud-native strategy for a $1B+ food distributor, migrating a legacy on-premise ecosystem to Google Cloud Platform (GCP). This initiative directly enabled real-time inventory visibility and scaled their e-commerce capabilities to meet unprecedented demand."
+      - "Data Modernization Strategy: Led the architectural redesign of an enterprise data platform, replacing siloed legacy systems with a unified GCP data lake. Resulted in a 30% improvement in data-driven decision speed for executive leadership."
+      - "Enterprise Platform Engineering (Discover): Defined the \"Golden Path\" strategy for a global financial services leader, establishing standardized CI/CD patterns through the Trident Pipeline. Reduced organizational friction and accelerated time-to-market for hundreds of internal engineering teams."
+    start_date: January 2020
+    end_date: December 2024
   - role: Senior Technical Principal
     company: Kin + Carta
     location: Denver, CO

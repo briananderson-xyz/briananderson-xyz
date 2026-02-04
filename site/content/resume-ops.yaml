@@ -79,6 +79,16 @@ experience:
       - "Observability Enablement: Standardized enterprise-wide integration patterns using Helm Charts and Kubernetes Operators, enabling seamless adoption of Datadog and Instana across multiple delivery teams for unified production monitoring."
     start_date: March 2024
     end_date: September 2024
+  - role: Principal Architect
+    company: Valtech | Kin + Carta
+    location: Denver, CO
+    description: Led platform engineering and infrastructure modernization at scale, focusing on reliability, automation, and developer velocity.
+    highlights:
+      - "Trident CI/CD & Platform Engineering (Discover): Architected the integration layer for the \"Trident\" pipeline, a massive-scale CI/CD framework. Established \"Golden Paths\" to automate security gates and compliance, resulting in a 90% reduction in deployment lead time for microservices."
+      - "GCP Infrastructure Modernization (GFS): Leveraged Terraform and automated CI/CD to migrate a multi-billion dollar distributor's core infrastructure to GCP. Focused on high-availability and disaster recovery patterns for the e-commerce engine."
+      - "Scalable Data Operations: Built automated, self-healing data ingestion pipelines. Implemented comprehensive monitoring and SLO/SLI frameworks to ensure 99.9% reliability for the enterprise data lake during peak holiday traffic."
+    start_date: January 2020
+    end_date: December 2024
   - role: Senior Technical Principal
     company: Kin + Carta
     location: Denver, CO
