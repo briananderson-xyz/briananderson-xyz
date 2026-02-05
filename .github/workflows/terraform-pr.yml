@@ -64,7 +64,6 @@ jobs:
             -var="github_org=${{ secrets.GH_ORG }}" \
             -var="github_repo=${{ secrets.GH_REPO }}" \
             -var="bucket_name=${{ secrets.SITE_BUCKET_NAME }}" \
-            -var="auth_proxy_domain=${{ secrets.AUTH_PROXY_DOMAIN }}" \
             -out=tfplan.out
 
       - name: Show Plan
