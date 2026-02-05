@@ -1,7 +1,6 @@
 name: Brian Anderson
 meta:
   order: 1
-title: Site Reliability Architect & DevOps Platform Engineer
 jobTitles:
   - Site Reliability Architect
   - DevOps Platform Engineer
@@ -13,24 +12,34 @@ mission: Driving operational excellence and engineering velocity through platfor
 email: brian@briananderson.xyz
 location: Denver, CO
 summary: >
-  Platform engineering leader with a decade of experience designing and operating 
+  Platform engineering leader with over a decade of experience designing and operating 
   production systems for Fortune 500 companies. Expert in Kubernetes orchestration, 
   CI/CD standardization, and observability implementation. Proven track record of 
   achieving zero-downtime migrations, reducing deployment cycles from weeks to hours, 
   and maintaining high availability for mission-critical financial and e-commerce systems.
 skills:
   Cloud & Orchestration:
-    - name: AWS (EKS, Lambda, RDS)
-    - name: Google Cloud (GKE, Pub/Sub, Firestore)
-    - name: Kubernetes / OpenShift
-    - name: Docker / Containerization
+    - name: AWS
+      url: https://aws.amazon.com/
+    - name: Google Cloud
+      url: https://cloud.google.com/
+    - name: Kubernetes
+      url: https://kubernetes.io/
+    - name: OpenShift
+      url: https://www.openshift.com/
+    - name: Docker
+      url: https://www.docker.com/
+    - name: Liquibase
+      url: https://www.liquibase.org/
+    - name: Terraform Cloud
+      url: https://www.hashicorp.com/products/terraform/cloud
   Infrastructure as Code:
     - name: Terraform
       url: https://www.terraform.io
-    - name: AWS CDK
+    - name: AWS CDK / CloudFormation
+      url: https://aws.amazon.com/cdk/
     - name: Helm Charts
       url: https://helm.sh/
-    - name: Kubernetes Operators
   CI/CD & Release Engineering:
     - name: GitHub Actions
       url: https://github.com/actions
@@ -38,55 +47,75 @@ skills:
       url: https://docs.gitlab.com/ci/
     - name: Spinnaker
       url: https://spinnaker.io/
-    - name: Jenkins / Fastlane
+    - name: Jenkins
+      url: https://www.jenkins.io/
+    - name: Fastlane
+      url: https://fastlane.tools/
   Reliability & Observability:
-    - name: Datadog / Instana
-    - name: Prometheus / Grafana
-    - name: SLO/SLI Implementation
-    - name: Incident Response
+    - name: Datadog 
+      url: https://www.datadoghq.com/
+    - name: Instana
+      url: https://www.instana.com/
+    - name: Elasticsearch
+      url: https://www.elastic.co/
   Networking & Security:
     - name: VPC / Transit Gateway
-    - name: Service Mesh
-    - name: API Gateway (Apigee)
-    - name: Security Compliance Automation
+      url: https://aws.amazon.com/vpc/
+    - name: Istio
+      url: https://istio.io/
   Data & Messaging:
-    - name: PostgreSQL / RDS
-    - name: Redis / Memorystore
-    - name: Kafka / Pub/Sub
+    - name: PostgreSQL
+      url: https://www.postgresql.org/
+    - name: RDS (Aurora)
+      url: https://aws.amazon.com/rds/
+    - name: Redis
+      url: https://redis.io/
+    - name: Memorystore
+      url: https://cloud.google.com/memorystore
+    - name: Kafka
+      url: https://kafka.apache.org/
+    - name: Pub/Sub
+      url: https://cloud.google.com/pubsub
     - name: EventBridge
+      url: https://aws.amazon.com/eventbridge/
   Languages:
     - name: Java (Spring Boot)
-    - name: Go
-    - name: Python
+      url: https://spring.io/projects/spring-boot
     - name: Node.js / TypeScript
+      url: https://nodejs.org/
+    - name: Python
+      url: https://www.python.org/
+    - name: Bash / Shell
+      url: https://www.gnu.org/software/bash/
+
 experience:
   - role: Enterprise Solutions Architect
     company: Amazon Web Services
     location: Denver, CO
     description: Specializing in cloud-native transformation, infrastructure modernization, and platform reliability.
     highlights:
-      - "Cloud Migration Architecture: Led architectural discovery for Greenfield enterprise customers, identifying high-impact opportunities for cloud-native modernization, implementing observability patterns, and establishing migration roadmaps for legacy-to-cloud transitions."
+      - "Cloud Migration Architecture: Led architectural discovery for Greenfield enterprise customers, identifying high-impact opportunities for cloud-native modernization, Generative AI integration, and establishing migration roadmaps for legacy-to-cloud transitions."
       - "Platform Automation: Engineered a GenAI-powered automation platform using Amazon Bedrock and Agentcore, reducing operational overhead by ~4 hours/week through automated CRM updates, documentation generation, and workflow orchestration."
-      - "Developer Tooling Integration: Championed adoption of developer productivity tools (Amazon Q Developer) and integrated API standardization frameworks (SpecKit/OpenSpec) to improve engineering velocity and code reliability across teams."
+      - "Developer Tooling Integration: Championed adoption of developer productivity tools (Amazon Q Developer/Kiro) and integrated AI-assisted development frameworks (SpecKit/OpenSpec) to showcase thought leadership in driving adoption across enterprise customers."
     start_date: September 2024
   - role: Technical Director
     company: Valtech | Kin + Carta
     location: Denver, CO
-    description: Led zero-downtime migration of mission-critical credit card portfolio to OpenShift.
+    description: Led zero-downtime migration of mission-critical credit card applications from legacy Websphere and Pivotal Cloud Foundry (PCF) to OpenShift (OCP on AWS).
     highlights:
-      - "Zero-Downtime Migration: Orchestrated migration of 6 mission-critical credit card applications from legacy Websphere and PCF to OpenShift (OCP), maintaining 100% availability throughout the transition for revenue-generating financial services."
-      - "CI/CD Transformation: Implemented automated CI/CD guardrails and TDD mandates, reducing deployment cycles from monthly releases to multiple on-demand daily deployments while maintaining strict financial sector change management compliance."
-      - "Observability Enablement: Standardized enterprise-wide integration patterns using Helm Charts and Kubernetes Operators, enabling seamless adoption of Datadog and Instana across multiple delivery teams for unified production monitoring."
+      - "Zero-Downtime Migration: Orchestrated migration of 6 mission-critical Java SpringBoot credit card applications from legacy Websphere and Pivotal Cloud Foundry (PCF) to OpenShift (OCP on AWS), maintaining 100% availability throughout the transition."
+      - "CI/CD Transformation: Implemented trunk-based CI/CD and TDD mandates, reducing deployment cycles from monthly releases to multiple on-demand daily deployments while maintaining strict financial sector change management compliance with ServiceNow and LeanIX."
+      - "Observability Enablement: Standardized enterprise-wide integration patterns using Helm Charts, enabling consistency in application deployments and seamless adoption of Datadog and Instana for managing SLIs, SLOs, and error budgets across multiple delivery teams for unified production monitoring."
     start_date: March 2024
     end_date: September 2024
   - role: Senior Technical Principal
     company: Kin + Carta
     location: Denver, CO
-    description: Designed enterprise 'Golden Path' platform for standardized cloud adoption and CI/CD.
+    description: Designed enterprise-wide 'Golden Path' for standardized cloud adoption and CI/CD.
     highlights:
-      - "Platform Engineering: Designed and evangelized an enterprise 'Golden Path' for a major Food Distributor, centralizing product provisioning and CI/CD templates across GitLab, SonarCloud, NexusIQ, and Apigee to enable rapid, secure deployment cycles."
-      - "Infrastructure as Code: Developed a comprehensive library of shared Terraform Modules and Liquibase patterns, ensuring infrastructure consistency, automated security compliance, and budgetary guardrails across all enterprise product teams."
-    start_date: November 2021
+      - "CI/CD & Platform Engineering (Discover Financial): Architected the integration layer for the \"Trident\" pipeline, a massive-scale CI/CD framework. Established \"Golden Paths\" to automate compliance, high availability, and trunk-based, continuous delivery, resulting in a 90% reduction in deployment lead time for microservices."
+      - "Infrastructure as Code (Gordon Food Service): Developed a comprehensive library of shared Terraform Modules and Liquibase patterns to centralize product provisioning, ensuring infrastructure consistency, automated security compliance, budgetary guardrails, and CI/CD templates across GitLab, SonarCloud, NexusIQ, and Apigee to enable rapid, secure deployment cycles across all enterprise product teams."
+    start_date: February 2020
     end_date: March 2024
   - role: Technical Principal
     company: Solstice | Kin + Carta
@@ -94,10 +123,10 @@ experience:
     description: Architected high-concurrency GKE platform achieving 8-9 daily production deployments.
     highlights:
       - "GKE Platform Operations: Architected and operated a high-concurrency ordering platform on Google Kubernetes Engine, integrating Firestore, Pub/Sub, and Memorystore (Redis) to handle massive traffic spikes with sub-second latency."
-      - "Release Engineering: Achieved 8-9 production deployments per day via Spinnaker while scaling engineering team to 60+ developers. Reduced release overhead for 6 production apps from 4 weeks to 1 week through pipeline automation."
-      - "Mobile CD Pipeline: Built a dual-platform continuous delivery pipeline using Fastlane, Jenkins, and Docker, integrating AWS Device Farm for automated testing across iOS and Android."
+      - "Release Engineering: Achieved 8-9 production deployments per day via Spinnaker while scaling engineering team to 60+ developers."
+      - "Mobile CD Pipeline: Built a dual-platform continuous delivery pipeline using Fastlane, Jenkins, and Docker, integrating AWS Device Farm for automated testing across iOS and Android. Reduced release overhead for 6 production apps from 4 weeks to 1 week through pipeline automation."
     start_date: January 2017
-    end_date: November 2021
+    end_date: February 2020
   - role: Senior Technical Consultant
     company: Solstice | Kin + Carta
     location: Chicago, IL

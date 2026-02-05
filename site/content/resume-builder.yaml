@@ -1,29 +1,28 @@
 name: Brian Anderson
 meta:
   order: 2
-title: Staff Software Engineer & Full-Stack Architect
 jobTitles:
-  - Staff Software Engineer
-  - Full-Stack Architect
+  - Full Stack Cloud Architect
+  - GenAI/DevOps Specialist
 tagline: >
   Hands-on engineer specializing in Full-Stack Product Development, GenAI Integration,
   and Mobile/Web Architecture. Passionate about shipping high-quality code, building
   intuitive user experiences, and solving complex technical challenges across the entire stack.
-mission: Delivering elegant, high-performance digital products by writing clean code and building systems that scale.
+mission: Delivering elegant, high-performance digital products by building systems that scale and fostering a culture of quality and consistency.
 email: brian@briananderson.xyz
 location: Denver, CO
 summary: >
   Full-stack engineer with over a decade of hands-on experience shipping production 
   applications for Fortune 500 brands. Expert in modern web frameworks, native mobile 
   development, and cloud-native backend services. Built and shipped high-concurrency 
-  e-commerce platforms, mobile banking apps, and GenAI-powered automation tools from 
-  concept to production.
+  e-commerce platforms, mobile banking apps, and GenAI-powered automation tools to enhance
+  developer experience and product delivery.
 skills:
   Frontend Frameworks:
     - name: React / Next.js
       url: https://react.dev/
     - name: SvelteKit
-      url: https://kit.svelte.dev/
+      url: https://svelte.dev/docs/kit/introduction
     - name: Angular
       url: https://angular.dev/
     - name: Vue
@@ -31,10 +30,16 @@ skills:
     - name: TypeScript
       url: https://www.typescriptlang.org/
   Mobile Development:
-    - name: iOS (Swift / UIKit)
-    - name: Android (Kotlin)
+    - name: iOS (Objective-C/Swift)
+      url: https://developer.apple.com/
+    - name: Android (Java)
+      url: https://developer.android.com/
     - name: React Native
-    - name: Auto Layout / Jetpack Compose
+      url: https://reactnative.dev/
+    - name: Ionic
+      url: https://ionicframework.com/
+    - name: Cordova
+      url: https://cordova.apache.org/
   Backend & APIs:
     - name: Node.js / Express
       url: https://nodejs.org/
@@ -42,30 +47,59 @@ skills:
       url: https://spring.io/projects/spring-boot
     - name: Python (Flask/FastAPI)
       url: https://www.python.org/
-    - name: REST / GraphQL
   Generative AI:
     - name: Amazon Bedrock
       url: https://docs.aws.amazon.com/bedrock/
-    - name: LangGraph / Agentcore
-    - name: RAG Implementation
-    - name: Prompt Engineering
+    - name: LangGraph
+      url: https://langchain.com/langgraph/
+    - name: Kiro
+      url: https://kiro.dev/
+    - name: Antigravity
+      url: https://antigravity.google/
+    - name: Strands Agents SDK
+      url: https://strandsagents.com/
   Data & Persistence:
     - name: PostgreSQL
       url: https://www.postgresql.org/
-    - name: DynamoDB / Firestore
+    - name: DynamoDB
+      url: https://aws.amazon.com/dynamodb/
+    - name: Firestore
+      url: https://firebase.google.com/products/firestore
     - name: Redis
       url: https://redis.io/
-    - name: Kafka / Pub/Sub
+    - name: Kafka
+      url: https://kafka.apache.org/
+    - name: Pub/Sub
+      url: https://cloud.google.com/pubsub
   Cloud & DevOps:
-    - name: AWS / Google Cloud
-    - name: Kubernetes / Docker
-    - name: GitHub Actions / CI/CD
+    - name: AWS
+      url: https://aws.amazon.com/
+    - name: Google Cloud
+      url: https://cloud.google.com/
+    - name: Kubernetes
+      url: https://kubernetes.io/
+    - name: Docker
+      url: https://www.docker.com/
+    - name: GitHub Actions
+      url: https://github.com/features/actions
+    - name: GitLab CI
+      url: https://about.gitlab.com/gitlab-ci/
     - name: Terraform
+      url: https://www.terraform.io/
+    - name: AWS CDK / CloudFormation
+      url: https://aws.amazon.com/cdk/
+    - name: Liquibase
+      url: https://www.liquibase.com/
+    - name: Spinnaker
+      url: https://www.spinnaker.io/
   Testing & Quality:
-    - name: TDD / Unit Testing
-    - name: Jest / Cypress
+    - name: TDD / BDD
+    - name: Playwright
+      url: https://playwright.dev/
     - name: AWS Device Farm
-    - name: Code Review
+      url: https://aws.amazon.com/device-farm/
+    - name: Extreme Programming
+      url: https://www.extremeprogramming.org/
 experience:
   - role: Enterprise Solutions Architect
     company: Amazon Web Services
@@ -73,17 +107,17 @@ experience:
     description: Building GenAI-powered automation tools and customer-facing integrations.
     highlights:
       - "GenAI Agent Development: Built a custom GenAI agent platform using Amazon Bedrock and Agentcore in Python, implementing RAG patterns for automated CRM updates and documentation generation. Reduced team administrative overhead by ~4 hours/week."
-      - "Full-Stack Integration: Implemented integrations for GitHub's SpecKit and FissionAI's OpenSpec APIs, building custom tooling that earned public commendation from the SpecKit team."
-      - "Customer Solution Delivery: Built an Amazon Connect-based SMS automation pilot for a global manufacturer, writing Lambda functions and integrating with backend APIs to automate customer support workflows."
+      - "Full-Stack Integration: Implemented Amazon Q Developer (Kiro) integrations for GitHub's SpecKit and FissionAI's OpenSpec APIs, becoming an early adopter and driving customer adoption through thought leadership and demos."
+      - "Customer Solution Delivery: Built an Amazon Connect-based SMS automation pilot for a global manufacturer, writing customer third-party applications and integrating with backend APIs to automate customer support workflows."
     start_date: September 2024
   - role: Technical Director
     company: Valtech | Kin + Carta
     location: Denver, CO
     description: Hands-on technical leadership for credit card application modernization.
     highlights:
-      - "Application Migration: Migrated 6 core credit card applications from legacy Websphere to OpenShift, refactoring Java Spring Boot services and implementing Helm-based deployments with zero downtime."
+      - "Application Migration: Lead Architect responsible for migrating 6 core credit card applications from legacy Websphere to OpenShift, refactoring Java Spring Boot services and implementing Helm-based deployments with zero downtime."
       - "Testing Excellence: Implemented TDD practices and automated testing guardrails, significantly reducing production bugs and increasing deployment confidence for the engineering team."
-      - "Integration Development: Built standardized integration patterns using Kubernetes Operators, enabling seamless connectivity with Datadog, Instana, and AWS RDS across multiple applications."
+      - "Integration Development (Discover Financial): Integrated Helm Charts on top of OpenShift, establishing best practices across the organization for estbalishing SLIs/SLOs with Datadog/Instana and high availability/scalability with Kubernetes."
     start_date: March 2024
     end_date: September 2024
   - role: Senior Technical Principal
@@ -91,9 +125,9 @@ experience:
     location: Denver, CO
     description: Built developer platform tooling and shared component libraries.
     highlights:
-      - "Developer Platform: Built the enterprise 'Golden Path' developer platform, implementing self-service project scaffolding that automated CI/CD setup across GitLab, SonarCloud, NexusIQ, and Apigee."
-      - "Shared Libraries: Developed a comprehensive library of shared Terraform modules and Liquibase patterns, enabling consistent infrastructure provisioning across all product teams."
-    start_date: November 2021
+      - "Cloud Developer Platform (Gordon Food Service): Built the enterprise 'Golden Path' developer platform, implementing self-service project scaffolding that automated CI/CD setup across GitLab, SonarCloud, NexusIQ, and Apigee."
+      - "Enterprise Applications (Gordon Food Service): Lead architect in developing a comprehensive library of shared Terraform modules and Liquibase patterns, enabling consistent infrastructure provisioning across all product teams."
+    start_date: February 2020
     end_date: March 2024
   - role: Technical Principal
     company: Solstice | Kin + Carta
@@ -101,10 +135,10 @@ experience:
     description: Built high-concurrency e-commerce platform and mobile applications.
     highlights:
       - "E-Commerce Platform: Built a high-concurrency ordering platform using Angular frontend and Java Spring Boot microservices, integrating Firestore for real-time updates, Pub/Sub for event streaming, and Memorystore (Redis) for caching."
-      - "Android Development: Implemented Android features for a global satellite/drone data solution using Kotlin, integrating Mapbox SDK for complex geospatial data visualization and ensuring implementation parity with iOS."
-      - "Mobile CI/CD: Built a dual-platform release pipeline using Fastlane, Jenkins, and Docker, integrating AWS Device Farm for automated cross-device testing and reducing release cycles from 4 weeks to 1 week."
+      - "Mobile Architect & CI/CD: Engineered a data-rich native Android application for a major agriculture client, integrating complex mapping features with Mapbox to visualize satellite and drone imagery. Built and deployed a comprehensive Continuous Delivery pipeline from scratch using Fastlane, Jenkins, and Docker, automating parallel builds for iOS and Android. Implemented automated testing via AWS Device Farm and static analysis with SonarQube, significantly reducing deployment friction and ensuring code quality across platforms."
+      - "Innovation Leadership: Engineered an internal DevOps framework for standardized distribution of Android, iOS, and Cordova Hybrid applications. Reduced release overhead from 4 weeks to 1 week for 6 production-supported applications via Fabric Beta."
     start_date: January 2017
-    end_date: November 2021
+    end_date: February 2020
   - role: Senior Technical Consultant
     company: Solstice | Kin + Carta
     location: Chicago, IL
