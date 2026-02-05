@@ -8,7 +8,7 @@ tagline: >
   Hands-on engineer specializing in Full-Stack Product Development, GenAI Integration,
   and Mobile/Web Architecture. Passionate about shipping high-quality code, building
   intuitive user experiences, and solving complex technical challenges across the entire stack.
-mission: Delivering elegant, high-performance digital products by writing clean code and building systems that scale.
+mission: Delivering elegant, high-performance digital products by building systems that scale and fostering a culture of quality and consistency.
 email: brian@briananderson.xyz
 location: Denver, CO
 summary: >
@@ -22,7 +22,7 @@ skills:
     - name: React / Next.js
       url: https://react.dev/
     - name: SvelteKit
-      url: https://kit.svelte.dev/
+      url: https://svelte.dev/docs/kit/introduction
     - name: Angular
       url: https://angular.dev/
     - name: Vue
