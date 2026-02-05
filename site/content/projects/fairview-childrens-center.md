@@ -2,7 +2,7 @@
 title: "Fairview Children's Center"
 date: 2025-02-04
 summary: "Complete WordPress overhaul for a children's center, transforming their digital presence to better reach prospective parents."
-tags: ["WordPress", "Custom Theme", "PHP", "UX Research", "Modernization"]
+tags: ["WordPress", "Custom Theme", "PHP", "JavaScript", "Modernization"]
 ---
 
 ### The Project
@@ -21,6 +21,8 @@ It didn't take long to get all the updates Melissa wanted, while also making sur
 - **Platform:** WordPress
 - **Theme:** Brand new custom theme, page hierarchy, and menus (including mobile)
 - **Design:** Strategic UI overhaul focusing on clear Call to Actions rather than "walls of text"
+- **Responsive:** Fully responsive across all device sizes with a mobile-first approach
+- **Dark Mode:** Complete light and dark mode support with user preference persistence
 - **Tooling:** Leveraged Gemini 3 for the redesign process
 
 ### New Functionality
