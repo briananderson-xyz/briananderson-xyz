@@ -3,4 +3,7 @@ node_modules
 build
 .DS_Store
 .env
+.env.local
 preview.log
+build.log
+check.log
