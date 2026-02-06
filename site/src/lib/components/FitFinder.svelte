@@ -67,13 +67,26 @@
 		error = null;
 	}
 
-	function handleCTAClick() {
+	function handleCTAClick(e: MouseEvent) {
 		if (browser && PUBLIC_POSTHOG_KEY && analysis) {
 			posthog.capture('fit_finder_cta_clicked', {
 				fitScore: analysis.fitScore,
 				linkType: 'email'
 			});
 		}
+		// Close modal after click
+		onClose();
+	}
+
+	function handleResumeClick(e: MouseEvent) {
+		if (browser && PUBLIC_POSTHOG_KEY && analysis) {
+			posthog.capture('fit_finder_resume_clicked', {
+				fitScore: analysis.fitScore,
+				variant: analysis.resumeVariantRecommendation
+			});
+		}
+		// Close modal after click
+		onClose();
 	}
 
 	function getScoreColor(score: number): string {
@@ -124,7 +137,9 @@
 		role="dialog"
 		aria-modal="true"
 		aria-labelledby="fit-finder-title"
+		tabindex="-1"
 		onclick={handleBackdropClick}
+		onkeydown={handleKeyDown}
 	>
 		<div class="terminal-window max-w-4xl w-full max-h-[90vh] flex flex-col">
 			<div class="terminal-header">
@@ -286,6 +301,7 @@
 											<a 
 												href="/{analysis.resumeVariantRecommendation === 'leader' ? '' : analysis.resumeVariantRecommendation + '/'}resume/"
 												class="text-terminal-green hover:underline ml-1"
+												onclick={handleResumeClick}
 											>
 												Check out my resume →
 											</a>

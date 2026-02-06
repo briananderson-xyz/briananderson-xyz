@@ -184,25 +184,32 @@ Context about Brian:
 Job Description:
 ${jobDescription}
 
+CRITICAL REQUIREMENTS:
+1. Every claim about skills, experience, or capabilities MUST be backed by specific evidence from Brian's background
+2. Only include skills/experience you can verify from the context provided
+3. Include citations (URLs) for all experience claims using relatedLinks
+4. Recommendations should be written FOR THE HIRING MANAGER (not for Brian) - advice on how to position Brian or what to focus on in conversations
+
 Analyze the fit and respond with a JSON object (no markdown, just raw JSON) with this exact structure:
 {
   "fitScore": <number 0-100>,
   "confidence": "<high|medium|low>",
   "matchingSkills": [
-    {"name": "<skill>", "metadata": "<years/context>"}
+    {"name": "<skill>", "metadata": "<specific years/context from Brian's background>"}
   ],
   "matchingExperience": [
     {
-      "role": "<role title>",
+      "role": "<exact role title from Brian's background>",
       "company": "<company name>",
       "dateRange": "<YYYY-YYYY>",
-      "relatedLinks": ["<url if relevant>"]
+      "relatedLinks": ["<${SITE_URL}/projects/project-name or other relevant URL>"]
     }
   ],
-  "gaps": ["<skill or experience gap>"],
+  "gaps": ["<skill or experience gap not found in Brian's background>"],
   "recommendations": [
-    "<specific recommendation about fit>",
-    "<suggestion for positioning>"
+    "<advice for hiring manager: what to focus on when talking to Brian>",
+    "<positioning suggestion: how Brian's experience maps to this role>",
+    "<conversation starter: specific topics to discuss with Brian>"
   ],
   "resumeVariantRecommendation": "<leader|ops|builder>",
   "cta": {
@@ -211,13 +218,16 @@ Analyze the fit and respond with a JSON object (no markdown, just raw JSON) with
   }
 }
 
-Be honest about gaps but focus on strengths. Fit score should be:
-- 80-100: Excellent fit, strong alignment
-- 60-79: Good fit, some gaps but manageable
-- 40-59: Moderate fit, significant gaps
-- 0-39: Poor fit, major misalignment
+SCORING GUIDELINES:
+- 80-100: Excellent fit, strong alignment with verifiable experience
+- 60-79: Good fit, some gaps but core competencies match
+- 40-59: Moderate fit, significant gaps in key areas
+- 0-39: Poor fit, major misalignment with requirements
 
-Confidence should reflect how well the JD matches Brian's documented experience.`;
+Confidence should reflect:
+- high: Job requirements clearly match Brian's documented experience
+- medium: Some requirements match, others are unclear or partially match
+- low: Limited information to assess fit accurately`;
 
 					const result = await model.generateContent(prompt);
 					const response = result.response.text();
