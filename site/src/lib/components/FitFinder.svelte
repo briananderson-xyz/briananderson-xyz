@@ -82,6 +82,12 @@
 		return 'text-red-500';
 	}
 
+	function getScoreBgColor(score: number): string {
+		if (score >= 80) return 'bg-terminal-green';
+		if (score >= 60) return 'bg-yellow-500';
+		return 'bg-red-500';
+	}
+
 	function getConfidenceBadge(confidence: string): string {
 		const badges = {
 			high: '🟢 High Confidence',
@@ -202,7 +208,7 @@
 								<div class="flex-1">
 									<div class="progress-bar">
 										<div 
-											class="progress-fill {getScoreColor(analysis.fitScore)}"
+											class="progress-fill {getScoreBgColor(analysis.fitScore)}"
 											style="width: {analysis.fitScore}%"
 										></div>
 									</div>
