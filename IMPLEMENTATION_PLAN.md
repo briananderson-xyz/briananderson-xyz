@@ -2,7 +2,7 @@
 
 ## Overview
 
-Add keyboard navigation, VS Code-style command palette, and Firebase-powered AI chatbot with RAG-style retrieval to Brian Anderson's portfolio site. Demonstrates technical capabilities while maintaining cost-effectiveness using Firebase free tiers.
+Add keyboard navigation, VS Code-style command palette, and Firebase-powered AI chatbot with RAG-style retrieval to Brian Anderson's portfolio site. Demonstrates technical capabilities while maintaining cost-effectiveness using Firebase free tiers. It is important to remember that the site itself is a static website hosted on GCS w/ Cloudflare DNS/CDN so do not implement sveltekit items that require server side rendering unless we can prerender OR in some scenarios use clientside logic
 
 ---
 
@@ -37,7 +37,7 @@ Add keyboard navigation, VS Code-style command palette, and Firebase-powered AI 
 ├─────────────────────────────────────────────────────────────┤
 │                                                          │
 │  ┌──────────────────────────────────────────────────────┐  │
-│  │  /api/chat                                       │  │
+│  │  /api/agent/chat                                       │  │
 │  │  - Validate App Check token                        │  │
 │  │  - Enforce rate limits                             │  │
 │  │  - RAG retrieval (URL context)                     │  │
@@ -48,7 +48,7 @@ Add keyboard navigation, VS Code-style command palette, and Firebase-powered AI 
 │  └──────────────────────────────────────────────────────┘  │
 │                                                          │
 │  ┌──────────────────────────────────────────────────────┐  │
-│  │  /api/fitFinder                                  │  │
+│  │  /api/agent/fit-finder                                  │  │
 │  │  - Analyze job description                        │  │
 │  │  - Return structured fit analysis                  │  │
 │  │  - Include "Connect with Brian" CTA              │  │
@@ -67,10 +67,10 @@ Add keyboard navigation, VS Code-style command palette, and Firebase-powered AI 
 
 ### Key Design Decisions
 
-1. **RAG via URL Context**: Firebase AI Logic's URL context feature allows external AIs to access same information by pointing at `/llms.txt`
+1. **RAG via URL Context**: Firebase AI Logic's URL context feature allows external AIs to access same information by pointing at `/llms.txt` variants can use /<variant>/llms.txt but MUST update their llms link tag ie. <link rel="llms" href="/<variant>/llms.txt">
 2. **Serverless Backend**: Firebase Cloud Functions keeps API keys server-side, provides rate limiting and abuse prevention
 3. **Client-Side State**: Session management, dismissal tracking, chat history in localStorage
-4. **Terminal Theming**: All new UI components use existing terminal aesthetic (scanlines, monospace, green/black)
+4. **Terminal Theming**: All new UI components use existing terminal aesthetic (scanlines, monospace, green/black/catpuccin mocha)
 5. **Variant-Aware**: Quick Actions respects current resume variant, with descriptions for switching
 
 ---
@@ -156,7 +156,7 @@ hobbies:
 
 - **Default**: `guest@briananderson:~$` (static, current design)
 - **Chat open**: `guest@briananderson:~$ [ONLINE]`
-- **AI thinking**: `guest@briananderson:~$ [PROCESSING]`
+- **AI thinking**: `guest@briananderson:~$ [PROCESSING]` visual indicator while loading (lean into our theming)
 - **Blinking cursor**: Animate when chat is ready for input
 
 ---
@@ -172,7 +172,7 @@ hobbies:
 
 1. **Variant-Aware Search**
    - Default: Search within current resume variant
-   - Include: "Switch variant" actions with descriptions explaining each variant
+   - Include: "Switch variant" action with descriptions explaining why the variants exist (a way to showcase different sides of my engineering persona)
    - Example descriptions:
      - Leader: "Focus: Team leadership, architecture, strategy"
      - Ops: "Focus: DevOps, platform engineering, reliability"
@@ -197,7 +197,7 @@ hobbies:
 
 5. **Terminal Styling**
    - Monospace font
-   - Green/black color scheme
+   - Green/black/catpuccin mocha color scheme
    - Blinking cursor
    - Scanline effect
 
@@ -237,7 +237,7 @@ firebase init functions
 
 3. **RAG Retrieval**
    - Use Firebase AI Logic's URL context feature
-   - Context source: `https://briananderson.xyz/llms.txt`
+   - Context source: `https://briananderson.xyz/llms.txt` (or active variant location)
    - Query Gemini for relevant content
 
 4. **Build Prompt**
@@ -253,7 +253,7 @@ firebase init functions
 
 6. **Stream Response**
    - Server-Sent Events (SSE)
-   - Real-time feedback to client
+   - Real-time feedback to client w/ handling for Markdown
    - Handle errors gracefully
 
 7. **Update Rate Limits**
@@ -277,8 +277,8 @@ firebase init functions
    interface FitAnalysis {
      fitScore: number; // 0-100
      confidence: 'high' | 'medium' | 'low';
-     matchingSkills: string[];
-     matchingExperience: string[];
+     matchingSkills: Skill[]; // skill name, metadata
+     matchingExperience: Experience[]; // Matching Experience, Role, DateRange, Company, related links
      gaps: string[];
      recommendations: string[];
      resumeVariantRecommendation: 'leader' | 'ops' | 'builder';
@@ -290,7 +290,7 @@ firebase init functions
    ```
 
 4. **CTA Integration**
-   - Always include "Connect with Brian" button
+   - Always include "Connect with Brian" button.. the prominence of this button though should be relative to how high and confident the score is. If we have low confidence or a score lower than 70, we can acknowledge that it may not be the right fit and thus not throw the CTA in their face
    - Email: `brian@briananderson.xyz`
    - Optional: LinkedIn link
 
@@ -323,6 +323,8 @@ const result = await model.generateContent({
   }
 });
 ```
+
+NOTE: Take any and all precautions that should come with allowing a query from user input
 
 ### Secondary: Build-Time Knowledge Base (Optional)
 
@@ -376,10 +378,10 @@ const result = await model.generateContent({
    - Full-screen or sidebar modal
    - Scanline effect (inherited from layout)
    - Monospace font
-   - Green/black color scheme
+   - Green/black/catpuccin mocha color scheme
 
 2. **Navbar Integration**
-   - Replace existing `guest@briananderson:~$` with interactive element
+   - Modify existing `guest@briananderson:~$` to be interactive 
    - Click to open full chat overlay
    - Status indicator showing availability
 
@@ -439,7 +441,7 @@ const result = await model.generateContent({
 │ FIT FINDER                          │
 │ ─────────────────────────────────────  │
 │                                    │
-│ 📄 Job Description                 │
+│ 📄 Project/Job Description                 │
 │ ┌──────────────────────────────────┐  │
 │ │ [Text area for JD paste]       │  │
 │ │                               │  │
@@ -464,8 +466,8 @@ const result = await model.generateContent({
 │ │                               │  │
 │ │ 💡 Recommendation:            │  │
 │ │ Strong fit for leadership-     │  │
-│ │ focused role. Recommend        │  │
-│ │ "Leader" resume variant.       │  │
+│ │ focused role. <Link to resume for        │  │
+│ │ "Leader" resume variant.>       │  │
 │ │                               │  │
 │ │ [📧 Connect with Brian]       │  │
 │ └──────────────────────────────────┘  │
@@ -487,7 +489,8 @@ const result = await model.generateContent({
    - Matching skills (from JD)
    - Gaps (skills/experience missing)
    - Recommendations
-   - Suggested resume variant
+   - Suggested resume variant resume link
+   - NOTE: Make sure to explain why its a good fit or bad fit.. not just bullet point references to my skills
 
 4. **Call-to-Action**
    - "Connect with Brian" button
@@ -496,7 +499,7 @@ const result = await model.generateContent({
 
 5. **Terminal Styling**
    - Monospace font
-   - Green/black color scheme
+   - Green/black/catpuccin mocha color scheme
    - Scanline effect
    - Blinking cursor during analysis
 
@@ -1025,7 +1028,7 @@ PUBLIC_POSTHOG_KEY=your_posthog_key_here
 PUBLIC_POSTHOG_HOST=https://app.posthog.com
 ```
 
-### 10.3 Deploy Cloud Functions
+### 10.3 Deploy Cloud Functions via GitHub Actions
 
 ```bash
 cd site/functions
@@ -1045,39 +1048,10 @@ pnpm run build
 firebase deploy --only hosting
 ```
 
-Or use your existing deployment method (Git-based CI/CD).
 
 ---
 
-## Cost Summary
-
-| Component | Monthly Cost | Notes |
-|-----------|--------------|-------|
-| Firebase AI Logic SDKs | $0 | Always free |
-| Gemini Developer API (Spark) | $0 | 15 RPM, 1,500 RPD |
-| Firebase App Check | $0 | reCAPTCHA v3 free tier |
-| Firebase Hosting | $0 | Already using |
-| Firebase Cloud Functions | $0 | Spark plan: ~125K invocations/month |
-| Firestore | $0 | Spark plan: 50K reads/day, 20K writes/day |
-| **Total** | **$0** | All free tiers |
-
-### Estimated Usage
-
-- **Chat sessions**: ~50-100/day
-- **Messages per session**: ~5-10
-- **Total messages**: ~500-1,000/day
-- **Within free tier?** Yes (1,500 RPD limit)
-
-### Upgrade Path (If Needed)
-
-If usage exceeds free tier:
-1. Switch Firebase project to Blaze plan (pay-as-you-go)
-2. Gemini Developer API pricing: ~$0.000001 per 1K tokens (flash-lite)
-3. Estimate: 1K messages × 1K tokens × $0.000001 = $0.001/day
-4. Cloud Functions: $0.40 per million invocations
-5. Firestore: Small usage likely stays in free tier
-
----
+ALWAYS Keep track of status in AI_STATUS.md and update after each task is complete
 
 ## Timeline
 
@@ -1123,6 +1097,7 @@ If usage exceeds free tier:
 - [ ] Deployment successful to production
 - [ ] Monthly cost remains $0
 
+
 ---
 
 ## Future Enhancements
@@ -1151,3 +1126,4 @@ If usage exceeds free tier:
    - Custom PostHog dashboard
    - Funnel analysis (visit → chat → CTA)
    - A/B test banner timing
+
