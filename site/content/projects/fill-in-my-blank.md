@@ -3,6 +3,8 @@ title: Fill In My Blank
 date: 2014-01-01
 summary: A mobile party game that allowed users to play with friends to create hilarious results using Blanks and Fillers.
 tags: ["Mobile Game", "iOS", "Android", "Java", "Objective-C"]
+featuredImage: "/projects/fimb/logo.png"
+featuredImageAlt: "Fill In My Blank Logo"
 ---
 
 ### The Concept
@@ -22,9 +24,6 @@ Taking cues from popular party games, **Fill In My Blank** was a mobile game tha
 
 ### Visual Archive
 <div class="grid grid-cols-2 md:grid-cols-3 gap-4 not-prose mt-8">
-  <div class="border border-skin-border bg-skin-page p-2 rounded-lg">
-    <img src="/projects/fimb/logo.png" alt="Logo" class="w-full h-auto grayscale hover:grayscale-0 transition-all"/>
-  </div>
   <div class="border border-skin-border bg-skin-page p-2 rounded-lg">
     <img src="/projects/fimb/home.png" alt="Home Screen" class="w-full h-auto grayscale hover:grayscale-0 transition-all"/>
   </div>

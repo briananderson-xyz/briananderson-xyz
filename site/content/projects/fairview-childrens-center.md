@@ -3,6 +3,8 @@ title: "Fairview Children's Center"
 date: 2025-02-04
 summary: "Complete WordPress overhaul for a children's center, transforming their digital presence to better reach prospective parents."
 tags: ["WordPress", "Custom Theme", "PHP", "JavaScript", "Modernization"]
+featuredImage: "/projects/fairview/desktop_home_dark.png"
+featuredImageAlt: "Fairview Children's Center - Desktop Home Dark Theme"
 ---
 
 ### The Project
@@ -42,9 +44,6 @@ I didn't want to just finish the site and leave Melissa hanging. I took the time
 
 ### Visual Archive
 <div class="grid grid-cols-2 md:grid-cols-3 gap-4 not-prose mt-8">
-  <div class="border border-skin-border bg-skin-page p-2 rounded-lg">
-    <img src="/projects/fairview/desktop_home_dark.png" alt="Desktop Home - Dark Theme" class="w-full h-auto grayscale hover:grayscale-0 transition-all"/>
-  </div>
   <div class="border border-skin-border bg-skin-page p-2 rounded-lg">
     <img src="/projects/fairview/desktop_home_light.png" alt="Desktop Home - Light Theme" class="w-full h-auto grayscale hover:grayscale-0 transition-all"/>
   </div>
