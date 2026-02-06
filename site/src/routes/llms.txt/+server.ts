@@ -6,9 +6,13 @@ import { PUBLIC_SITE_URL } from '$env/static/public';
 export const prerender = true;
 
 export const GET = async () => {
-	const filePath = path.resolve('content/resume.yaml');
-	const fileContents = fs.readFileSync(filePath, 'utf-8');
-	const resume: any = yaml.load(fileContents);
+	const resumePath = path.resolve('content/resume.yaml');
+	const resumeContents = fs.readFileSync(resumePath, 'utf-8');
+	const resume: any = yaml.load(resumeContents);
+
+	const personalPath = path.resolve('content/personal.yaml');
+	const personalContents = fs.readFileSync(personalPath, 'utf-8');
+	const personal: any = yaml.load(personalContents);
 
 	const content = `# briananderson.xyz
 
@@ -41,6 +45,15 @@ Personal portfolio and professional site for Brian Anderson - Technical Director
 ## About Brian
 
 ${resume.summary}
+
+### Personal Interests
+${personal.interests.map((i: any) => `- **${i.name}:** ${i.description}`).join('\n')}
+
+### Core Values
+${personal.values.map((v: string) => `- ${v}`).join('\n')}
+
+### Hobbies
+${personal.hobbies.map((h: any) => `- **${h.name}:** ${h.details}`).join('\n')}
 
 ## Expertise
 
