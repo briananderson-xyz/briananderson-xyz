@@ -59,3 +59,39 @@ export interface Resume {
   certificates: ResumeCertificate[];
   'early-career'?: ResumeEarlyCareer[];
 }
+
+export interface QuickAction {
+	id: string;
+	title: string;
+	description?: string;
+	category: 'page' | 'blog' | 'project' | 'variant' | 'action';
+	url?: string;
+	handler?: () => void;
+	keywords?: string[];
+}
+
+export interface ChatMessage {
+	id: string;
+	role: 'user' | 'assistant' | 'system';
+	content: string;
+	timestamp: number;
+}
+
+export interface FitAnalysis {
+	fitScore: number;
+	confidence: 'high' | 'medium' | 'low';
+	matchingSkills: Array<{ name: string; metadata?: string }>;
+	matchingExperience: Array<{
+		role: string;
+		company: string;
+		dateRange: string;
+		relatedLinks?: string[];
+	}>;
+	gaps: string[];
+	recommendations: string[];
+	resumeVariantRecommendation: 'leader' | 'ops' | 'builder';
+	cta: {
+		text: string;
+		link: string;
+	};
+}

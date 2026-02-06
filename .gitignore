@@ -9,5 +9,9 @@ build
 playwright-report
 test-results
 
+# IDE
+.vscode/
+
 # Environment variables
 site/.env
+site/.env.local

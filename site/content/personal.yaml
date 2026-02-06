@@ -1,0 +1,35 @@
+name: Brian Anderson
+location: Denver, CO
+
+interests:
+  - name: Automation & Tooling
+    description: Building tools that automate away repetitive tasks
+    passion: I love discovering workflows that can be automated and creating solutions that free people to focus on creative work
+
+  - name: Building & Creating
+    description: Always working on side projects, from electronics to software
+    passion: There's something magical about taking an idea from concept to reality
+
+  - name: Mentoring & Teaching
+    description: Sharing knowledge through blog posts, mentoring junior developers
+    passion: Watching someone have that "aha" moment when a concept clicks
+
+  - name: Continuous Learning
+    description: Exploring new technologies, staying current with industry trends
+    passion: Technology moves fast, and I love staying on the cutting edge
+
+values:
+  - "Quality over speed - do it right the first time"
+  - "Collaboration over competition - we rise by lifting others"
+  - "Practical innovation - solve real problems, not hypothetical ones"
+  - "Transparency - honest communication builds trust"
+
+hobbies:
+  - name: Electronics & Hardware
+    details: Tinkering with Arduino, building custom IoT devices, home automation projects
+
+  - name: Open Source
+    details: Contributing to projects I use, maintaining my own tools, supporting the community
+
+  - name: Cooking
+    details: Weekend meal prep experiments, trying new recipes, perfecting coffee brewing

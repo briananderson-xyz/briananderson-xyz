@@ -3,12 +3,117 @@
   import "$lib/styles/app.css";
   import Navbar from "$lib/components/Navbar.svelte";
   import Footer from "$lib/components/Footer.svelte";
+  import QuickActions from "$lib/components/QuickActions.svelte";
+  import KeyboardShortcutsHelp from "$lib/components/KeyboardShortcutsHelp.svelte";
+  import Chatbot from "$lib/components/Chatbot.svelte";
+  import FitFinder from "$lib/components/FitFinder.svelte";
+  import HiringManagerBanner from "$lib/components/HiringManagerBanner.svelte";
+  import { useKeyboardShortcuts, type KeyboardShortcut } from "$lib/hooks/useKeyboardShortcuts";
   import { browser } from "$app/environment";
   import { beforeNavigate, afterNavigate } from "$app/navigation";
   import posthog from "posthog-js";
   import { PUBLIC_POSTHOG_KEY, PUBLIC_POSTHOG_HOST } from "$env/static/public";
 
+  let quickActionsVisible = $state(false);
+  let shortcutsHelpVisible = $state(false);
+  let chatbotVisible = $state(false);
+  let fitFinderVisible = $state(false);
+
+  const shortcuts: KeyboardShortcut[] = [
+    {
+      key: 'k',
+      meta: true,
+      description: 'Open Quick Actions',
+      handler: () => {
+        // Close other modals first
+        chatbotVisible = false;
+        fitFinderVisible = false;
+        shortcutsHelpVisible = false;
+        // Open Quick Actions
+        quickActionsVisible = true;
+        if (browser && PUBLIC_POSTHOG_KEY) {
+          posthog.capture('keyboard_shortcut_used', { shortcut: 'cmd+k' });
+        }
+      }
+    },
+    {
+      key: 'i',
+      meta: true,
+      description: 'Toggle AI Chatbot',
+      handler: () => {
+        // Close other modals first
+        quickActionsVisible = false;
+        fitFinderVisible = false;
+        shortcutsHelpVisible = false;
+        // Toggle chatbot
+        chatbotVisible = !chatbotVisible;
+        if (browser && PUBLIC_POSTHOG_KEY) {
+          posthog.capture('keyboard_shortcut_used', { shortcut: 'cmd+i' });
+          if (chatbotVisible) {
+            posthog.capture('chat_opened', { source: 'shortcut' });
+          }
+        }
+      }
+    },
+    {
+      key: 'f',
+      meta: true,
+      description: 'Open Fit Finder',
+      handler: () => {
+        // Close other modals first
+        quickActionsVisible = false;
+        chatbotVisible = false;
+        shortcutsHelpVisible = false;
+        // Open Fit Finder
+        fitFinderVisible = true;
+        if (browser && PUBLIC_POSTHOG_KEY) {
+          posthog.capture('keyboard_shortcut_used', { shortcut: 'cmd+f' });
+          posthog.capture('fit_finder_opened', { source: 'shortcut' });
+        }
+      }
+    },
+    {
+      key: '?',
+      meta: true,
+      shift: true,
+      description: 'Show Keyboard Shortcuts',
+      handler: () => {
+        // Close other modals first
+        quickActionsVisible = false;
+        chatbotVisible = false;
+        fitFinderVisible = false;
+        // Open shortcuts help
+        shortcutsHelpVisible = true;
+        if (browser && PUBLIC_POSTHOG_KEY) {
+          posthog.capture('keyboard_help_opened', { source: 'shortcut' });
+        }
+      }
+    },
+    {
+      key: 'h',
+      meta: true,
+      description: 'Go Home',
+      handler: () => {
+        if (browser) {
+          window.location.href = '/';
+        }
+      }
+    },
+    {
+      key: 'Escape',
+      description: 'Close All Overlays',
+      handler: () => {
+        quickActionsVisible = false;
+        shortcutsHelpVisible = false;
+        chatbotVisible = false;
+        fitFinderVisible = false;
+      }
+    }
+  ];
+
   if (browser) {
+    useKeyboardShortcuts(shortcuts);
+
     onMount(() => {
       if (PUBLIC_POSTHOG_KEY) {
         console.log(
@@ -67,7 +172,27 @@
 <div
   class="min-h-screen print:min-h-0 flex flex-col bg-skin-page text-skin-base font-sans transition-colors duration-300"
 >
-  <Navbar />
+  <Navbar 
+    onOpenShortcutsHelp={() => shortcutsHelpVisible = true}
+    onOpenChat={() => {
+      quickActionsVisible = false;
+      fitFinderVisible = false;
+      shortcutsHelpVisible = false;
+      chatbotVisible = true;
+    }}
+    onOpenFitFinder={() => {
+      quickActionsVisible = false;
+      chatbotVisible = false;
+      shortcutsHelpVisible = false;
+      fitFinderVisible = true;
+    }}
+    onOpenQuickActions={() => {
+      chatbotVisible = false;
+      fitFinderVisible = false;
+      shortcutsHelpVisible = false;
+      quickActionsVisible = true;
+    }}
+  />
   <main
     class="flex-1 w-full max-w-6xl mx-auto p-4 md:p-6 print:p-0 print:max-w-none"
   >
@@ -75,3 +200,28 @@
   </main>
   <Footer />
 </div>
+
+<QuickActions 
+  visible={quickActionsVisible} 
+  onClose={() => quickActionsVisible = false} 
+/>
+
+<Chatbot
+  visible={chatbotVisible}
+  onClose={() => chatbotVisible = false}
+/>
+
+<FitFinder
+  visible={fitFinderVisible}
+  onClose={() => fitFinderVisible = false}
+/>
+
+<HiringManagerBanner
+  onOpenFitFinder={() => fitFinderVisible = true}
+/>
+
+<KeyboardShortcutsHelp 
+  {shortcuts}
+  visible={shortcutsHelpVisible}
+  onClose={() => shortcutsHelpVisible = false}
+/>
