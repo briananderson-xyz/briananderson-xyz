@@ -15,6 +15,7 @@
 	let messages = $state<ChatMessage[]>([]);
 	let isLoading = $state(false);
 	let chatContainer: HTMLDivElement;
+	let focusTrigger = $state(0);
 
 	// Load chat history from localStorage
 	onMount(() => {
@@ -37,7 +38,7 @@
 		}
 	});
 
-	// Auto-scroll to bottom when new messages arrive
+	// Auto-scroll to bottom when new messages arrive or when chat opens
 	$effect(() => {
 		if (chatContainer && messages.length > 0) {
 			// Use requestAnimationFrame for smoother scrolling
@@ -46,6 +47,16 @@
 					top: chatContainer.scrollHeight,
 					behavior: 'smooth'
 				});
+			});
+		}
+	});
+
+	// Scroll to bottom when chat becomes visible (opening with history)
+	$effect(() => {
+		if (visible && chatContainer && messages.length > 0) {
+			// Immediate scroll without animation when opening
+			requestAnimationFrame(() => {
+				chatContainer.scrollTop = chatContainer.scrollHeight;
 			});
 		}
 	});
@@ -89,6 +100,9 @@
 				timestamp: Date.now()
 			};
 			messages = [...messages, assistantMessage];
+
+			// Trigger refocus after response
+			focusTrigger++;
 
 		} catch (error) {
 			console.error('Chat error:', error);
@@ -194,6 +208,7 @@
 					onSend={handleSendMessage}
 					disabled={isLoading}
 					autoFocus={visible}
+					focusTrigger={focusTrigger}
 				/>
 			</div>
 		</div>

@@ -74,7 +74,7 @@ export const chat = onRequest(
 				try {
 					const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 					const model = genAI.getGenerativeModel({
-						model: 'gemini-2.0-flash-lite',
+						model: 'gemini-2.5-flash',
 						systemInstruction: getSystemPrompt(SITE_URL),
 						generationConfig: {
 							maxOutputTokens: 1000,
@@ -165,7 +165,7 @@ export const fitFinder = onRequest(
 				try {
 					const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 					const model = genAI.getGenerativeModel({
-						model: 'gemini-2.0-flash-lite',
+						model: 'gemini-2.5-flash',
 						generationConfig: {
 							maxOutputTokens: 2000,
 							temperature: 0.5,

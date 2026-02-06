@@ -7,3 +7,9 @@ build
 preview.log
 build.log
 check.log
+
+# Firebase Functions build output
+functions/lib/
+functions/node_modules/
+
+firebase-debug.log

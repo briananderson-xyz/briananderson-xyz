@@ -5,9 +5,10 @@
 		onSend: (message: string) => void;
 		disabled?: boolean;
 		autoFocus?: boolean;
+		focusTrigger?: number;
 	}
 
-	let { onSend, disabled = false, autoFocus = false }: Props = $props();
+	let { onSend, disabled = false, autoFocus = false, focusTrigger = 0 }: Props = $props();
 	
 	let inputValue = $state('');
 	let textareaElement: HTMLTextAreaElement;
@@ -15,6 +16,13 @@
 	// Auto-focus when component mounts if autoFocus is true
 	onMount(() => {
 		if (autoFocus && textareaElement) {
+			textareaElement.focus();
+		}
+	});
+
+	// Refocus when focusTrigger changes (after receiving response)
+	$effect(() => {
+		if (focusTrigger > 0 && textareaElement) {
 			textareaElement.focus();
 		}
 	});
