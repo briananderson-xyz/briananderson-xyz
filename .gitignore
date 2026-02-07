@@ -21,5 +21,8 @@ site/.env.local
 .playwright-mcp/
 .opencode/
 
+# AI-generated temporary docs (status tracking, planning, etc.)
+.ai-docs/
+
 # Windows artifacts
 nul
