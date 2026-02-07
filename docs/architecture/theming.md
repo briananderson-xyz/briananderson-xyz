@@ -1,7 +1,5 @@
 # Theming System
 
-> Referenced from [CLAUDE.md](../../CLAUDE.md) and [AGENTS.md](../../AGENTS.md)
-
 ## Overview
 
 The site supports three themes using CSS custom properties. All theme-aware styling flows through Tailwind's `skin-*` utility classes, which resolve to CSS variables at runtime.
