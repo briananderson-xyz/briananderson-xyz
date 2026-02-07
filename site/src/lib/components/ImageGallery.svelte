@@ -1,6 +1,13 @@
 <script lang="ts">
   import Lightbox from "$lib/components/Lightbox.svelte";
   import { onMount } from "svelte";
+  import type { Snippet } from "svelte";
+
+  interface Props {
+    children: Snippet;
+  }
+
+  let { children }: Props = $props();
 
   let lightboxOpen = $state(false);
   let currentIndex = $state(0);
@@ -28,7 +35,7 @@
 </script>
 
 <div bind:this={galleryElement}>
-  <slot />
+  {@render children()}
 </div>
 
 {#if lightboxOpen}

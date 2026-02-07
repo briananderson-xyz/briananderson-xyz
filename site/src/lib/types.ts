@@ -1,3 +1,20 @@
+export interface ContentMetadata {
+	title: string;
+	date: string;
+	summary?: string;
+	tags?: string[];
+	keywords?: string[];
+	featuredImage?: string;
+	featuredImageAlt?: string;
+	featuredImageCaption?: string;
+	readingTime?: string;
+}
+
+export interface ContentItem {
+	metadata: ContentMetadata;
+	route: string;
+}
+
 export interface ResumeJob {
   role: string;
   company: string;
@@ -79,16 +96,22 @@ export interface ChatMessage {
 
 export interface FitAnalysis {
 	fitScore: number;
+	fitLevel: 'good' | 'maybe' | 'not';
 	confidence: 'high' | 'medium' | 'low';
-	matchingSkills: Array<{ name: string; metadata?: string }>;
+	matchingSkills: Array<{
+		name: string;
+		url?: string;
+		context?: string;
+	}>;
 	matchingExperience: Array<{
 		role: string;
 		company: string;
 		dateRange: string;
-		relatedLinks?: string[];
+		url?: string;
+		relevance: string;
 	}>;
 	gaps: string[];
-	recommendations: string[];
+	analysis: string;
 	resumeVariantRecommendation: 'leader' | 'ops' | 'builder';
 	cta: {
 		text: string;

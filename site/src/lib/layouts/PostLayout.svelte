@@ -1,11 +1,14 @@
 <script lang="ts">
   import Lightbox from "$lib/components/Lightbox.svelte";
-  
+  import type { ContentMetadata } from "$lib/utils/content-loader";
+  import type { Snippet } from "svelte";
+
   interface Props {
-    metadata: Record<string, any>;
+    metadata: ContentMetadata;
+    children: Snippet;
   }
-  
-  let { metadata }: Props = $props();
+
+  let { metadata, children }: Props = $props();
   
   let lightboxOpen = $state(false);
   
@@ -73,7 +76,7 @@
   {/if}
 
   <div class="font-sans text-lg leading-relaxed text-skin-base">
-    <slot />
+    {@render children()}
   </div>
 </article>
 

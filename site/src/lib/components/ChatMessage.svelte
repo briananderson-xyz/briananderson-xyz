@@ -15,8 +15,8 @@
 	});
 
 	const renderedContent = $derived(
-		message.role === 'assistant' 
-			? marked.parse(message.content) 
+		message.role === 'assistant'
+			? marked.parse(message.content)
 			: message.content
 	);
 
@@ -26,17 +26,22 @@
 			minute: '2-digit'
 		});
 	}
+
+	const roleClasses = $derived(
+		message.role === 'user'
+			? 'bg-terminal-green/10 border border-terminal-green/30 ml-12'
+			: message.role === 'assistant'
+				? 'bg-terminal-black border border-terminal-green/20 mr-12'
+				: 'bg-terminal-dark border border-terminal-text/20 text-center'
+	);
 </script>
 
-<div 
-	class="message"
-	class:user={message.role === 'user'}
-	class:assistant={message.role === 'assistant'}
-	class:system={message.role === 'system'}
+<div
+	class="rounded-lg p-4 font-mono text-sm {roleClasses}"
 	data-testid="chat-message"
 >
-	<div class="message-header">
-		<span class="message-role">
+	<div class="flex justify-between items-center mb-2 text-xs">
+		<span class="text-terminal-green font-semibold">
 			{#if message.role === 'user'}
 				You
 			{:else if message.role === 'assistant'}
@@ -45,10 +50,10 @@
 				System
 			{/if}
 		</span>
-		<span class="message-time">{formatTime(message.timestamp)}</span>
+		<span class="text-terminal-text/50">{formatTime(message.timestamp)}</span>
 	</div>
-	
-	<div class="message-content">
+
+	<div class="message-content text-terminal-text leading-relaxed">
 		{#if message.role === 'assistant'}
 			{@html renderedContent}
 		{:else}
@@ -58,69 +63,59 @@
 </div>
 
 <style>
-	.message {
-		@apply rounded-lg p-4 font-mono text-sm;
-	}
-
-	.message.user {
-		@apply bg-terminal-green/10 border border-terminal-green/30 ml-12;
-	}
-
-	.message.assistant {
-		@apply bg-terminal-black border border-terminal-green/20 mr-12;
-	}
-
-	.message.system {
-		@apply bg-terminal-dark border border-terminal-text/20 text-center;
-	}
-
-	.message-header {
-		@apply flex justify-between items-center mb-2 text-xs;
-	}
-
-	.message-role {
-		@apply text-terminal-green font-semibold;
-	}
-
-	.message-time {
-		@apply text-terminal-text/50;
-	}
-
-	.message-content {
-		@apply text-terminal-text leading-relaxed;
-	}
-
-	/* Style markdown content */
+	/* Plain CSS for :global() selectors targeting {@html} rendered content */
 	.message-content :global(p) {
-		@apply mb-2 last:mb-0;
+		margin-bottom: 0.5rem;
+	}
+
+	.message-content :global(p:last-child) {
+		margin-bottom: 0;
 	}
 
 	.message-content :global(ul),
 	.message-content :global(ol) {
-		@apply ml-4 mb-2;
+		margin-left: 1rem;
+		margin-bottom: 0.5rem;
 	}
 
 	.message-content :global(li) {
-		@apply mb-1;
+		margin-bottom: 0.25rem;
 	}
 
 	.message-content :global(code) {
-		@apply bg-terminal-green/10 px-1 py-0.5 rounded text-terminal-green;
+		background-color: rgba(var(--color-terminal-accent), 0.1);
+		padding-left: 0.25rem;
+		padding-right: 0.25rem;
+		padding-top: 0.125rem;
+		padding-bottom: 0.125rem;
+		border-radius: 0.25rem;
+		color: rgb(var(--color-terminal-accent));
 	}
 
 	.message-content :global(pre) {
-		@apply bg-terminal-dark p-3 rounded overflow-x-auto mb-2;
+		background-color: #1e1e1e;
+		padding: 0.75rem;
+		border-radius: 0.25rem;
+		overflow-x: auto;
+		margin-bottom: 0.5rem;
 	}
 
 	.message-content :global(pre code) {
-		@apply bg-transparent p-0;
+		background-color: transparent;
+		padding: 0;
 	}
 
 	.message-content :global(a) {
-		@apply text-terminal-green underline hover:text-terminal-green/80;
+		color: rgb(var(--color-terminal-accent));
+		text-decoration: underline;
+	}
+
+	.message-content :global(a:hover) {
+		opacity: 0.8;
 	}
 
 	.message-content :global(strong) {
-		@apply text-terminal-green font-bold;
+		color: rgb(var(--color-terminal-accent));
+		font-weight: 700;
 	}
 </style>

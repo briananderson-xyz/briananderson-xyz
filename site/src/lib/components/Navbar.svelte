@@ -16,7 +16,7 @@
   let { onOpenShortcutsHelp, onOpenChat, onOpenFitFinder, onOpenQuickActions }: Props = $props();
 
   let open = $state(false);
-  
+
   // Terminal input state
   let terminalInput = $state('');
   let showAutocomplete = $state(false);
@@ -33,12 +33,12 @@
   const filteredCommands = $derived(() => {
     if (!terminalInput.trim()) return commands;
     const query = terminalInput.toLowerCase();
-    return commands.filter(cmd => 
-      cmd.label.toLowerCase().includes(query) || 
+    return commands.filter(cmd =>
+      cmd.label.toLowerCase().includes(query) ||
       cmd.description.toLowerCase().includes(query)
     );
   });
-  
+
   const activeRoute = $derived($page.url.pathname);
   const variant = $derived(getVariant($page.url));
 
@@ -58,7 +58,7 @@
 
   function handleTerminalKeydown(e: KeyboardEvent) {
     const filtered = filteredCommands();
-    
+
     if (e.key === 'ArrowDown') {
       e.preventDefault();
       selectedIndex = (selectedIndex + 1) % filtered.length;
@@ -100,48 +100,59 @@
     class="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between gap-4"
   >
     <div class="relative">
-      <button
-        onclick={() => inputElement?.focus()}
-        class="text-sm md:text-base font-bold tracking-tight text-skin-base flex items-center gap-2 group cursor-text"
-      >
-        <span class="text-skin-accent group-hover:animate-pulse"
-          >guest@briananderson:~$</span
+      <div class="text-sm md:text-base font-bold tracking-tight text-skin-base flex items-center gap-2 group">
+        <a
+          href={addVariant("/", variant)}
+          class="text-skin-accent hover:animate-pulse"
+          >guest@briananderson:~$</a
         >
-        {#if !isFocused && !terminalInput}
-          <span class="w-2 h-4 bg-skin-accent animate-terminal-blink"></span>
-        {/if}
-        <div class="input-wrapper">
-          <span class="input-mirror" aria-hidden="true">{terminalInput || ''}</span>
-          <input
-            bind:this={inputElement}
-            bind:value={terminalInput}
-            onfocus={handleTerminalFocus}
-            onblur={handleTerminalBlur}
-            onkeydown={handleTerminalKeydown}
-            oninput={handleTerminalInput}
-            type="text"
-            class="terminal-input"
-            class:focused={isFocused}
-            placeholder=""
-            maxlength="30"
-            aria-label="Terminal command input"
-          />
-          {#if !isFocused && terminalInput}
-            <span class="w-2 h-4 bg-skin-accent animate-terminal-blink -ml-2"></span>
+        <button
+          onclick={() => inputElement?.focus()}
+          class="cursor-text flex items-center gap-0"
+        >
+          {#if !isFocused && !terminalInput}
+            <span class="w-2 h-4 bg-skin-accent animate-terminal-blink"></span>
           {/if}
-        </div>
-      </button>
+          <div class="relative inline-flex items-center" style="min-width: 8px; max-width: 300px;">
+            <span class="invisible whitespace-pre font-mono text-skin-accent" aria-hidden="true" style="padding: 0 16px 0 0;">{terminalInput || ''}</span>
+            <input
+              bind:this={inputElement}
+              bind:value={terminalInput}
+              onfocus={handleTerminalFocus}
+              onblur={handleTerminalBlur}
+              onkeydown={handleTerminalKeydown}
+              oninput={handleTerminalInput}
+              type="text"
+              class="absolute left-0 top-0 bg-transparent border-none outline-none text-skin-accent font-mono w-full h-full"
+              class:focused={isFocused}
+              placeholder=""
+              maxlength="30"
+              aria-label="Terminal command input"
+              style="caret-color: transparent;"
+            />
+            {#if isFocused}
+              <style>
+                input.focused {
+                  caret-color: rgb(var(--color-accent));
+                }
+              </style>
+            {/if}
+            {#if !isFocused && terminalInput}
+              <span class="w-2 h-4 bg-skin-accent animate-terminal-blink" style="margin-left: -1rem;"></span>
+            {/if}
+          </div>
+        </button>
+      </div>
 
       {#if showAutocomplete && filteredCommands().length > 0}
-        <div class="autocomplete-dropdown">
+        <div class="absolute top-full left-0 mt-2 min-w-[280px] z-50 bg-terminal-black border-2 border-terminal-green rounded-lg shadow-2xl font-mono text-sm">
           {#each filteredCommands() as command, index}
             <button
               onclick={() => executeCommand(command)}
-              class="autocomplete-item"
-              class:selected={index === selectedIndex}
+              class="w-full px-4 py-3 text-left flex flex-col gap-1 border-b border-terminal-green/10 last:border-b-0 hover:bg-terminal-green/10 transition-colors cursor-pointer {index === selectedIndex ? 'bg-terminal-green/10' : ''}"
             >
-              <span class="command-label">{command.label}</span>
-              <span class="command-description">{command.description}</span>
+              <span class="text-terminal-green font-semibold">{command.label}</span>
+              <span class="text-terminal-text/70 text-xs">{command.description}</span>
             </button>
           {/each}
         </div>
@@ -238,52 +249,7 @@
 </header>
 
 <style>
-  .input-wrapper {
-    @apply relative inline-flex items-center;
-    min-width: 8px;
-    max-width: 300px;
-  }
-
-  .input-mirror {
-    @apply invisible whitespace-pre font-mono text-skin-accent;
-    padding: 0 16px 0 0; /* Extra padding for next character */
-  }
-
-  .terminal-input {
-    @apply absolute left-0 top-0 bg-transparent border-none outline-none text-skin-accent font-mono;
-    @apply w-full h-full;
-    caret-color: transparent;
-  }
-
-  .terminal-input.focused {
-    caret-color: rgb(var(--color-accent));
-  }
-
-  .terminal-input::placeholder {
-    @apply text-skin-muted/50;
-  }
-
-  .autocomplete-dropdown {
-    @apply absolute top-full left-0 mt-2 min-w-[280px] z-50;
-    @apply bg-terminal-black border-2 border-terminal-green rounded-lg shadow-2xl;
-    @apply font-mono text-sm;
-  }
-
-  .autocomplete-item {
-    @apply w-full px-4 py-3 text-left flex flex-col gap-1;
-    @apply border-b border-terminal-green/10 last:border-b-0;
-    @apply hover:bg-terminal-green/10 transition-colors cursor-pointer;
-  }
-
-  .autocomplete-item.selected {
-    @apply bg-terminal-green/10;
-  }
-
-  .command-label {
-    @apply text-terminal-green font-semibold;
-  }
-
-  .command-description {
-    @apply text-terminal-text/70 text-xs;
+  input::placeholder {
+    color: rgba(var(--color-text-muted), 0.5);
   }
 </style>

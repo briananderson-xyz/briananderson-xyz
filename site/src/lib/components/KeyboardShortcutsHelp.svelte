@@ -8,7 +8,7 @@
 	}
 
 	let { shortcuts, visible, onClose }: Props = $props();
-	
+
 	function handleBackdropClick(e: MouseEvent) {
 		if (e.target === e.currentTarget) {
 			onClose();
@@ -17,74 +17,47 @@
 </script>
 
 {#if visible}
-	<div 
+	<div
 		class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
 		data-testid="keyboard-help"
 		role="dialog"
+		tabindex="-1"
 		aria-modal="true"
 		aria-labelledby="shortcuts-title"
 		onclick={handleBackdropClick}
+		onkeydown={(e) => e.key === 'Escape' && onClose()}
 	>
-		<div class="terminal-window max-w-2xl w-full mx-4">
-			<div class="terminal-header">
+		<div class="bg-terminal-black border-2 border-terminal-green shadow-2xl max-w-2xl w-full mx-4">
+			<div class="flex justify-between items-center px-4 py-2 bg-terminal-green/10 border-b-2 border-terminal-green font-mono text-terminal-green">
 				<span id="shortcuts-title">Keyboard Shortcuts</span>
 				<div class="flex items-center gap-2">
-					<kbd class="terminal-kbd-sm">Esc</kbd>
-					<button 
+					<kbd class="px-2 py-0.5 bg-terminal-green/10 border border-terminal-green rounded text-terminal-green font-mono text-xs">Esc</kbd>
+					<button
 						onclick={onClose}
-						class="terminal-close"
+						class="text-2xl leading-none hover:text-terminal-green transition-colors cursor-pointer"
 						aria-label="Close shortcuts help"
 					>
 						×
 					</button>
 				</div>
 			</div>
-			
-			<div class="terminal-content p-6 max-h-[70vh] overflow-y-auto">
+
+			<div class="p-6 max-h-[70vh] overflow-y-auto font-mono text-sm">
 				<div class="space-y-4">
 					{#each shortcuts as shortcut}
 						<div class="flex justify-between items-center py-2 border-b border-terminal-green/20">
 							<span class="text-terminal-text">{shortcut.description}</span>
-							<kbd class="terminal-kbd">
+							<kbd class="px-3 py-1 bg-terminal-green/10 border border-terminal-green rounded text-terminal-green font-mono text-xs">
 								{getShortcutDisplay(shortcut)}
 							</kbd>
 						</div>
 					{/each}
 				</div>
-				
+
 				<div class="mt-6 text-sm text-terminal-text/70">
-					<p>Press <kbd class="terminal-kbd-sm">Esc</kbd> or click outside to close this dialog</p>
+					<p>Press <kbd class="px-2 py-0.5 bg-terminal-green/10 border border-terminal-green rounded text-terminal-green font-mono text-xs">Esc</kbd> or click outside to close this dialog</p>
 				</div>
 			</div>
 		</div>
 	</div>
 {/if}
-
-<style>
-	.terminal-window {
-		@apply bg-terminal-black border-2 border-terminal-green shadow-2xl;
-	}
-
-	.terminal-header {
-		@apply flex justify-between items-center px-4 py-2 bg-terminal-green/10 border-b-2 border-terminal-green;
-		@apply font-mono text-terminal-green;
-	}
-
-	.terminal-close {
-		@apply text-2xl leading-none hover:text-terminal-green transition-colors cursor-pointer;
-	}
-
-	.terminal-content {
-		@apply font-mono text-sm;
-	}
-
-	.terminal-kbd {
-		@apply px-3 py-1 bg-terminal-green/10 border border-terminal-green rounded;
-		@apply text-terminal-green font-mono text-xs;
-	}
-
-	.terminal-kbd-sm {
-		@apply px-2 py-0.5 bg-terminal-green/10 border border-terminal-green rounded;
-		@apply text-terminal-green font-mono text-xs;
-	}
-</style>

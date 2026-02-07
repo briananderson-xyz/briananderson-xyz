@@ -11,10 +11,10 @@
 	}
 
 	let { visible, onClose }: Props = $props();
-	
+
 	let messages = $state<ChatMessage[]>([]);
 	let isLoading = $state(false);
-	let chatContainer: HTMLDivElement;
+	let chatContainer = $state<HTMLDivElement | null>(null);
 	let focusTrigger = $state(0);
 
 	// Load chat history from localStorage
@@ -106,7 +106,7 @@
 
 		} catch (error) {
 			console.error('Chat error:', error);
-			
+
 			// Add error message
 			const errorMessage: ChatMessage = {
 				id: (Date.now() + 1).toString(),
@@ -148,19 +148,21 @@
 </script>
 
 {#if visible}
-	<div 
+	<div
 		class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
 		data-testid="chatbot"
 		role="dialog"
+		tabindex="-1"
 		aria-modal="true"
 		aria-labelledby="chatbot-title"
 		onclick={handleBackdropClick}
+		onkeydown={(e) => e.key === 'Escape' && onClose()}
 	>
-		<div class="terminal-window max-w-4xl w-full h-[80vh] flex flex-col">
-			<div class="terminal-header">
+		<div class="bg-terminal-black border-2 border-terminal-green shadow-2xl max-w-4xl w-full h-[80vh] flex flex-col">
+			<div class="flex justify-between items-center px-4 py-2 bg-terminal-green/10 border-b-2 border-terminal-green font-mono text-terminal-green">
 				<span id="chatbot-title">guest@briananderson:~$ chat</span>
 				<div class="flex items-center gap-3">
-					<button 
+					<button
 						onclick={clearHistory}
 						class="text-sm hover:text-terminal-green transition-colors"
 						title="Clear chat history"
@@ -169,9 +171,9 @@
 					</button>
 					<div class="flex items-center gap-1">
 						<span class="text-xs text-terminal-green/70">Esc</span>
-						<button 
+						<button
 							onclick={onClose}
-							class="terminal-close"
+							class="text-2xl leading-none hover:text-terminal-green transition-colors cursor-pointer"
 							aria-label="Close chatbot"
 						>
 							×
@@ -179,8 +181,8 @@
 					</div>
 				</div>
 			</div>
-			
-			<div 
+
+			<div
 				bind:this={chatContainer}
 				class="flex-1 overflow-y-auto p-4 space-y-4"
 			>
@@ -204,7 +206,7 @@
 			</div>
 
 			<div class="border-t border-terminal-green/20">
-				<ChatInput 
+				<ChatInput
 					onSend={handleSendMessage}
 					disabled={isLoading}
 					autoFocus={visible}
@@ -214,18 +216,3 @@
 		</div>
 	</div>
 {/if}
-
-<style>
-	.terminal-window {
-		@apply bg-terminal-black border-2 border-terminal-green shadow-2xl;
-	}
-
-	.terminal-header {
-		@apply flex justify-between items-center px-4 py-2 bg-terminal-green/10 border-b-2 border-terminal-green;
-		@apply font-mono text-terminal-green;
-	}
-
-	.terminal-close {
-		@apply text-2xl leading-none hover:text-terminal-green transition-colors cursor-pointer;
-	}
-</style>
