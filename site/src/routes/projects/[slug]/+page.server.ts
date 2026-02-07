@@ -1,4 +1,6 @@
 import { render } from 'svelte/server';
+import type { Component } from 'svelte';
+import type { ContentMetadata } from '$lib/types';
 
 export const prerender = true;
 
@@ -11,7 +13,7 @@ export const load = async ({ params }) => {
         return { html: null, metadata: null };
     }
 
-    const mod = await modules[match]() as { default: any; metadata: any };
+    const mod = await modules[match]() as { default: Component; metadata: ContentMetadata };
     const { html } = render(mod.default, { props: { metadata: mod.metadata } });
 
     return { html, metadata: mod.metadata };

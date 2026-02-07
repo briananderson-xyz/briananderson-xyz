@@ -4,11 +4,12 @@
     // import { PUBLIC_ENV } from "$env/static/public";
 
     export let title: string;
-    export let description: string =
-        "Brian Anderson - Systems Engineer & Full Stack Developer";
+    export let description: string;
     export let type: string = "website";
     export let image: string | undefined = undefined;
     export let canonical: string | undefined = undefined;
+    export let keywords: string[] | undefined = undefined;
+    export let tags: string[] | undefined = undefined;
 
     // $: isDev = dev || PUBLIC_ENV === "dev";
     $: finalTitle = dev ? `[dev] ${title}` : title;
@@ -24,11 +25,17 @@
             ? image
             : `${$page.url.origin}${image}`
         : undefined;
+
+    // Combine tags and keywords for meta keywords
+    $: metaKeywords = [...(tags || []), ...(keywords || [])].join(", ");
 </script>
 
 <svelte:head>
     <title>{finalTitle}</title>
     <meta name="description" content={description} />
+    {#if metaKeywords}
+        <meta name="keywords" content={metaKeywords} />
+    {/if}
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content={type} />
@@ -37,6 +44,11 @@
     <meta property="og:description" content={description} />
     {#if finalImage}
         <meta property="og:image" content={finalImage} />
+    {/if}
+    {#if tags && tags.length > 0}
+        {#each tags as tag}
+            <meta property="article:tag" content={tag} />
+        {/each}
     {/if}
 
     <!-- Twitter -->

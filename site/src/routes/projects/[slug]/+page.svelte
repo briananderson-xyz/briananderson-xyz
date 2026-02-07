@@ -1,18 +1,26 @@
 <script lang="ts">
   import SEO from "$lib/components/SEO.svelte";
-  export let data: { html: string | null; metadata: any };
+  import ImageGallery from "$lib/components/ImageGallery.svelte";
+  import type { ContentMetadata } from "$lib/utils/content-loader";
+
+  export let data: { html: string | null; metadata: ContentMetadata };
 </script>
 
 {#if data?.html}
   <SEO
     title="{data.metadata.title} | Projects"
     description={data.metadata.summary || data.metadata.title}
+    tags={data.metadata.tags}
+    keywords={data.metadata.keywords}
+    image={data.metadata.featuredImage}
   />
 
-  <article class="mx-auto max-w-4xl px-4 py-8">
-    <div class="prose prose-lg max-w-none prose-headings:font-mono">
-      {@html data.html}
-    </div>
+  <article class="mx-auto max-w-4xl px-4">
+    <ImageGallery>
+      <div class="prose prose-lg max-w-none prose-headings:font-mono">
+        {@html data.html}
+      </div>
+    </ImageGallery>
   </article>
 {:else}
   <div class="max-w-3xl mx-auto px-4 py-16 font-mono text-skin-muted">

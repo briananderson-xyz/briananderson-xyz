@@ -1,6 +1,5 @@
 <script lang="ts">
   import Button from "$lib/components/ui/button.svelte";
-  import { onMount } from "svelte";
   import { slide } from "svelte/transition";
   import type { Resume } from "$lib/types";
   import ExperienceItem from "$lib/components/ExperienceItem.svelte";
@@ -50,11 +49,8 @@
     blog: addVariant('/blog/', variant)
   };
 
-  let mounted = false;
   let openCategories: Record<string, boolean> = {};
   let showAllExperience = false;
-
-  onMount(() => (mounted = true));
 
   function toggleCategory(category: string) {
     openCategories = {
@@ -64,10 +60,13 @@
   }
 
   $: formattedTitle = formatJobTitles(resume.jobTitles);
+
+  // Build JSON-LD tag to avoid ESLint parser confusion with <script> in templates
+  const jsonLdTag = `<${"script"} type="application/ld+json">${JSON.stringify(jsonLd, null, 2)}</${"script"}>`;
 </script>
 
 <svelte:head>
-  {@html `<script type="application/ld+json">${JSON.stringify(jsonLd, null, 2)}</script>`}
+  {@html jsonLdTag}
 </svelte:head>
 
 <section id="about" class="py-12 md:py-20 px-4">

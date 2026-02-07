@@ -1,0 +1,539 @@
+{
+  "skills": [
+    {
+      "name": "Agentcore",
+      "category": "AI Agent Frameworks",
+      "projects": [],
+      "blog": []
+    },
+    {
+      "name": "Amazon Bedrock",
+      "category": "Generative AI",
+      "projects": [],
+      "blog": []
+    },
+    {
+      "name": "Angular",
+      "category": "Web Frameworks",
+      "projects": [],
+      "blog": []
+    },
+    {
+      "name": "Antigravity",
+      "category": "AI Development Tools",
+      "projects": [],
+      "blog": []
+    },
+    {
+      "name": "Apache Kafka",
+      "category": "Data & Messaging",
+      "projects": [],
+      "blog": []
+    },
+    {
+      "name": "AWS",
+      "category": "Cloud Platforms",
+      "projects": [],
+      "blog": []
+    },
+    {
+      "name": "AWS CDK / CloudFormation",
+      "category": "Infrastructure & IaC",
+      "projects": [],
+      "blog": []
+    },
+    {
+      "name": "Claude Code",
+      "category": "AI Development Tools",
+      "projects": [],
+      "blog": []
+    },
+    {
+      "name": "Codex",
+      "category": "AI Development Tools",
+      "projects": [],
+      "blog": []
+    },
+    {
+      "name": "Cross-Functional Leadership",
+      "category": "Leadership & Strategy",
+      "projects": [
+        "gfs-ordering-platform",
+        "discover-trident"
+      ],
+      "blog": []
+    },
+    {
+      "name": "DynamoDB",
+      "category": "Data & Messaging",
+      "projects": [],
+      "blog": []
+    },
+    {
+      "name": "EventBridge",
+      "category": "Data & Messaging",
+      "projects": [],
+      "blog": []
+    },
+    {
+      "name": "Executive Stakeholder Management",
+      "category": "Leadership & Strategy",
+      "projects": [],
+      "blog": []
+    },
+    {
+      "name": "Firestore",
+      "category": "Data & Messaging",
+      "projects": [],
+      "blog": []
+    },
+    {
+      "name": "GitHub Actions",
+      "category": "DevOps & CI/CD",
+      "projects": [],
+      "blog": []
+    },
+    {
+      "name": "GitLab CI",
+      "category": "DevOps & CI/CD",
+      "projects": [],
+      "blog": []
+    },
+    {
+      "name": "Google Cloud",
+      "category": "Cloud Platforms",
+      "projects": [],
+      "blog": []
+    },
+    {
+      "name": "Helm",
+      "category": "DevOps & CI/CD",
+      "projects": [],
+      "blog": []
+    },
+    {
+      "name": "Java (Spring Boot)",
+      "category": "Languages",
+      "projects": [
+        "fill-in-my-blank"
+      ],
+      "blog": []
+    },
+    {
+      "name": "Jenkins",
+      "category": "DevOps & CI/CD",
+      "projects": [],
+      "blog": []
+    },
+    {
+      "name": "Kiro",
+      "category": "AI Development Tools",
+      "projects": [],
+      "blog": []
+    },
+    {
+      "name": "Kubernetes (EKS/GKE)",
+      "category": "Infrastructure & IaC",
+      "projects": [
+        "gfs-ordering-platform",
+        "discover-trident"
+      ],
+      "blog": []
+    },
+    {
+      "name": "LangGraph",
+      "category": "AI Agent Frameworks",
+      "projects": [],
+      "blog": []
+    },
+    {
+      "name": "Model Context Protocol (MCP)",
+      "category": "Generative AI",
+      "projects": [],
+      "blog": []
+    },
+    {
+      "name": "Networking (VPC/TGW)",
+      "category": "Infrastructure & IaC",
+      "projects": [],
+      "blog": []
+    },
+    {
+      "name": "Next.js",
+      "category": "Web Frameworks",
+      "projects": [],
+      "blog": []
+    },
+    {
+      "name": "Node.js",
+      "category": "Languages",
+      "projects": [],
+      "blog": []
+    },
+    {
+      "name": "OpenShift",
+      "category": "Cloud Platforms",
+      "projects": [],
+      "blog": []
+    },
+    {
+      "name": "OpenSpec",
+      "category": "AI Development Tools",
+      "projects": [],
+      "blog": []
+    },
+    {
+      "name": "PostgreSQL",
+      "category": "Data & Messaging",
+      "projects": [],
+      "blog": []
+    },
+    {
+      "name": "Prompt Engineering",
+      "category": "Generative AI",
+      "projects": [],
+      "blog": []
+    },
+    {
+      "name": "Pub/Sub",
+      "category": "Data & Messaging",
+      "projects": [],
+      "blog": []
+    },
+    {
+      "name": "Python",
+      "category": "Languages",
+      "projects": [],
+      "blog": []
+    },
+    {
+      "name": "RAG",
+      "category": "Generative AI",
+      "projects": [],
+      "blog": []
+    },
+    {
+      "name": "React",
+      "category": "Web Frameworks",
+      "projects": [],
+      "blog": []
+    },
+    {
+      "name": "Redis",
+      "category": "Data & Messaging",
+      "projects": [],
+      "blog": []
+    },
+    {
+      "name": "Solution Discovery",
+      "category": "Leadership & Strategy",
+      "projects": [
+        "discover-trident"
+      ],
+      "blog": []
+    },
+    {
+      "name": "SpecKit",
+      "category": "AI Development Tools",
+      "projects": [],
+      "blog": []
+    },
+    {
+      "name": "Spinnaker",
+      "category": "DevOps & CI/CD",
+      "projects": [],
+      "blog": []
+    },
+    {
+      "name": "Strands SDK",
+      "category": "AI Agent Frameworks",
+      "projects": [],
+      "blog": []
+    },
+    {
+      "name": "Strategic Roadmapping",
+      "category": "Leadership & Strategy",
+      "projects": [],
+      "blog": []
+    },
+    {
+      "name": "SvelteKit",
+      "category": "Web Frameworks",
+      "projects": [],
+      "blog": [
+        "building-this-site"
+      ]
+    },
+    {
+      "name": "Terraform",
+      "category": "Infrastructure & IaC",
+      "projects": [
+        "gfs-cloud-enablement"
+      ],
+      "blog": []
+    },
+    {
+      "name": "Terraform Cloud",
+      "category": "Infrastructure & IaC",
+      "projects": [
+        "gfs-cloud-enablement"
+      ],
+      "blog": []
+    },
+    {
+      "name": "TypeScript",
+      "category": "Languages",
+      "projects": [],
+      "blog": []
+    },
+    {
+      "name": "VoltAgent SDK",
+      "category": "AI Agent Frameworks",
+      "projects": [],
+      "blog": []
+    },
+    {
+      "name": "Vue",
+      "category": "Web Frameworks",
+      "projects": [],
+      "blog": []
+    }
+  ],
+  "experience": [
+    {
+      "role": "Enterprise Solutions Architect",
+      "company": "Amazon Web Services",
+      "dateRange": "September 2024 - Present",
+      "location": "Denver, CO",
+      "description": "Specializing in GenAI integration, Cloud Native transformation, and Logistics Control Towers.",
+      "highlights": [
+        "Industrial Data & Agentic AI (ProveIT): Built a cross-industry prototype simulating MQTT data streams for Glass and Pharma manufacturing using a Unified Namespace (UNS) architecture. Integrated an Agentic AI layer using AgentCore and Bedrock to enable real-time observability, allowing users to query equipment status and automate SOP-driven troubleshooting for production lines.",
+        "Customer Experience and Rapid Prototyping (Amazon Connect): Identified the opportunity and led the delivery of a pilot that enabled a global manufacturer to support multi-threaded conversations and expanded customer support hours. Personally engineered a secure SMS image-upload third-party app integration to address a specific visual troubleshooting gap, using this technical deep dive into the customer problem to earn the trust required to influence their broader modernization strategy.",
+        "Enterprise Modernization and SAP Integration: Architected a Document Management System integrated with SAP ERP to modernize legacy workflows. Leveraging the trust built through earlier successful prototypes, I secured executive buy-in to establish a comprehensive multi-year cloud migration roadmap for the enterprise.",
+        "GenAI Innovation and Automation: Engineered a custom GenAI agent platform using Amazon Bedrock and Agentcore, reducing team administrative overhead by 4 hours per week. Focused on improving CRM data hygiene and automated note-taking to provide leadership with enhanced visibility into customer engagement trends.",
+        "Product Influence and Developer Tooling: Championed Amazon Q Developer (Kiro) as a top 100 global CLI user and beta contributor, providing feedback to refine agentic features for real-world developer workflows. Engineered integrations for SpecKit and OpenSpec to support enterprise AI rollouts and drive internal adoption of spec-driven development."
+      ]
+    },
+    {
+      "role": "Technical Director",
+      "company": "Valtech | Kin + Carta",
+      "dateRange": "March 2024 - September 2024",
+      "location": "Denver, CO",
+      "description": "Led cloud modernization for a mission-critical credit card portfolio to OpenShift.",
+      "highlights": [
+        "Strategic Enterprise Modernization (Discover Financial): Partnered with client Directors and VPs to architect the migration of 14 mission-critical credit card applications from legacy WebSphere/PCF to OpenShift (OCP). Instilled executive confidence through transparent delivery roadmaps and zero-defect migration strategies.",
+        "Engineering Excellence & Cultural Leadership: Pioneered a 'Quality First' mandate by implementing TDD and automation as a standard. Scaled organizational expertise by serving as a primary architectural resource, enabling dozens of additional teams to meet aggressive migration deadlines.",
+        "Scalable Architecture & Enablement: Directed the implementation of standardized integration patterns using Helm Charts and Kubernetes Operators. Enabled 'first-class' adoption of AWS services (RDS for PostgreSQL) and observability suites (Instana/Datadog) via shared, configurable CI/CD pipelines."
+      ]
+    },
+    {
+      "role": "Senior Technical Principal",
+      "company": "Kin + Carta",
+      "dateRange": "February 2020 - March 2024",
+      "location": "Denver, CO",
+      "description": "Orchestrated enterprise cloud adoption strategy and established governance for Gordon Food Service.",
+      "highlights": [
+        "Architectural Governance & Provisioning (Gordon Food Service): Engineered a standardized 'Golden Path' for enterprise cloud adoption by architecting a centralized Terraform module library. This automated the provisioning of fragmented tools (GitLab, SonarCloud, Apigee, NexusIQ) across the enterprise, ensuring security compliance and budgetary guardrails.",
+        "Data Modernization Strategy: Led the architectural redesign of fragmented legacy systems into a unified GCP Data Lake. This strategic consolidation eliminated data silos and delivered a 30% improvement in decision-making velocity for executive leadership.",
+        "Operational Excellence: Developed common CI/CD Pipeline Templates to standardize integration across current and future product teams, enabling rapid testing and deployment while maintaining rigorous compliance and security."
+      ]
+    },
+    {
+      "role": "Technical Principal",
+      "company": "Solstice | Kin + Carta",
+      "dateRange": "January 2017 - February 2020",
+      "location": "Denver, CO",
+      "description": "Architected high-concurrency ordering platforms and geospatial data solutions for agriculture.",
+      "highlights": [
+        "Google Cloud Ecommerce Architecture (Gordon Food Service): Architected a high-concurrency platform using Angular and Java Spring Boot on GKE, leveraging Firestore, Pub/Sub, and Memorystore. Scaled the organization to 60+ developers across 5 teams, achieving 8–9 production deployments per day.",
+        "Mobile Architecture: Served as Solution Architect and Android Lead for a geospatial field-mapping solution for a large agriculture company. Engineered the architecture to visualize satellite/drone data and integrated a proprietary Nitrogen simulation analysis tool. Built a dual-platform CD pipeline using Fastlane, Docker, and AWS Device Farm to ensure feature parity.",
+        "Innovation Leadership: Engineered an internal DevOps framework for standardized distribution of Android, iOS, and Cordova Hybrid applications. Reduced release overhead from 4 weeks to 1 week for 6 production-supported applications via Fabric Beta."
+      ]
+    },
+    {
+      "role": "Senior Technical Consultant",
+      "company": "Solstice | Kin + Carta",
+      "dateRange": "July 2015 - January 2017",
+      "location": "Chicago, IL",
+      "description": "Led technical sales and architecture for enterprise mobile and modernization roadmaps.",
+      "highlights": [
+        "Enterprise Mobile Strategy: Served as Solution Architect and Tech Lead for native iOS and Android applications for a Global Fast Food enterprise, overseeing complex integration with ServiceNow platform.",
+        "Modernization Roadmaps: Led technical sales engagements for large-scale fleet management clients, performing architectural audits and providing strategic roadmaps to modernize legacy platforms and UI/UX.",
+        "Innovation & R&D Leadership: Spearheaded R&D projects involving Raspberry Pi (Flask), Oculus Rift (Unity 3D), and Amazon Echo to demonstrate experiential commerce at industry conference (Solstice FWD).",
+        "Location-Based Services: Architected a high-traffic healthcare conference application utilizing iBeacons (BLE) for proximity-based notifications and Parse for real-time messaging."
+      ]
+    },
+    {
+      "role": "Technical Consultant",
+      "company": "Solstice",
+      "dateRange": "April 2014 - July 2015",
+      "location": "Chicago, IL",
+      "description": "Developed native mobile and hybrid web applications for high-profile clients.",
+      "highlights": [
+        "iOS Product Delivery: Acted as sole developer and architect for a premium Swift-based iOS application for a high-profile executive society, transitioning a legacy subscription model into a user-centric mobile experience.",
+        "Web & Hybrid Development: Architected an AngularJS web application for a specialty food distributor, implementing automated deployment pipelines using Octopus and TFS. Integrated Chart.js via custom WebViews into native mobile apps for a wealth management company using Bower and Gulp for streamlined package management and integration."
+      ]
+    },
+    {
+      "role": "Technical Analyst",
+      "company": "Solstice Mobile",
+      "dateRange": "June 2013 - April 2014",
+      "location": "Chicago, IL",
+      "description": "Delivered core mobile features for financial services clients.",
+      "highlights": [
+        "Financial Services Engineering: Delivered core mobile features for a large financial services client in 4-week sprints, including Photo Check Deposit, Scheduled Payments and a complete home screen refactor using Auto Layout."
+      ]
+    }
+  ],
+  "projects": [
+    {
+      "slug": "fairview-childrens-center",
+      "title": "Fairview Children's Center",
+      "url": "https://briananderson.xyz/projects/fairview-childrens-center/",
+      "summary": "Complete WordPress overhaul for a children's center, transforming their digital presence to better reach prospective parents.",
+      "tags": [
+        "WordPress",
+        "CustomTheme",
+        "PHP",
+        "JavaScript",
+        "Modernization",
+        "Consulting",
+        "Builder"
+      ],
+      "keywords": [
+        "fairview",
+        "childcare",
+        "website-redesign",
+        "ux"
+      ],
+      "date": "2025-02-04",
+      "contentExcerpt": "The Project\r\n\r\nMelissa reached out because she needed help making a few updates to her website. I teamed up with my sister Jennifer, a UX researcher whose child attends the center, to put together a proposal after showing Melissa some of the missed opportunities her site had in reaching prospective parents.\r\n\r\nThe Challenge\r\n\r\nThe existing site had the basics: information about programs, contact details, hours. But it wasn't working hard enough. The design was dated, navigation was confusing on ..."
+    },
+    {
+      "slug": "gfs-ordering-platform",
+      "title": "Global E-commerce Ordering Platform",
+      "url": "https://briananderson.xyz/projects/gfs-ordering-platform/",
+      "summary": "Modernizing the core ordering engine for a $1B+ food distributor.",
+      "tags": [
+        "Architecture",
+        "Ecommerce",
+        "Microservices",
+        "GKE",
+        "Leader"
+      ],
+      "keywords": [
+        "gfs",
+        "gordon-food-service",
+        "ordering-platform",
+        "modernization"
+      ],
+      "date": "2024-01-10",
+      "contentExcerpt": "The Challenge\r\n\r\nGordon Food Service serves over 100,000 customers across North America: restaurants, healthcare facilities, schools, and more. Their legacy ordering system was a monolith tied to mainframe-era infrastructure. It worked, but it couldn't keep up. Deployments happened four times a year. Feature requests sat in queues for months. The platform that powered a billion-dollar distribution business was becoming the bottleneck.\r\n\r\nI came into this engagement as a Technical Principal, lead..."
+    },
+    {
+      "slug": "discover-trident",
+      "title": "Trident Pipeline & Golden Paths",
+      "url": "https://briananderson.xyz/projects/discover-trident/",
+      "summary": "Establishing enterprise platform engineering and CI/CD at financial services scale.",
+      "tags": [
+        "DevOps",
+        "PlatformEngineering",
+        "CICD",
+        "Kubernetes",
+        "Governance",
+        "Leader"
+      ],
+      "keywords": [
+        "discover",
+        "trident",
+        "golden-paths",
+        "financial-services"
+      ],
+      "date": "2023-11-20",
+      "contentExcerpt": "The Challenge\r\n\r\nDiscover Financial Services operates at a scale where developer friction has real cost. Thousands of engineers, thousands of microservices, and a regulatory environment where every deployment carries compliance implications. The challenge wasn't just speed. It was building a deployment framework that could move fast and satisfy the governance requirements that come with handling financial data at global scale.\r\n\r\nI joined as a Technical Director leading the integration side of t..."
+    },
+    {
+      "slug": "gfs-cloud-enablement",
+      "title": "Enterprise Cloud Enablement & ICDS",
+      "url": "https://briananderson.xyz/projects/gfs-cloud-enablement/",
+      "summary": "Standardizing GCP infrastructure and CI/CD pipelines at scale.",
+      "tags": [
+        "Terraform",
+        "IaC",
+        "GCP",
+        "DevOps",
+        "PlatformEngineering",
+        "Ops"
+      ],
+      "keywords": [
+        "gfs",
+        "gordon-food-service",
+        "icds",
+        "cloud-enablement"
+      ],
+      "date": "2023-06-15",
+      "contentExcerpt": "The Challenge\r\n\r\nGordon Food Service is one of the largest foodservice distributors in North America, serving roughly 100,000 customers across the US and Canada. As GFS moved to the cloud, the challenge wasn't just migration, it was standardization. Dozens of product teams needed to provision infrastructure, deploy services, and operate in GCP, but without guardrails the result would be sprawl: inconsistent configurations, security gaps, and duplicated effort across every team.\r\n\r\nOff-the-shelf ..."
+    },
+    {
+      "slug": "fill-in-my-blank",
+      "title": "Fill In My Blank",
+      "url": "https://briananderson.xyz/projects/fill-in-my-blank/",
+      "summary": "A mobile party game that allowed users to play with friends to create hilarious results using Blanks and Fillers.",
+      "tags": [
+        "MobileGame",
+        "iOS",
+        "Android",
+        "Java",
+        "ObjectiveC",
+        "Builder"
+      ],
+      "keywords": [
+        "fimb",
+        "party-game",
+        "mobile-app"
+      ],
+      "date": "2014-01-01",
+      "contentExcerpt": "Origin\nFill In My Blank started in a classroom. I was a CS major at UW-Madison taking a course called \"Starting a Software Company,\" which was half business fundamentals, half build-something-real. Five of us, all CS majors and friends, teamed up with a simple pitch: take the energy of party games like Cards Against Humanity and put it on your phone, playable with friends anywhere.\nWe built the first version that semester. A Ruby on Rails backend with an Android app. It worked well enough that w..."
+    }
+  ],
+  "blog": [
+    {
+      "slug": "building-this-site",
+      "title": "Building this site (with AI)",
+      "url": "https://briananderson.xyz/blog/building-this-site/",
+      "summary": "A deep dive into the stack behind briananderson.xyz - SvelteKit, Tailwind, Catppuccin, and Agentic workflows.",
+      "tags": [
+        "SvelteKit",
+        "AI",
+        "Tailwind",
+        "CICD",
+        "GCP",
+        "Firebase",
+        "Builder"
+      ],
+      "keywords": [
+        "site",
+        "meta",
+        "agentic",
+        "catppuccin"
+      ],
+      "date": "2026-01-12"
+    }
+  ],
+  "resume": {
+    "name": "Brian Anderson",
+    "title": "Technical Director / Enterprise Solutions Architect",
+    "tagline": "Specializing in GenAI integration, Cloud Native transformation, and DevOps. Passion for designing autonomous systems and scalable architectures that empower teams to deliver high-quality solutions by fostering a culture of collaboration, focusing on developer experience, and enabling rapid innovation with continuous delivery.",
+    "summary": "Proven track record of leading multi-team deliveries for Fortune 500 companies, specializing in migrating monolithic systems to Kubernetes-based microservices and implementing end-to-end automation. Expert in AWS/GCP architecture, CI/CD standardization, and bridging the gap between executive strategy and technical execution.",
+    "location": "Denver, CO",
+    "email": "brian@briananderson.xyz"
+  },
+  "metadata": {
+    "buildDate": "2026-02-07T23:27:03.890Z",
+    "version": "1.0.0",
+    "projectCount": 5,
+    "blogCount": 1,
+    "skillCount": 47,
+    "experienceCount": 7
+  }
+}

@@ -57,6 +57,9 @@ jobs:
           ls -la .env
           echo "Content of .env (sanitized):"
           grep "PUBLIC_SITE_URL" .env || echo "PUBLIC_SITE_URL not found in .env"
+      - name: Lint
+        working-directory: site
+        run: pnpm run lint
       - name: Run validation
         working-directory: site
         env:
@@ -136,7 +139,25 @@ jobs:
           GH_TOKEN: ${{ github.token }}
       - name: Upload to dev bucket
         run: |
+          # Upload hashed assets (long cache)
           gcloud storage rsync site/build/_app gs://dev.briananderson.xyz/_app --recursive --cache-control="public, max-age=31536000, immutable"
+
+          # Upload versioned content index (long cache, immutable)
+          if compgen -G "site/build/content-index.*.json" > /dev/null; then
+            gcloud storage cp site/build/content-index.*.json gs://dev.briananderson.xyz/ --cache-control="public, max-age=31536000, immutable"
+          fi
+
+          # Upload content index pointer (short cache)
+          if [ -f "site/build/content-index-latest.json" ]; then
+            gcloud storage cp site/build/content-index-latest.json gs://dev.briananderson.xyz/ --cache-control="public, max-age=60, must-revalidate"
+          fi
+
+          # Upload main content index fallback (medium cache)
+          if [ -f "site/build/content-index.json" ]; then
+            gcloud storage cp site/build/content-index.json gs://dev.briananderson.xyz/ --cache-control="public, max-age=300, must-revalidate"
+          fi
+
+          # Upload everything else (standard cache)
           gcloud storage rsync site/build/ gs://dev.briananderson.xyz/ --recursive --delete-unmatched-destination-objects --cache-control="public, max-age=3600, must-revalidate"
       - name: Run E2E tests
         id: smoke
@@ -160,7 +181,20 @@ jobs:
         run: |
           echo "❌ Smoke tests failed, rolling back dev to run $LAST_RUN_ID..."
           gh run download $LAST_RUN_ID -n build-artifact-dev
+
+          # Upload with proper cache headers
           gcloud storage rsync site/build/_app gs://dev.briananderson.xyz/_app --recursive --cache-control="public, max-age=31536000, immutable"
+
+          if compgen -G "site/build/content-index.*.json" > /dev/null; then
+            gcloud storage cp site/build/content-index.*.json gs://dev.briananderson.xyz/ --cache-control="public, max-age=31536000, immutable"
+          fi
+          if [ -f "site/build/content-index-latest.json" ]; then
+            gcloud storage cp site/build/content-index-latest.json gs://dev.briananderson.xyz/ --cache-control="public, max-age=60, must-revalidate"
+          fi
+          if [ -f "site/build/content-index.json" ]; then
+            gcloud storage cp site/build/content-index.json gs://dev.briananderson.xyz/ --cache-control="public, max-age=300, must-revalidate"
+          fi
+
           gcloud storage rsync site/build/ gs://dev.briananderson.xyz/ --recursive --delete-unmatched-destination-objects --cache-control="public, max-age=3600, must-revalidate"
           echo "Rollback complete."
           exit 1
@@ -227,7 +261,25 @@ jobs:
       - name: Upload to prod bucket
         id: deploy
         run: |
+          # Upload hashed assets (long cache)
           gcloud storage rsync site/build/_app gs://briananderson.xyz/_app --recursive --cache-control="public, max-age=31536000, immutable"
+
+          # Upload versioned content index (long cache, immutable)
+          if compgen -G "site/build/content-index.*.json" > /dev/null; then
+            gcloud storage cp site/build/content-index.*.json gs://briananderson.xyz/ --cache-control="public, max-age=31536000, immutable"
+          fi
+
+          # Upload content index pointer (short cache)
+          if [ -f "site/build/content-index-latest.json" ]; then
+            gcloud storage cp site/build/content-index-latest.json gs://briananderson.xyz/ --cache-control="public, max-age=60, must-revalidate"
+          fi
+
+          # Upload main content index fallback (medium cache)
+          if [ -f "site/build/content-index.json" ]; then
+            gcloud storage cp site/build/content-index.json gs://briananderson.xyz/ --cache-control="public, max-age=300, must-revalidate"
+          fi
+
+          # Upload everything else (standard cache)
           gcloud storage rsync site/build/ gs://briananderson.xyz/ --recursive --delete-unmatched-destination-objects --cache-control="public, max-age=3600, must-revalidate"
       - name: Run smoke tests
         id: smoke
@@ -251,7 +303,20 @@ jobs:
         run: |
           echo "❌ Smoke tests failed, rolling back prod to run $LAST_RUN_ID..."
           gh run download $LAST_RUN_ID -n build-artifact-prod
+
+          # Upload with proper cache headers
           gcloud storage rsync site/build/_app gs://briananderson.xyz/_app --recursive --cache-control="public, max-age=31536000, immutable"
+
+          if compgen -G "site/build/content-index.*.json" > /dev/null; then
+            gcloud storage cp site/build/content-index.*.json gs://briananderson.xyz/ --cache-control="public, max-age=31536000, immutable"
+          fi
+          if [ -f "site/build/content-index-latest.json" ]; then
+            gcloud storage cp site/build/content-index-latest.json gs://briananderson.xyz/ --cache-control="public, max-age=60, must-revalidate"
+          fi
+          if [ -f "site/build/content-index.json" ]; then
+            gcloud storage cp site/build/content-index.json gs://briananderson.xyz/ --cache-control="public, max-age=300, must-revalidate"
+          fi
+
           gcloud storage rsync site/build/ gs://briananderson.xyz/ --recursive --delete-unmatched-destination-objects --cache-control="public, max-age=3600, must-revalidate"
           echo "Rollback complete."
           exit 1
@@ -318,6 +383,19 @@ jobs:
           if [ "${{ github.event.inputs.target_env }}" == "prod" ]; then
             BUCKET="briananderson.xyz"
           fi
+
+          # Upload with proper cache headers
           gcloud storage rsync site/build/_app gs://$BUCKET/_app --recursive --cache-control="public, max-age=31536000, immutable"
+
+          if compgen -G "site/build/content-index.*.json" > /dev/null; then
+            gcloud storage cp site/build/content-index.*.json gs://$BUCKET/ --cache-control="public, max-age=31536000, immutable"
+          fi
+          if [ -f "site/build/content-index-latest.json" ]; then
+            gcloud storage cp site/build/content-index-latest.json gs://$BUCKET/ --cache-control="public, max-age=60, must-revalidate"
+          fi
+          if [ -f "site/build/content-index.json" ]; then
+            gcloud storage cp site/build/content-index.json gs://$BUCKET/ --cache-control="public, max-age=300, must-revalidate"
+          fi
+
           gcloud storage rsync site/build/ gs://$BUCKET/ --recursive --delete-unmatched-destination-objects --cache-control="public, max-age=3600, must-revalidate"
           echo "✅ Rollback to ${{ github.event.inputs.target_env }} complete"
