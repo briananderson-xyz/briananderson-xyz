@@ -57,6 +57,9 @@ jobs:
           ls -la .env
           echo "Content of .env (sanitized):"
           grep "PUBLIC_SITE_URL" .env || echo "PUBLIC_SITE_URL not found in .env"
+      - name: Lint
+        working-directory: site
+        run: pnpm run lint
       - name: Run validation
         working-directory: site
         env:

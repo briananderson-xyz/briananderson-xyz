@@ -47,6 +47,10 @@ jobs:
           echo "PUBLIC_POSTHOG_KEY=${{ secrets.PUBLIC_POSTHOG_KEY }}" >> .env
           echo "PUBLIC_POSTHOG_HOST=${{ secrets.PUBLIC_POSTHOG_HOST }}" >> .env
 
+      - name: Lint
+        working-directory: site
+        run: pnpm run lint
+
       - name: Run TypeScript check
         working-directory: site
         run: pnpm run check || echo "TypeScript check failed (ignoring third-party posthog-node express type error)"
