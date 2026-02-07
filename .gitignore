@@ -15,3 +15,11 @@ test-results
 # Environment variables
 site/.env
 site/.env.local
+
+# Local tool configs
+.claude/
+.playwright-mcp/
+.opencode/
+
+# Windows artifacts
+nul
