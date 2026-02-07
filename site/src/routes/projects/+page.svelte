@@ -34,16 +34,16 @@
         class="group block border border-skin-border bg-skin-base/5 hover:border-skin-accent hover:shadow-[0_0_10px_rgba(var(--color-accent),0.1)] transition-all duration-300 rounded-lg overflow-hidden"
       >
         {#if p.metadata.featuredImage}
-          <div class="w-full aspect-video overflow-hidden">
+          <div class="w-full">
             <img
               src={p.metadata.featuredImage}
               alt={p.metadata.featuredImageAlt || p.metadata.title}
-              class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
+              class="w-[65%] aspect-video my-2 mx-auto rounded border border-skin-border object-contain"
             />
           </div>
         {/if}
-        
-        <div class="p-6">
+
+        <div class="p-4">
           <div class="flex justify-between items-start mb-2">
             <h2
               class="font-bold text-lg font-mono text-skin-base group-hover:text-skin-accent transition-colors"
