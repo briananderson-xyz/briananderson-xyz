@@ -1,13 +1,18 @@
 <script lang="ts">
   import SEO from "$lib/components/SEO.svelte";
   import ImageGallery from "$lib/components/ImageGallery.svelte";
-  export let data: { html: string | null; metadata: any };
+  import type { ContentMetadata } from "$lib/utils/content-loader";
+
+  export let data: { html: string | null; metadata: ContentMetadata };
 </script>
 
 {#if data?.html}
   <SEO
     title="{data.metadata.title} | Projects"
     description={data.metadata.summary || data.metadata.title}
+    tags={data.metadata.tags}
+    keywords={data.metadata.keywords}
+    image={data.metadata.featuredImage}
   />
 
   <article class="mx-auto max-w-4xl px-4">

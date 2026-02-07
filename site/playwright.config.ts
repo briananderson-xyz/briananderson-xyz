@@ -26,6 +26,6 @@ export default defineConfig({
           command: "pnpm exec vite preview",
           port: 4137,
           timeout: 60000,
-          gracefulShutdown: { signal: "SIGTERM", timeout: 5000 },
+          gracefulShutdown: { signal: "SIGINT", timeout: 5000 },
         },
 });

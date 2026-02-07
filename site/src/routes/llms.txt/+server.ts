@@ -2,17 +2,24 @@ import fs from 'fs';
 import yaml from 'js-yaml';
 import path from 'path';
 import { PUBLIC_SITE_URL } from '$env/static/public';
+import type { Resume } from '$lib/types';
+
+interface Personal {
+	interests: { name: string; description: string }[];
+	values: string[];
+	hobbies: { name: string; details: string }[];
+}
 
 export const prerender = true;
 
 export const GET = async () => {
 	const resumePath = path.resolve('content/resume.yaml');
 	const resumeContents = fs.readFileSync(resumePath, 'utf-8');
-	const resume: any = yaml.load(resumeContents);
+	const resume = yaml.load(resumeContents) as Resume;
 
 	const personalPath = path.resolve('content/personal.yaml');
 	const personalContents = fs.readFileSync(personalPath, 'utf-8');
-	const personal: any = yaml.load(personalContents);
+	const personal = yaml.load(personalContents) as Personal;
 
 	const content = `# briananderson.xyz
 
@@ -47,13 +54,13 @@ Personal portfolio and professional site for Brian Anderson - Technical Director
 ${resume.summary}
 
 ### Personal Interests
-${personal.interests.map((i: any) => `- **${i.name}:** ${i.description}`).join('\n')}
+${personal.interests.map((i) => `- **${i.name}:** ${i.description}`).join('\n')}
 
 ### Core Values
 ${personal.values.map((v: string) => `- ${v}`).join('\n')}
 
 ### Hobbies
-${personal.hobbies.map((h: any) => `- **${h.name}:** ${h.details}`).join('\n')}
+${personal.hobbies.map((h) => `- **${h.name}:** ${h.details}`).join('\n')}
 
 ## Expertise
 
@@ -64,10 +71,10 @@ ${personal.hobbies.map((h: any) => `- **${h.name}:** ${h.details}`).join('\n')}
 - Enterprise architecture and team leadership
 
 ### Key Technologies
-${Object.entries(resume.skills).slice(0, 5).map(([cat, skills]: [string, any]) => `**${cat}:** ${skills.map((s: any) => s.name).join(', ')}`).join('\n')}
+${Object.entries(resume.skills).slice(0, 5).map(([cat, skills]) => `**${cat}:** ${skills.map((s) => s.name).join(', ')}`).join('\n')}
 
 ### Certifications
-${resume.certificates.slice(0, 3).map((cert: any) => `- ${cert.name}`).join('\n')}
+${resume.certificates.slice(0, 3).map((cert) => `- ${cert.name}`).join('\n')}
 
 ## Featured Work
 

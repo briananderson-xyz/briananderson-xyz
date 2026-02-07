@@ -12,26 +12,35 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 			// Mock response for development
 			const mockAnalysis = {
 				fitScore: 85,
+				fitLevel: 'good' as const,
 				confidence: 'high' as const,
 				matchingSkills: [
-					{ name: 'AWS', metadata: '10+ years experience' },
-					{ name: 'Kubernetes', metadata: 'Production deployments' },
-					{ name: 'Team Leadership', metadata: 'Led teams of 5-15 engineers' }
+					{
+						name: 'AWS',
+						url: '/projects/gfs-cloud-enablement',
+						context: 'Led cloud-native transformation at Gordon Food Service'
+					},
+					{
+						name: 'Kubernetes',
+						url: '/projects/gfs-cloud-enablement',
+						context: 'Architected enterprise Kubernetes platform'
+					},
+					{
+						name: 'Team Leadership',
+						context: 'Led engineering teams of 5-15 at Kin + Carta and GFS'
+					}
 				],
 				matchingExperience: [
 					{
 						role: 'Senior Technical Principal',
 						company: 'Kin + Carta',
 						dateRange: '2021-2024',
-						relatedLinks: ['/projects/gfs-cloud-enablement']
+						url: '/projects/gfs-cloud-enablement',
+						relevance: 'Led enterprise cloud transformation and platform engineering initiatives'
 					}
 				],
-				gaps: ['Azure experience', 'Machine Learning'],
-				recommendations: [
-					'Strong fit for leadership-focused role',
-					'Extensive cloud-native experience aligns well',
-					'Consider highlighting DevOps transformation work'
-				],
+				gaps: ['Azure-specific experience', 'Deep Machine Learning expertise'],
+				analysis: 'Based on the requirements, Brian appears to be a strong fit for this role. His extensive experience with AWS, Kubernetes, and cloud-native platforms aligns well with the core technical needs. His leadership background managing teams of 5-15 engineers demonstrates the people management skills required.\n\nWhile there are some gaps in Azure-specific experience and deep ML expertise, Brian\'s proven ability to learn new technologies quickly and his broad platform engineering background suggest these could be developed. His work on the GFS cloud transformation project shows he can lead large-scale initiatives successfully.\n\nBrian\'s combination of technical depth and leadership experience makes him well-suited to drive both technical excellence and team development in this role.',
 				resumeVariantRecommendation: 'leader' as const,
 				cta: {
 					text: 'Connect with Brian',

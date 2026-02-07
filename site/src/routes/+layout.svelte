@@ -7,7 +7,7 @@
   import KeyboardShortcutsHelp from "$lib/components/KeyboardShortcutsHelp.svelte";
   import Chatbot from "$lib/components/Chatbot.svelte";
   import FitFinder from "$lib/components/FitFinder.svelte";
-  import HiringManagerBanner from "$lib/components/HiringManagerBanner.svelte";
+  import ConnectBanner from "$lib/components/ConnectBanner.svelte";
   import { useKeyboardShortcuts, type KeyboardShortcut } from "$lib/hooks/useKeyboardShortcuts";
   import { browser } from "$app/environment";
   import { beforeNavigate, afterNavigate } from "$app/navigation";
@@ -18,6 +18,7 @@
   let shortcutsHelpVisible = $state(false);
   let chatbotVisible = $state(false);
   let fitFinderVisible = $state(false);
+  let { children, data } = $props();
 
   const shortcuts: KeyboardShortcut[] = [
     {
@@ -196,7 +197,7 @@
   <main
     class="flex-1 w-full max-w-6xl mx-auto p-4 md:p-6 print:p-0 print:max-w-none"
   >
-    <slot />
+    {@render children()}
   </main>
   <Footer />
 </div>
@@ -204,6 +205,7 @@
 <QuickActions 
   visible={quickActionsVisible} 
   onClose={() => quickActionsVisible = false} 
+  contentActions={data.contentActions}
 />
 
 <Chatbot
@@ -216,8 +218,19 @@
   onClose={() => fitFinderVisible = false}
 />
 
-<HiringManagerBanner
-  onOpenFitFinder={() => fitFinderVisible = true}
+<ConnectBanner
+  onOpenFitFinder={() => {
+    quickActionsVisible = false;
+    chatbotVisible = false;
+    shortcutsHelpVisible = false;
+    fitFinderVisible = true;
+  }}
+  onOpenChat={() => {
+    quickActionsVisible = false;
+    fitFinderVisible = false;
+    shortcutsHelpVisible = false;
+    chatbotVisible = true;
+  }}
 />
 
 <KeyboardShortcutsHelp 
