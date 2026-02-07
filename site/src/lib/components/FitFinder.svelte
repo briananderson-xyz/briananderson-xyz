@@ -38,11 +38,12 @@
 				})
 			});
 
+			const data = await response.json();
+
 			if (!response.ok) {
-				throw new Error('Failed to analyze job description');
+				throw new Error(data.details || data.error || 'Failed to analyze job description');
 			}
 
-			const data = await response.json();
 			analysis = data.analysis;
 
 			if (browser && PUBLIC_POSTHOG_KEY) {
@@ -55,7 +56,11 @@
 
 		} catch (err) {
 			console.error('Fit finder error:', err);
-			error = 'Failed to analyze job description. Please try again.';
+			if (err instanceof Error) {
+				error = err.message;
+			} else {
+				error = 'Service temporarily unavailable. Please try again later.';
+			}
 		} finally {
 			isAnalyzing = false;
 		}
