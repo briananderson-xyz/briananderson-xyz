@@ -18,8 +18,12 @@
     "test:posthog": "node scripts/validate-posthog.js",
     "test:resumes": "tsx scripts/validate-resumes.ts",
     "test:ai": "node scripts/validate-ai.js",
+    "test:content-index": "tsx scripts/validate-content-index.ts",
+    "test:api": "node scripts/validate-api-endpoints.js",
     "test:e2e": "pnpm exec playwright test",
-    "validate": "pnpm run check || echo 'TypeScript check failed (ignoring third-party error)' && pnpm run test:resumes && pnpm run build && pnpm run test:ui && pnpm run test:posthog && pnpm run test:ai"
+    "test:e2e:chat": "pnpm exec playwright test chat.spec.ts",
+    "test:e2e:fit-finder": "pnpm exec playwright test fit-finder.spec.ts",
+    "validate": "pnpm run check || echo 'TypeScript check failed (ignoring third-party error)' && pnpm run test:resumes && pnpm run test:content-index && pnpm run build && pnpm run test:ui && pnpm run test:posthog && pnpm run test:ai"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",

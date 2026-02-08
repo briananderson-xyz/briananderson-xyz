@@ -1,8 +1,10 @@
 <script lang="ts">
-	import { browser } from '$app/environment';
+	import { browser, dev } from '$app/environment';
 	import type { FitAnalysis } from '$lib/types';
 	import posthog from 'posthog-js';
 	import { PUBLIC_POSTHOG_KEY } from '$env/static/public';
+
+	const API_BASE = dev ? '/api' : 'https://api.briananderson.xyz';
 
 	interface Props {
 		visible: boolean;
@@ -29,7 +31,7 @@
 		}
 
 		try {
-			const response = await fetch('/api/fit-finder', {
+			const response = await fetch(`${API_BASE}/fit-finder`, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({

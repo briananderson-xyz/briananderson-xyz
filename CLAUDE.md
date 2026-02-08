@@ -92,7 +92,8 @@ This is a **statically generated site**. All pages are prerendered at build time
 - Every `+page.server.ts` should export `export const prerender = true`
 - Server-side logic (load functions) runs at **build time**, not at request time
 - Do not introduce SSR-only patterns (cookies, request headers, dynamic server responses) in page routes
-- API routes under `src/routes/api/` are the exception — they proxy to Firebase Functions at runtime
+- API routes under `src/routes/api/` exist for **dev mode only** — they proxy to the local Firebase emulator
+- In production, client components call `https://api.briananderson.xyz` directly (Cloudflare Worker → Cloud Run)
 - `import.meta.glob` with `eager: true` is the standard pattern for loading content at build time
 - If a feature requires runtime server logic, it belongs in Firebase Functions (`site/functions/`), not in SvelteKit routes
 
@@ -127,6 +128,8 @@ pnpm run test:ui           # UI validation script
 pnpm run test:resumes      # Resume YAML validation
 pnpm run test:posthog      # PostHog integration validation
 pnpm run test:ai           # AI feature validation
+pnpm run test:api          # API endpoint validation (chat + fit-finder)
+pnpm run test:content-index # Content index structure validation
 ```
 
 ## AI Features (Chat & Fit Finder)
@@ -175,7 +178,7 @@ pnpm run dev                # Port 5173
 
 **Environment:** Create `site/functions/.env.local` with `GEMINI_API_KEY=your-key-here`
 
-**Dev mode detection:** API routes (`/api/chat`, `/api/fit-finder`) automatically use `localhost:5001` when `dev=true`
+**Dev mode detection:** Client components use `/api/chat` and `/api/fit-finder` in dev (SvelteKit proxy → emulator), `https://api.briananderson.xyz/chat` and `/fit-finder` in production (Cloudflare Worker → Cloud Run)
 
 ### Deployment
 

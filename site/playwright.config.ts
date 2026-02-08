@@ -26,6 +26,7 @@ export default defineConfig({
           command: "pnpm exec vite preview",
           port: 4137,
           timeout: 60000,
+          reuseExistingServer: !process.env.CI,
           gracefulShutdown: { signal: "SIGINT", timeout: 5000 },
         },
 });

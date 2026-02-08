@@ -166,15 +166,23 @@ jobs:
           PLAYWRIGHT_TEST_BASE_URL: https://dev.briananderson.xyz
         continue-on-error: true
         run: pnpm run test:e2e
+      - name: Run API smoke tests
+        id: smoke_api
+        working-directory: site
+        env:
+          SITE_URL: https://api.briananderson.xyz
+          SMOKE_TEST: 'true'
+        continue-on-error: true
+        run: pnpm run test:api
       - name: Upload dev build artifact (Verified)
-        if: steps.smoke.outcome == 'success'
+        if: steps.smoke.outcome == 'success' && steps.smoke_api.outcome == 'success'
         uses: actions/upload-artifact@v4
         with:
           name: build-artifact-dev
           path: site/build/
           retention-days: 14
       - name: Rollback on failure
-        if: steps.smoke.outcome == 'failure' && steps.last_successful.outputs.run_id != 'none'
+        if: (steps.smoke.outcome == 'failure' || steps.smoke_api.outcome == 'failure') && steps.last_successful.outputs.run_id != 'none'
         env:
           LAST_RUN_ID: ${{ steps.last_successful.outputs.run_id }}
           GH_TOKEN: ${{ github.token }}
@@ -199,7 +207,7 @@ jobs:
           echo "Rollback complete."
           exit 1
       - name: Fail if smoke tests failed
-        if: steps.smoke.outcome == 'failure'
+        if: steps.smoke.outcome == 'failure' || steps.smoke_api.outcome == 'failure'
         run: exit 1
 
   deploy-prod:
@@ -288,15 +296,23 @@ jobs:
           PLAYWRIGHT_TEST_BASE_URL: https://briananderson.xyz
         continue-on-error: true
         run: pnpm run test:e2e
+      - name: Run API smoke tests
+        id: smoke_api
+        working-directory: site
+        env:
+          SITE_URL: https://api.briananderson.xyz
+          SMOKE_TEST: 'true'
+        continue-on-error: true
+        run: pnpm run test:api
       - name: Upload prod build artifact (Verified)
-        if: steps.smoke.outcome == 'success'
+        if: steps.smoke.outcome == 'success' && steps.smoke_api.outcome == 'success'
         uses: actions/upload-artifact@v4
         with:
           name: build-artifact-prod
           path: site/build/
           retention-days: 30
       - name: Rollback on failure
-        if: steps.smoke.outcome == 'failure' && steps.last_successful.outputs.run_id != 'none'
+        if: (steps.smoke.outcome == 'failure' || steps.smoke_api.outcome == 'failure') && steps.last_successful.outputs.run_id != 'none'
         env:
           LAST_RUN_ID: ${{ steps.last_successful.outputs.run_id }}
           GH_TOKEN: ${{ github.token }}
@@ -321,10 +337,10 @@ jobs:
           echo "Rollback complete."
           exit 1
       - name: Fail if smoke tests failed
-        if: steps.smoke.outcome == 'failure'
+        if: steps.smoke.outcome == 'failure' || steps.smoke_api.outcome == 'failure'
         run: exit 1
       - name: Warn if no rollback target
-        if: steps.smoke.outcome == 'failure' && steps.last_successful.outputs.run_id == 'none'
+        if: (steps.smoke.outcome == 'failure' || steps.smoke_api.outcome == 'failure') && steps.last_successful.outputs.run_id == 'none'
         run: |
           echo "⚠️  Smoke tests failed but no previous successful prod deployment found for rollback."
           echo "This is the first prod deployment - manual intervention may be required."

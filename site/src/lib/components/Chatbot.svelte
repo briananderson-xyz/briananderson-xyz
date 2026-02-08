@@ -1,9 +1,11 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { browser } from '$app/environment';
+	import { browser, dev } from '$app/environment';
 	import type { ChatMessage } from '$lib/types';
 	import ChatMessageComponent from './ChatMessage.svelte';
 	import ChatInput from './ChatInput.svelte';
+
+	const API_BASE = dev ? '/api' : 'https://api.briananderson.xyz';
 
 	interface Props {
 		visible: boolean;
@@ -77,7 +79,7 @@
 
 		try {
 			// Call Firebase function
-			const response = await fetch('/api/chat', {
+			const response = await fetch(`${API_BASE}/chat`, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
