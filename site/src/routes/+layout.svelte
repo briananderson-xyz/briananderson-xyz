@@ -8,6 +8,7 @@
   import Chatbot from "$lib/components/Chatbot.svelte";
   import FitFinder from "$lib/components/FitFinder.svelte";
   import ConnectBanner from "$lib/components/ConnectBanner.svelte";
+  import ScrollToTop from "$lib/components/ScrollToTop.svelte";
   import { useKeyboardShortcuts, type KeyboardShortcut } from "$lib/hooks/useKeyboardShortcuts";
   import { trackEvent } from "$lib/utils/analytics";
   import { browser } from "$app/environment";
@@ -226,8 +227,10 @@
   }}
 />
 
-<KeyboardShortcutsHelp 
+<KeyboardShortcutsHelp
   {shortcuts}
   visible={shortcutsHelpVisible}
   onClose={() => shortcutsHelpVisible = false}
 />
+
+<ScrollToTop />

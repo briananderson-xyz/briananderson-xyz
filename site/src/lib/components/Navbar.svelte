@@ -22,11 +22,12 @@
   let showAutocomplete = $state(false);
   let selectedIndex = $state(0);
   let inputElement: HTMLInputElement | undefined;
+  let inputButtonElement: HTMLButtonElement | undefined;
   let isFocused = $state(false);
 
   const commands = [
-    { id: 'chat', label: 'chat', description: 'Chat with my AI assistant', action: onOpenChat },
-    { id: 'fit-finder', label: 'fit-finder', description: "Analyze role fit with AI", action: onOpenFitFinder },
+    { id: 'chat', label: 'chat --with brian', description: 'Chat about experience, skills, projects, or anything else', action: onOpenChat },
+    { id: 'fit-finder', label: 'check-fit', description: 'Paste your job/project description → instant compatibility analysis', action: onOpenFitFinder },
     { id: 'quick-actions', label: 'quick-actions', description: 'Navigate quickly with keyboard shortcuts', action: onOpenQuickActions }
   ];
 
@@ -107,6 +108,7 @@
           >guest@briananderson:~$</a
         >
         <button
+          bind:this={inputButtonElement}
           onclick={() => inputElement?.focus()}
           class="cursor-text flex items-center gap-0"
         >
@@ -145,14 +147,20 @@
       </div>
 
       {#if showAutocomplete && filteredCommands().length > 0}
-        <div class="absolute top-full left-0 mt-2 min-w-[280px] z-50 bg-terminal-black border-2 border-terminal-green rounded-lg shadow-2xl font-mono text-sm">
+        <div
+          class="absolute top-full mt-2 min-w-[320px] z-50 bg-terminal-black border-2 border-terminal-green rounded-lg shadow-2xl font-mono text-sm"
+          style="left: {inputButtonElement?.offsetLeft ?? 0}px;"
+        >
           {#each filteredCommands() as command, index}
             <button
               onclick={() => executeCommand(command)}
-              class="w-full px-4 py-3 text-left flex flex-col gap-1 border-b border-terminal-green/10 last:border-b-0 hover:bg-terminal-green/10 transition-colors cursor-pointer {index === selectedIndex ? 'bg-terminal-green/10' : ''}"
+              class="w-full px-4 py-3 text-left flex items-start gap-3 border-b border-terminal-green/10 last:border-b-0 hover:bg-terminal-green/20 transition-colors cursor-pointer {index === selectedIndex ? 'bg-terminal-green/10' : ''}"
             >
-              <span class="text-terminal-green font-semibold">{command.label}</span>
-              <span class="text-terminal-text/70 text-xs">{command.description}</span>
+              <span class="text-xl">{command.id === 'chat' ? '›' : command.id === 'fit-finder' ? '⚡' : '⌘'}</span>
+              <div class="flex-1">
+                <div class="text-terminal-green font-semibold mb-1">$ {command.label}</div>
+                <div class="text-terminal-text/70 text-xs">{command.description}</div>
+              </div>
             </button>
           {/each}
         </div>
