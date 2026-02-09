@@ -1,10 +1,11 @@
 <script lang="ts">
   import { page } from "$app/stores";
   import SEO from "$lib/components/SEO.svelte";
+  import type { ContentItem } from "$lib/types";
   import { addVariant, getVariant } from "$lib/utils/variantLink";
   import { onMount } from "svelte";
 
-  export let data: { posts: { metadata: any; route: string }[] };
+  export let data: { posts: ContentItem[] };
   $: posts = data.posts;
 
   let variant: string | null = null;

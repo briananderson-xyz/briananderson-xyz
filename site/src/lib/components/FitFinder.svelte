@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { dev } from '$app/environment';
+	import { browser, dev } from '$app/environment';
 	import type { FitAnalysis } from '$lib/types';
 	import { trackEvent } from '$lib/utils/analytics';
 
