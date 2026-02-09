@@ -1,23 +1,33 @@
 # briananderson.xyz — SvelteKit + Markdown
 
-- SvelteKit 2 + Svelte 5 (stable)
-- adapter-static (fully prerender)
-- mdsvex (Markdown) — content lives in `/content`
-- Dynamic routes render Markdown from `/content`
-- Blog + Projects sections
-- Dark mode toggle (localStorage)
-- RSS at `/rss.xml`, sitemap at `/sitemap.xml`, robots.txt at `/robots.txt`
+> **📚 Full documentation:** See [`../CLAUDE.md`](../CLAUDE.md) or [`../AGENTS.md`](../AGENTS.md)
 
-## Dev
+**Stack:** SvelteKit 2 + Svelte 5 + TypeScript + Tailwind CSS 3 + Firebase Functions
+
+## Quick Start
+
 ```bash
 pnpm i
 pnpm dev
 ```
 
-## Build
+## Build & Deploy
+
 ```bash
-pnpm build
+pnpm run build              # Builds content index + static site
+firebase deploy             # Deploys to GCS + Firebase Functions
 ```
 
-## Deploy
-Upload `build/` to a GCS bucket (Cloudflare CDN fronts the bucket for caching and DNS).
+## AI Features
+
+- **Chat:** AI assistant using Gemini function calling to answer questions about Brian's background
+- **Fit Finder:** Analyzes job descriptions against Brian's skills/experience with tool-based retrieval
+- **Content Index:** Auto-generated at build time from markdown files (versioned for cache-busting)
+
+See [`../docs/architecture/ai-features.md`](../docs/architecture/ai-features.md) for details.
+
+## Documentation
+
+- **Architecture & Patterns:** [`../CLAUDE.md`](../CLAUDE.md)
+- **AI Features:** [`../docs/architecture/ai-features.md`](../docs/architecture/ai-features.md)
+- **Quick Start Guide:** [`../QUICK_START.md`](../QUICK_START.md)

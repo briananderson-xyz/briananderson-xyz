@@ -85,12 +85,10 @@ test.describe('Resume Variant System', () => {
   });
 
   test('canonical resume routes work', async ({ page }) => {
-    const expectedOps = getExpectedContent('ops');
     await page.goto('/ops/resume/');
     await page.waitForLoadState('networkidle');
     await expect(page.locator('h1')).toContainText('Brian Anderson');
 
-    const expectedBuilder = getExpectedContent('builder');
     await page.goto('/builder/resume/');
     await page.waitForLoadState('networkidle');
     await expect(page.locator('h1')).toContainText('Brian Anderson');

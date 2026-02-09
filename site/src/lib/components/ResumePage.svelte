@@ -1,7 +1,7 @@
 <script lang="ts">
     import ResumeContent from "$lib/components/ResumeContent.svelte";
     import SEO from "$lib/components/SEO.svelte";
-    import type { Resume } from "$lib/types";
+    import type { Resume, SkillItem } from "$lib/types";
 
     export let resume: Resume;
     export let variant: string | null = null;
@@ -9,20 +9,14 @@
     export let description: string;
     export let canonical: string;
 
-    const formatSkillsAsDefinedTerms = (skills: Record<string, any[]>) => {
-        const definedTerms: any[] = [];
+    const formatSkillsAsDefinedTerms = (skills: Record<string, SkillItem[]>) => {
+        const definedTerms: { "@type": string; name: string; url?: string; inDefinedTermSet: string }[] = [];
         for (const [category, items] of Object.entries(skills)) {
             for (const skill of items) {
                 definedTerms.push({
                     "@type": "DefinedTerm",
-                    name:
-                        typeof skill === "string"
-                            ? skill
-                            : skill.altName || skill.name,
-                    url:
-                        typeof skill === "object" && skill.url
-                            ? skill.url
-                            : undefined,
+                    name: skill.altName || skill.name,
+                    url: skill.url,
                     inDefinedTermSet: category,
                 });
             }
@@ -46,7 +40,7 @@
             "https://github.com/briananderson1222",
             "https://www.linkedin.com/in/brian--anderson/",
         ],
-        alumniOf: resume.education.map((edu: any) => ({
+        alumniOf: resume.education.map((edu) => ({
             "@type": "CollegeOrUniversity",
             name: edu.school,
             address: {
@@ -54,13 +48,13 @@
                 addressLocality: edu.location.split(", ")[0] || edu.location,
             },
         })),
-        hasCredential: resume.certificates.map((cert: any) => ({
+        hasCredential: resume.certificates.map((cert) => ({
             "@type": "EducationalOccupationalCredential",
             name: cert.name,
             url: cert.url,
             credentialCategory: "certification",
         })),
-        hasOccupation: resume.experience.map((job: any) => ({
+        hasOccupation: resume.experience.map((job) => ({
             "@type": "Occupation",
             name: job.role,
             startDate: job.start_date,
@@ -73,12 +67,15 @@
         })),
         knowsAbout: formatSkillsAsDefinedTerms(resume.skills),
     };
+
+    // Build JSON-LD tag to avoid ESLint parser confusion with <script> in templates
+    $: jsonLdTag = `<${"script"} type="application/ld+json">${JSON.stringify(jsonLd, null, 2)}</${"script"}>`;
 </script>
 
 <SEO {title} {description} {canonical} />
 
 <svelte:head>
-    {@html `<script type="application/ld+json">${JSON.stringify(jsonLd, null, 2)}</script>`}
+    {@html jsonLdTag}
 </svelte:head>
 
 <div class="max-w-6xl mx-auto mb-8 print:hidden">

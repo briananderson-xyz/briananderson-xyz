@@ -18,7 +18,7 @@ const config = {
   extensions: ['.svelte', '.md', '.svx'],
   preprocess: [vitePreprocess(), mdsvex(mdsvexConfig)],
   kit: {
-    adapter: adapter({ pages: 'build', assets: 'build', strict: true, trailingSlash: 'always' }),
+    adapter: adapter({ pages: 'build', assets: 'build', strict: false, trailingSlash: 'always' }),
     paths: {
       relative: false // Required for PostHog session replay to work correctly
     },

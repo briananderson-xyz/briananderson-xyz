@@ -1,10 +1,11 @@
 <script lang="ts">
   import { page } from "$app/stores";
   import SEO from "$lib/components/SEO.svelte";
+  import type { ContentItem } from "$lib/types";
   import { addVariant, getVariant } from "$lib/utils/variantLink";
   import { onMount } from "svelte";
 
-  export let data: { posts: { metadata: any; route: string }[] };
+  export let data: { posts: ContentItem[] };
   $: posts = data.posts;
 
   let variant: string | null = null;
@@ -39,12 +40,21 @@
     {#each posts as post}
       <a
         href={addVariant(post.route, variant)}
-        class="group grid grid-cols-12 gap-4 items-baseline p-4 hover:bg-skin-base/5 border-l-2 border-transparent hover:border-skin-accent transition-all rounded-r-lg"
+        class="group grid grid-cols-12 gap-4 items-start p-4 hover:bg-skin-base/5 border-l-2 border-transparent hover:border-skin-accent transition-all rounded-r-lg"
       >
         <div class="col-span-3 md:col-span-2 text-xs text-skin-muted pt-1">
           {new Date(post.metadata.date).toISOString().split("T")[0]}
         </div>
         <div class="col-span-9 md:col-span-10">
+          {#if post.metadata.featuredImage}
+            <div class="mb-3">
+              <img
+                src={post.metadata.featuredImage}
+                alt={post.metadata.featuredImageAlt || post.metadata.title}
+                class="w-[65%] aspect-video my-2 mx-auto rounded border border-skin-border object-contain"
+              />
+            </div>
+          {/if}
           <h2
             class="text-base text-skin-base group-hover:text-skin-accent font-bold transition-colors mb-1"
           >

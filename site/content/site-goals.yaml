@@ -1,0 +1,33 @@
+# Site Goals - briananderson.xyz
+# Last updated: 2026-02-06
+
+goals:
+  - name: Professional Portfolio
+    description: >
+      Showcase cloud architecture, DevOps, and AI expertise through
+      real project case studies and technical writing.
+
+  - name: Builder Identity
+    description: >
+      Demonstrate building, not just advising. The site itself is a
+      portfolio piece. From the SvelteKit framework to the AI-powered
+      features, every technical choice is intentional and visible.
+
+  - name: Thought Leadership
+    description: >
+      Share technical insights via blog posts and project narratives.
+      Go beyond "what was built" to cover the why and how behind
+      architectural decisions.
+
+  - name: Range & Versatility
+    description: >
+      Show the full spectrum. Enterprise engagements (Discover Financial,
+      Gordon Food Service, AWS), community work (Fairview Children's Center),
+      and entrepreneurship (Fill In My Blank). Technical depth across
+      cloud, DevOps, platform engineering, and product development.
+
+  - name: Human Connection
+    description: >
+      Go beyond resume bullets to show how Brian works with people
+      and approaches problems. Each project should convey voice,
+      context, and lessons learned, not just deliverables.

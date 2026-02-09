@@ -1,7 +1,6 @@
 <script lang="ts">
   import { getDuration } from '$lib/utils/date';
   import type { ResumeJob } from '$lib/types';
-  import { browser } from '$app/environment';
   import '$lib/components/ui/glowing-green.css';
 
   export let job: ResumeJob;

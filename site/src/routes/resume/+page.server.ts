@@ -1,7 +1,6 @@
 import fs from 'fs';
 import yaml from 'js-yaml';
 import path from 'path';
-import { redirect } from '@sveltejs/kit';
 import type { Resume } from '$lib/types';
 
 export const prerender = true;

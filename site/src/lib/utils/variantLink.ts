@@ -3,9 +3,6 @@ import { variants } from '$lib/data/variants';
 const defaultVariant = 'default';
 const basePath = 'https://briananderson.xyz';
 
-// Routes that have specific canonical variant paths
-const canonicalRoutes = ['/', '/resume', '/resume/'];
-
 export function addVariant(path: string, variant: string | null | undefined): string {
   if (!variant || variant === defaultVariant) return path;
 
@@ -36,14 +33,20 @@ export function removeVariant(path: string): string {
     url.searchParams.delete('v');
     // Return path + search (without v) + hash
     return url.pathname + url.search + url.hash;
-  } catch (e) {
+  } catch {
     return path;
   }
 }
 
 export function getVariant(url: URL): string | null {
-  const queryVariant = url.searchParams.get('v');
-  if (queryVariant) return queryVariant;
+  // During prerendering, searchParams access is not allowed
+  // We can safely skip the query param check and rely on path-based detection
+  try {
+    const queryVariant = url.searchParams.get('v');
+    if (queryVariant) return queryVariant;
+  } catch {
+    // Ignore error during prerendering
+  }
 
   const pathParts = url.pathname.split('/').filter(Boolean);
   if (pathParts.length > 0 && variants.find(v => v.key === pathParts[0])) {

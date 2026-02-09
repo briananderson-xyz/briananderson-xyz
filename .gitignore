@@ -9,5 +9,27 @@ build
 playwright-report
 test-results
 
+# IDE
+.vscode/
+
 # Environment variables
 site/.env
+site/.env.local
+site/functions/.env.local
+
+# Local tool configs
+.claude/
+.playwright-mcp/
+.opencode/
+
+# AI-generated temporary docs (status tracking, planning, etc.)
+.ai-docs/
+
+# Generated content index (rebuilt by prebuild script)
+site/static/content-index*.json
+
+# Firebase local emulator data
+.firebase/
+
+# Windows artifacts
+nul
