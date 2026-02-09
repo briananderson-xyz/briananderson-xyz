@@ -5,7 +5,8 @@
  * fetching only the information it needs for analysis.
  */
 
-import type { FunctionDeclarationsTool } from '@google/generative-ai';
+import { Type } from '@google/genai';
+import type { FunctionDeclaration } from '@google/genai';
 
 /**
  * Tool function implementations
@@ -138,17 +139,17 @@ export class ContentTools {
 /**
  * Tool declarations for Gemini
  */
-export const toolDeclarations: FunctionDeclarationsTool = {
+export const toolDeclarations: { functionDeclarations: FunctionDeclaration[] } = {
 	functionDeclarations: [
 		{
 			name: 'search_skills',
 			description: 'Search for skills by keywords. Use this to find if Brian has specific technical or soft skills. Returns skills with evidence (projects/blog posts where used).',
 			parameters: {
-				type: 'object' as const,
+				type: Type.OBJECT,
 				properties: {
 					keywords: {
-						type: 'array' as const,
-						items: { type: 'string' as const },
+						type: Type.ARRAY,
+						items: { type: Type.STRING },
 						description: 'Keywords to search for (e.g., ["kubernetes", "aws", "leadership"])'
 					}
 				},
@@ -159,10 +160,10 @@ export const toolDeclarations: FunctionDeclarationsTool = {
 			name: 'get_project',
 			description: 'Get detailed information about a specific project by its slug. Use this after search_projects to get full details.',
 			parameters: {
-				type: 'object' as const,
+				type: Type.OBJECT,
 				properties: {
 					slug: {
-						type: 'string' as const,
+						type: Type.STRING,
 						description: 'Project slug (e.g., "gfs-cloud-enablement")'
 					}
 				},
@@ -173,11 +174,11 @@ export const toolDeclarations: FunctionDeclarationsTool = {
 			name: 'search_projects',
 			description: 'Search for projects by keywords or technologies. Returns list of relevant projects with summaries.',
 			parameters: {
-				type: 'object' as const,
+				type: Type.OBJECT,
 				properties: {
 					keywords: {
-						type: 'array' as const,
-						items: { type: 'string' as const },
+						type: Type.ARRAY,
+						items: { type: Type.STRING },
 						description: 'Keywords to search for (e.g., ["cloud", "kubernetes", "migration"])'
 					}
 				},
@@ -188,11 +189,11 @@ export const toolDeclarations: FunctionDeclarationsTool = {
 			name: 'search_experience',
 			description: 'Search work experience by role, company, or keywords. Returns relevant experience entries.',
 			parameters: {
-				type: 'object' as const,
+				type: Type.OBJECT,
 				properties: {
 					keywords: {
-						type: 'array' as const,
-						items: { type: 'string' as const },
+						type: Type.ARRAY,
+						items: { type: Type.STRING },
 						description: 'Keywords to search for (e.g., ["technical director", "aws", "platform"])'
 					}
 				},
@@ -203,10 +204,10 @@ export const toolDeclarations: FunctionDeclarationsTool = {
 			name: 'get_skills_by_category',
 			description: 'Get all skills in a specific category (e.g., "Cloud Platforms", "Leadership", "Languages").',
 			parameters: {
-				type: 'object' as const,
+				type: Type.OBJECT,
 				properties: {
 					category: {
-						type: 'string' as const,
+						type: Type.STRING,
 						description: 'Category name (e.g., "Cloud Platforms", "AI Agent Frameworks")'
 					}
 				},
@@ -217,11 +218,67 @@ export const toolDeclarations: FunctionDeclarationsTool = {
 			name: 'get_resume_summary',
 			description: 'Get Brian\'s resume summary including name, title, location, tagline, and overview.',
 			parameters: {
-				type: 'object' as const,
+				type: Type.OBJECT,
 				properties: {}
 			}
 		}
 	]
+};
+
+/**
+ * Tool declaration for structured fit analysis submission.
+ * The model calls this as its final action; the SDK enforces the parameter schema.
+ */
+export const submitAnalysisDeclaration: FunctionDeclaration = {
+	name: 'submit_analysis',
+	description: 'Submit the final fit analysis after gathering evidence. Call ONCE as your final action.',
+	parameters: {
+		type: Type.OBJECT,
+		properties: {
+			fitScore: { type: Type.NUMBER, description: '0-100' },
+			fitLevel: { type: Type.STRING, description: '"good" (80-100), "maybe" (50-79), "not" (0-49)' },
+			confidence: { type: Type.STRING, description: '"high", "medium", or "low"' },
+			matchingSkills: {
+				type: Type.ARRAY,
+				items: {
+					type: Type.OBJECT,
+					properties: {
+						name: { type: Type.STRING },
+						url: { type: Type.STRING },
+						context: { type: Type.STRING }
+					},
+					required: ['name']
+				}
+			},
+			matchingExperience: {
+				type: Type.ARRAY,
+				items: {
+					type: Type.OBJECT,
+					properties: {
+						role: { type: Type.STRING },
+						company: { type: Type.STRING },
+						dateRange: { type: Type.STRING },
+						url: { type: Type.STRING },
+						relevance: { type: Type.STRING }
+					},
+					required: ['role', 'company', 'dateRange', 'relevance']
+				}
+			},
+			gaps: { type: Type.ARRAY, items: { type: Type.STRING } },
+			analysis: { type: Type.STRING, description: '2-3 paragraph narrative' },
+			resumeVariantRecommendation: { type: Type.STRING, description: '"leader", "ops", or "builder"' },
+			cta: {
+				type: Type.OBJECT,
+				properties: {
+					text: { type: Type.STRING },
+					link: { type: Type.STRING }
+				},
+				required: ['text', 'link']
+			}
+		},
+		required: ['fitScore', 'fitLevel', 'confidence', 'matchingSkills',
+			'matchingExperience', 'gaps', 'analysis', 'resumeVariantRecommendation', 'cta']
+	}
 };
 
 /**
@@ -245,6 +302,8 @@ export function executeToolCall(
 			return tools.getSkillsByCategory(args.category);
 		case 'get_resume_summary':
 			return tools.getResumeSummary();
+		case 'submit_analysis':
+			return args;
 		default:
 			throw new Error(`Unknown tool: ${functionName}`);
 	}

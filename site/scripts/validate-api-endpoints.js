@@ -175,7 +175,7 @@ Required:
         }
 
         if (!['good', 'maybe', 'not'].includes(analysis.fitLevel)) {
-          warn(`Unexpected fitLevel: ${analysis.fitLevel} (AI may not have returned it)`);
+          error(`Missing or unexpected fitLevel: ${analysis.fitLevel}`);
         } else {
           success(`Fit Finder returned fitLevel: ${analysis.fitLevel}`);
         }
@@ -211,19 +211,23 @@ Required:
         }
 
         if (!analysis.analysis || typeof analysis.analysis !== 'string') {
-          warn('Analysis missing narrative text (AI may not have returned it)');
+          error('Analysis missing narrative text');
         } else if (analysis.analysis.length < 50) {
-          warn('Analysis narrative seems too short');
+          error('Analysis narrative too short (< 50 chars)');
         } else {
           success('Fit Finder includes narrative analysis');
         }
 
         if (!analysis.resumeVariantRecommendation) {
-          warn('Analysis missing resumeVariantRecommendation');
+          error('Analysis missing resumeVariantRecommendation');
+        } else {
+          success(`Resume variant recommendation: ${analysis.resumeVariantRecommendation}`);
         }
 
         if (!analysis.cta || !analysis.cta.text || !analysis.cta.link) {
-          warn('Analysis missing CTA (AI may not have returned it)');
+          error('Analysis missing CTA (text and link required)');
+        } else {
+          success('Analysis includes CTA');
         }
       }
     }

@@ -1,9 +1,9 @@
 import { onRequest } from 'firebase-functions/v2/https';
 import { initializeApp } from 'firebase-admin/app';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenAI } from '@google/genai';
 import { getSystemPrompt } from './systemPrompt.js';
 import { checkGuardrails, getRefusalMessage } from './guardrails.js';
-import { ContentTools, toolDeclarations, executeToolCall } from './tools.js';
+import { ContentTools, toolDeclarations, submitAnalysisDeclaration, executeToolCall } from './tools.js';
 
 // Initialize Firebase Admin
 initializeApp();
@@ -82,66 +82,6 @@ async function fetchContentIndex(): Promise<any> {
 	}
 }
 
-function buildContextFromIndex(index: any): string {
-	if (!index) return '';
-
-	const sections: string[] = [];
-
-	// Resume summary
-	if (index.resume) {
-		sections.push(`ABOUT BRIAN:
-Name: ${index.resume.name}
-Title: ${index.resume.title}
-Location: ${index.resume.location}
-Summary: ${index.resume.summary}`);
-	}
-
-	// Experience
-	if (index.experience?.length > 0) {
-		const expLines = index.experience.map((exp: any) =>
-			`- ${exp.role} at ${exp.company} (${exp.dateRange}): ${exp.description}${exp.highlights?.length ? '\n  Key work: ' + exp.highlights.slice(0, 2).join('; ') : ''}`
-		).join('\n');
-		sections.push(`WORK EXPERIENCE:\n${expLines}`);
-	}
-
-	// Skills with project relationships
-	if (index.skills?.length > 0) {
-		const skillsWithProjects = index.skills
-			.filter((s: any) => s.projects.length > 0 || s.blog.length > 0)
-			.map((s: any) => {
-				const refs: string[] = [];
-				if (s.projects.length > 0) refs.push(`projects: ${s.projects.join(', ')}`);
-				if (s.blog.length > 0) refs.push(`blog: ${s.blog.join(', ')}`);
-				return `- ${s.name} [${s.category}] → ${refs.join(' | ')}`;
-			}).join('\n');
-
-		const skillsWithoutProjects = index.skills
-			.filter((s: any) => s.projects.length === 0 && s.blog.length === 0)
-			.map((s: any) => s.name)
-			.join(', ');
-
-		sections.push(`SKILLS WITH DOCUMENTED EVIDENCE:\n${skillsWithProjects}\n\nADDITIONAL SKILLS (from resume):\n${skillsWithoutProjects}`);
-	}
-
-	// Projects
-	if (index.projects?.length > 0) {
-		const projectLines = index.projects.map((p: any) =>
-			`- "${p.title}" (${p.url}): ${p.summary} [Tags: ${p.tags.join(', ')}]`
-		).join('\n');
-		sections.push(`PROJECTS (linkable):\n${projectLines}`);
-	}
-
-	// Blog posts
-	if (index.blog?.length > 0) {
-		const blogLines = index.blog.map((b: any) =>
-			`- "${b.title}" (${b.url}): ${b.summary || 'No summary'} [Tags: ${b.tags.join(', ')}]`
-		).join('\n');
-		sections.push(`BLOG POSTS (linkable):\n${blogLines}`);
-	}
-
-	return sections.join('\n\n');
-}
-
 // CORS headers
 const corsHeaders = {
 	'Access-Control-Allow-Origin': '*',
@@ -199,57 +139,56 @@ export const chat = onRequest(
 
 			// Fetch content index for tool-based responses
 			const contentIndex = await fetchContentIndex();
-			const tools = contentIndex ? new ContentTools(contentIndex) : null;
+			const contentTools = contentIndex ? new ContentTools(contentIndex) : null;
 
-			const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-			const model = genAI.getGenerativeModel({
-				model: 'gemini-2.5-flash',
-				systemInstruction: getSystemPrompt(SITE_URL),
-				tools: tools ? [toolDeclarations] : undefined,
-				generationConfig: {
-					maxOutputTokens: 1000,
-					temperature: 0.7,
-				},
-			});
+			const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
 
 			// Convert history to Gemini format
 			const chatHistory = history.map((msg) => ({
-				role: msg.role === 'user' ? 'user' : 'model',
+				role: msg.role === 'user' ? ('user' as const) : ('model' as const),
 				parts: [{ text: msg.content }],
 			}));
 
 			// Start chat with history
-			const chat = model.startChat({
-				history: chatHistory as any,
+			const chat = ai.chats.create({
+				model: 'gemini-2.5-flash',
+				config: {
+					systemInstruction: getSystemPrompt(SITE_URL),
+					tools: contentTools ? [toolDeclarations] : undefined,
+					maxOutputTokens: 1000,
+					temperature: 0.7,
+				},
+				history: chatHistory,
 			});
 
 			// Send message and get response
-			let result = await chat.sendMessage(message);
+			let result = await chat.sendMessage({ message });
 
 			// Handle function calls if tools are available
-			if (tools) {
+			if (contentTools) {
 				let maxIterations = 5;
-				while (result.response.functionCalls() && maxIterations > 0) {
+				while (result.functionCalls && maxIterations > 0) {
 					maxIterations--;
 
-					const functionCalls = result.response.functionCalls();
+					const functionCalls = result.functionCalls;
 					console.log('Chat function calls:', functionCalls.map(fc => fc.name));
 
 					const functionResponses = functionCalls.map(fc => {
-						const toolResult = executeToolCall(tools, fc.name, fc.args);
+						const toolResult = executeToolCall(contentTools, fc.name!, fc.args);
 						return {
 							functionResponse: {
+								id: fc.id,
 								name: fc.name,
-								response: toolResult
+								response: { output: toolResult }
 							}
 						};
 					});
 
-					result = await chat.sendMessage(functionResponses);
+					result = await chat.sendMessage({ message: functionResponses });
 				}
 			}
 
-			const response = result.response.text();
+			const response = result.text;
 
 			res.set(corsHeaders);
 			res.status(200).json({
@@ -283,7 +222,7 @@ export const fitFinder = onRequest(
 		}
 
 		try {
-			const { jobDescription, variant = 'leader' }: FitFinderRequest = req.body;
+			const { jobDescription, variant: _variant = 'leader' }: FitFinderRequest = req.body;
 
 			if (!jobDescription || typeof jobDescription !== 'string') {
 				res.status(400).json({ error: 'Job description is required' });
@@ -312,17 +251,13 @@ export const fitFinder = onRequest(
 			}
 
 			// Initialize tools
-			const tools = new ContentTools(contentIndex);
+			const contentTools = new ContentTools(contentIndex);
 
-			const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-			const model = genAI.getGenerativeModel({
-				model: 'gemini-2.5-flash',
-				tools: [toolDeclarations],
-				generationConfig: {
-					maxOutputTokens: 2000,
-					temperature: 0.5,
-				},
-			});
+			const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
+
+			const fitFinderTools = {
+				functionDeclarations: [...toolDeclarations.functionDeclarations, submitAnalysisDeclaration]
+			};
 
 			const initialPrompt = `You are analyzing a job description to determine if Brian Anderson is a good fit.
 
@@ -336,43 +271,15 @@ WORKFLOW:
 2. Use search_projects() and get_project() to find relevant project work
 3. Use search_experience() to find relevant roles and companies
 4. Use get_resume_summary() for overview information
+5. Call submit_analysis() with your structured assessment as your FINAL action
 
-CRITICAL RULES FOR FINAL RESPONSE:
+CRITICAL RULES:
 1. ONLY cite skills, experience, and projects you found via tool calls
 2. Every "url" field MUST be from the tool results - do NOT invent URLs
 3. If a skill has no project/blog evidence, omit the "url" field
 4. Be humble and honest - acknowledge gaps rather than overselling
 5. The "analysis" field should be a natural 2-3 paragraph narrative
-
-After gathering information with tools, respond with a JSON object (no markdown, just raw JSON):
-{
-  "fitScore": <number 0-100>,
-  "fitLevel": "<good|maybe|not>",
-  "confidence": "<high|medium|low>",
-  "matchingSkills": [
-    {
-      "name": "<skill name from tool results>",
-      "url": "<project/blog URL from tool results, or omit if none>",
-      "context": "<how/where Brian used this skill>"
-    }
-  ],
-  "matchingExperience": [
-    {
-      "role": "<exact role from search_experience>",
-      "company": "<company name>",
-      "dateRange": "<date range from results>",
-      "url": "<project URL if relevant, or omit>",
-      "relevance": "<why this role is relevant>"
-    }
-  ],
-  "gaps": ["<specific job requirements not found in Brian's background>"],
-  "analysis": "<2-3 paragraph narrative explaining fit, using specific evidence from tool calls. Be informative and humble. Acknowledge gaps without dwelling on them. End with potential value Brian could bring.>",
-  "resumeVariantRecommendation": "<leader|ops|builder>",
-  "cta": {
-    "text": "Connect with Brian",
-    "link": "mailto:brian@briananderson.xyz"
-  }
-}
+6. You MUST call submit_analysis() as your final action - do NOT return plain text
 
 FIT LEVELS:
 - "good" (80-100): Strong alignment, core requirements well-covered
@@ -380,37 +287,68 @@ FIT LEVELS:
 - "not" (0-49): Significant gaps in critical requirements`;
 
 			// Start conversation with tools
-			const chat = model.startChat();
-			let result = await chat.sendMessage(initialPrompt);
+			const chat = ai.chats.create({
+				model: 'gemini-2.5-flash',
+				config: {
+					tools: [fitFinderTools],
+					maxOutputTokens: 2000,
+					temperature: 0.5,
+				},
+			});
+			let result = await chat.sendMessage({ message: initialPrompt });
 
-			// Handle function calls in a loop
+			// Handle function calls in a loop, intercept submit_analysis
+			let analysis: any = null;
 			let maxIterations = 10;
-			while (result.response.functionCalls() && maxIterations > 0) {
+			while (maxIterations > 0) {
 				maxIterations--;
 
-				const functionCalls = result.response.functionCalls();
+				const functionCalls = result.functionCalls;
+				if (!functionCalls || functionCalls.length === 0) {
+					// No more function calls — check for text fallback
+					break;
+				}
+
 				console.log('Function calls requested:', functionCalls.map(fc => fc.name));
 
-				// Execute all function calls
+				// Check if submit_analysis was called (may appear alongside other calls)
+				const submitCall = functionCalls.find(fc => fc.name === 'submit_analysis');
+				if (submitCall) {
+					analysis = submitCall.args;
+					break;
+				}
+
+				// Execute all other function calls
 				const functionResponses = functionCalls.map(fc => {
-					const toolResult = executeToolCall(tools, fc.name, fc.args);
+					const toolResult = executeToolCall(contentTools, fc.name!, fc.args);
 					return {
 						functionResponse: {
+							id: fc.id,
 							name: fc.name,
-							response: toolResult
+							response: { output: toolResult }
 						}
 					};
 				});
 
 				// Send function results back to model
-				result = await chat.sendMessage(functionResponses);
+				result = await chat.sendMessage({ message: functionResponses });
 			}
 
-			const response = result.response.text();
+			// Fallback: if model returned text instead of calling submit_analysis
+			if (!analysis && result.text) {
+				console.warn('Model returned text instead of calling submit_analysis, attempting JSON parse');
+				try {
+					const response = result.text;
+					const jsonStr = response.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+					analysis = JSON.parse(jsonStr);
+				} catch (parseErr) {
+					console.error('Failed to parse fallback text as JSON:', result.text?.substring(0, 200));
+				}
+			}
 
-			// Parse JSON response
-			const jsonStr = response.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-			const analysis = JSON.parse(jsonStr);
+			if (!analysis) {
+				throw new Error('Model did not produce a fit analysis');
+			}
 
 			res.set(corsHeaders);
 			res.status(200).json({
