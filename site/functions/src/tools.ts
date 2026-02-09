@@ -7,27 +7,36 @@
 
 import { Type } from '@google/genai';
 import type { FunctionDeclaration } from '@google/genai';
+import type {
+	ContentIndex,
+	SkillResult,
+	ProjectEntry,
+	ProjectResult,
+	ExperienceResult,
+	ResumeSummary,
+	ToolExecutionArgs
+} from './types.js';
 
 /**
  * Tool function implementations
  */
 export class ContentTools {
-	private index: any;
+	private index: ContentIndex;
 
-	constructor(contentIndex: any) {
+	constructor(contentIndex: ContentIndex) {
 		this.index = contentIndex;
 	}
 
 	/**
 	 * Search for skills by keywords
 	 */
-	searchSkills(keywords: string[]): any[] {
+	searchSkills(keywords: string[]): SkillResult[] {
 		if (!this.index?.skills) return [];
 
 		const keywordsLower = keywords.map(k => k.toLowerCase());
 
 		return this.index.skills
-			.filter((skill: any) => {
+			.filter((skill) => {
 				const skillName = skill.name.toLowerCase();
 				const category = skill.category?.toLowerCase() || '';
 
@@ -37,7 +46,7 @@ export class ContentTools {
 					keyword.includes(skillName)
 				);
 			})
-			.map((skill: any) => ({
+			.map((skill) => ({
 				name: skill.name,
 				category: skill.category,
 				projects: skill.projects,
@@ -49,26 +58,26 @@ export class ContentTools {
 	/**
 	 * Get project details by slug
 	 */
-	getProject(slug: string): any {
+	getProject(slug: string): ProjectEntry | null {
 		if (!this.index?.projects) return null;
 
-		return this.index.projects.find((p: any) => p.slug === slug);
+		return this.index.projects.find((p) => p.slug === slug) || null;
 	}
 
 	/**
 	 * Search projects by keywords or tags
 	 */
-	searchProjects(keywords: string[]): any[] {
+	searchProjects(keywords: string[]): ProjectResult[] {
 		if (!this.index?.projects) return [];
 
 		const keywordsLower = keywords.map(k => k.toLowerCase());
 
 		return this.index.projects
-			.filter((project: any) => {
+			.filter((project) => {
 				const searchText = `${project.title} ${project.summary} ${project.tags.join(' ')} ${project.keywords.join(' ')}`.toLowerCase();
 				return keywordsLower.some(keyword => searchText.includes(keyword));
 			})
-			.map((project: any) => ({
+			.map((project) => ({
 				slug: project.slug,
 				title: project.title,
 				url: project.url,
@@ -81,17 +90,17 @@ export class ContentTools {
 	/**
 	 * Search experience by role or company keywords
 	 */
-	searchExperience(keywords: string[]): any[] {
+	searchExperience(keywords: string[]): ExperienceResult[] {
 		if (!this.index?.experience) return [];
 
 		const keywordsLower = keywords.map(k => k.toLowerCase());
 
 		return this.index.experience
-			.filter((exp: any) => {
+			.filter((exp) => {
 				const searchText = `${exp.role} ${exp.company} ${exp.description} ${exp.highlights.join(' ')}`.toLowerCase();
 				return keywordsLower.some(keyword => searchText.includes(keyword));
 			})
-			.map((exp: any) => ({
+			.map((exp) => ({
 				role: exp.role,
 				company: exp.company,
 				dateRange: exp.dateRange,
@@ -104,14 +113,14 @@ export class ContentTools {
 	/**
 	 * Get all skills in a specific category
 	 */
-	getSkillsByCategory(category: string): any[] {
+	getSkillsByCategory(category: string): Pick<SkillResult, 'name' | 'projects' | 'blog'>[] {
 		if (!this.index?.skills) return [];
 
 		const categoryLower = category.toLowerCase();
 
 		return this.index.skills
-			.filter((skill: any) => skill.category?.toLowerCase().includes(categoryLower))
-			.map((skill: any) => ({
+			.filter((skill) => skill.category?.toLowerCase().includes(categoryLower))
+			.map((skill) => ({
 				name: skill.name,
 				projects: skill.projects,
 				blog: skill.blog
@@ -121,7 +130,7 @@ export class ContentTools {
 	/**
 	 * Get Brian's resume summary
 	 */
-	getResumeSummary(): any {
+	getResumeSummary(): ResumeSummary | null {
 		if (!this.index?.resume) return null;
 
 		return {
@@ -287,19 +296,19 @@ export const submitAnalysisDeclaration: FunctionDeclaration = {
 export function executeToolCall(
 	tools: ContentTools,
 	functionName: string,
-	args: any
-): any {
+	args: ToolExecutionArgs
+): SkillResult[] | ProjectEntry | ProjectResult[] | ExperienceResult[] | Pick<SkillResult, 'name' | 'projects' | 'blog'>[] | ResumeSummary | ToolExecutionArgs | null {
 	switch (functionName) {
 		case 'search_skills':
-			return tools.searchSkills(args.keywords);
+			return tools.searchSkills(args.keywords || []);
 		case 'get_project':
-			return tools.getProject(args.slug);
+			return tools.getProject(args.slug || '');
 		case 'search_projects':
-			return tools.searchProjects(args.keywords);
+			return tools.searchProjects(args.keywords || []);
 		case 'search_experience':
-			return tools.searchExperience(args.keywords);
+			return tools.searchExperience(args.keywords || []);
 		case 'get_skills_by_category':
-			return tools.getSkillsByCategory(args.category);
+			return tools.getSkillsByCategory(args.category || '');
 		case 'get_resume_summary':
 			return tools.getResumeSummary();
 		case 'submit_analysis':

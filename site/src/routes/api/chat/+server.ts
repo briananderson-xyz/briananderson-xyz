@@ -6,10 +6,10 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 	try {
 		const body = await request.json();
 
-		// Use local emulator in dev, production URL otherwise
+		// Use local emulator in dev, Cloudflare Worker proxy in production
 		const functionUrl = dev
 			? 'http://127.0.0.1:5001/briananderson-xyz/us-central1/chat'
-			: 'https://chat-jefw7grwra-uc.a.run.app';
+			: 'https://api.briananderson.xyz/chat';
 
 		const response = await fetch(functionUrl, {
 			method: 'POST',

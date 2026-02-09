@@ -9,6 +9,7 @@
   import FitFinder from "$lib/components/FitFinder.svelte";
   import ConnectBanner from "$lib/components/ConnectBanner.svelte";
   import { useKeyboardShortcuts, type KeyboardShortcut } from "$lib/hooks/useKeyboardShortcuts";
+  import { trackEvent } from "$lib/utils/analytics";
   import { browser } from "$app/environment";
   import { beforeNavigate, afterNavigate } from "$app/navigation";
   import posthog from "posthog-js";
@@ -32,9 +33,7 @@
         shortcutsHelpVisible = false;
         // Open Quick Actions
         quickActionsVisible = true;
-        if (browser && PUBLIC_POSTHOG_KEY) {
-          posthog.capture('keyboard_shortcut_used', { shortcut: 'cmd+k' });
-        }
+        trackEvent('keyboard_shortcut_used', { shortcut: 'cmd+k' });
       }
     },
     {
@@ -48,11 +47,9 @@
         shortcutsHelpVisible = false;
         // Toggle chatbot
         chatbotVisible = !chatbotVisible;
-        if (browser && PUBLIC_POSTHOG_KEY) {
-          posthog.capture('keyboard_shortcut_used', { shortcut: 'cmd+i' });
-          if (chatbotVisible) {
-            posthog.capture('chat_opened', { source: 'shortcut' });
-          }
+        trackEvent('keyboard_shortcut_used', { shortcut: 'cmd+i' });
+        if (chatbotVisible) {
+          trackEvent('chat_opened', { source: 'shortcut' });
         }
       }
     },
@@ -67,10 +64,8 @@
         shortcutsHelpVisible = false;
         // Open Fit Finder
         fitFinderVisible = true;
-        if (browser && PUBLIC_POSTHOG_KEY) {
-          posthog.capture('keyboard_shortcut_used', { shortcut: 'cmd+f' });
-          posthog.capture('fit_finder_opened', { source: 'shortcut' });
-        }
+        trackEvent('keyboard_shortcut_used', { shortcut: 'cmd+f' });
+        trackEvent('fit_finder_opened', { source: 'shortcut' });
       }
     },
     {
@@ -85,9 +80,7 @@
         fitFinderVisible = false;
         // Open shortcuts help
         shortcutsHelpVisible = true;
-        if (browser && PUBLIC_POSTHOG_KEY) {
-          posthog.capture('keyboard_help_opened', { source: 'shortcut' });
-        }
+        trackEvent('keyboard_help_opened', { source: 'shortcut' });
       }
     },
     {

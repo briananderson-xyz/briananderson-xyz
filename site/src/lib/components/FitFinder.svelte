@@ -1,8 +1,7 @@
 <script lang="ts">
-	import { browser, dev } from '$app/environment';
+	import { dev } from '$app/environment';
 	import type { FitAnalysis } from '$lib/types';
-	import posthog from 'posthog-js';
-	import { PUBLIC_POSTHOG_KEY } from '$env/static/public';
+	import { trackEvent } from '$lib/utils/analytics';
 
 	const API_BASE = dev ? '/api' : 'https://api.briananderson.xyz';
 
@@ -24,11 +23,9 @@
 		isAnalyzing = true;
 		error = null;
 
-		if (browser && PUBLIC_POSTHOG_KEY) {
-			posthog.capture('fit_finder_analyzed', {
-				jdLength: jobDescription.length
-			});
-		}
+		trackEvent('fit_finder_analyzed', {
+			jdLength: jobDescription.length
+		});
 
 		try {
 			const response = await fetch(`${API_BASE}/fit-finder`, {
@@ -48,15 +45,13 @@
 
 			analysis = data.analysis;
 
-			if (browser && PUBLIC_POSTHOG_KEY) {
-				posthog.capture('fit_finder_completed', {
-					fitScore: analysis?.fitScore,
-					confidence: analysis?.confidence,
-					recommendedVariant: analysis?.resumeVariantRecommendation
-				});
-			}
+			trackEvent('fit_finder_completed', {
+				fitScore: analysis?.fitScore,
+				confidence: analysis?.confidence,
+				recommendedVariant: analysis?.resumeVariantRecommendation
+			});
 
-		} catch (err) {
+		} catch (err: unknown) {
 			console.error('Fit finder error:', err);
 			if (err instanceof Error) {
 				error = err.message;
@@ -75,8 +70,8 @@
 	}
 
 	function handleCTAClick() {
-		if (browser && PUBLIC_POSTHOG_KEY && analysis) {
-			posthog.capture('fit_finder_cta_clicked', {
+		if (analysis) {
+			trackEvent('fit_finder_cta_clicked', {
 				fitScore: analysis.fitScore,
 				linkType: 'email'
 			});
@@ -86,8 +81,8 @@
 	}
 
 	function handleResumeClick() {
-		if (browser && PUBLIC_POSTHOG_KEY && analysis) {
-			posthog.capture('fit_finder_resume_clicked', {
+		if (analysis) {
+			trackEvent('fit_finder_resume_clicked', {
 				fitScore: analysis.fitScore,
 				variant: analysis.resumeVariantRecommendation
 			});

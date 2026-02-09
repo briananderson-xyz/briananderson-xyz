@@ -4,75 +4,83 @@ import { GoogleGenAI } from '@google/genai';
 import { getSystemPrompt } from './systemPrompt.js';
 import { checkGuardrails, getRefusalMessage } from './guardrails.js';
 import { ContentTools, toolDeclarations, submitAnalysisDeclaration, executeToolCall } from './tools.js';
+import type {
+	ContentIndex,
+	ContentIndexPointer,
+	ChatRequest,
+	FitFinderRequest
+} from './types.js';
 
 // Initialize Firebase Admin
 initializeApp();
 
 const SITE_URL = process.env.SITE_URL || 'https://briananderson.xyz';
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+const IS_PRODUCTION = process.env.NODE_ENV === 'production';
 
-interface ChatRequest {
-	message: string;
-	history?: Array<{ role: string; content: string }>;
-	variant?: 'leader' | 'ops' | 'builder';
-}
-
-interface FitFinderRequest {
-	jobDescription: string;
-	variant?: 'leader' | 'ops' | 'builder';
-}
+// Tool call iteration limits
+const MAX_CHAT_TOOL_ITERATIONS = 5;
+const MAX_FIT_FINDER_TOOL_ITERATIONS = 10;
 
 // Content index cache with versioning
-let contentIndexCache: any = null;
+let contentIndexCache: ContentIndex | null = null;
 let contentIndexVersion: string | null = null;
 
 /**
  * Fetch content index using versioned approach to avoid stale cache
  */
-async function fetchContentIndex(): Promise<any> {
+async function fetchContentIndex(): Promise<ContentIndex | null> {
 	try {
 		// Fetch pointer file (short cache TTL)
 		const pointerResponse = await fetch(`${SITE_URL}/content-index-latest.json`);
 		if (!pointerResponse.ok) {
-			console.warn('Content index pointer not available:', pointerResponse.status);
+			if (!IS_PRODUCTION) {
+				console.warn('Content index pointer not available:', pointerResponse.status);
+			}
 			// Fallback to non-versioned
 			const fallbackResponse = await fetch(`${SITE_URL}/content-index.json`);
 			if (!fallbackResponse.ok) return null;
-			return await fallbackResponse.json();
+			return await fallbackResponse.json() as ContentIndex;
 		}
 
-		const pointer = await pointerResponse.json();
+		const pointer = await pointerResponse.json() as ContentIndexPointer;
 		const { filename, buildDate, hash } = pointer;
 
 		// Check if we have this version cached
 		if (contentIndexCache && contentIndexVersion === hash) {
-			console.log('Using cached content index:', hash);
+			if (!IS_PRODUCTION) {
+				console.log('Using cached content index:', hash);
+			}
 			return contentIndexCache;
 		}
 
 		// Fetch the specific versioned file (long cache TTL, immutable)
 		const indexResponse = await fetch(`${SITE_URL}/${filename}`);
 		if (!indexResponse.ok) {
-			console.warn('Versioned content index not available:', indexResponse.status);
+			if (!IS_PRODUCTION) {
+				console.warn('Versioned content index not available:', indexResponse.status);
+			}
 			return null;
 		}
 
-		contentIndexCache = await indexResponse.json();
+		contentIndexCache = await indexResponse.json() as ContentIndex;
 		contentIndexVersion = hash;
 
-		// Log freshness
-		const buildTime = new Date(buildDate);
-		const ageMinutes = (Date.now() - buildTime.getTime()) / 60000;
-		console.log('Content index loaded:', {
-			version: hash,
-			buildDate,
-			ageMinutes: Math.round(ageMinutes),
-			skills: contentIndexCache.skills?.length,
-			projects: contentIndexCache.projects?.length
-		});
+		// Log freshness (only in development)
+		if (!IS_PRODUCTION) {
+			const buildTime = new Date(buildDate);
+			const ageMinutes = (Date.now() - buildTime.getTime()) / 60000;
+			console.log('Content index loaded:', {
+				version: hash,
+				buildDate,
+				ageMinutes: Math.round(ageMinutes),
+				skills: contentIndexCache.skills?.length,
+				projects: contentIndexCache.projects?.length
+			});
 
-		if (ageMinutes > 60) {
-			console.warn(`⚠️  Content index is ${Math.round(ageMinutes)} minutes old`);
+			if (ageMinutes > 60) {
+				console.warn(`⚠️  Content index is ${Math.round(ageMinutes)} minutes old`);
+			}
 		}
 
 		return contentIndexCache;
@@ -166,12 +174,14 @@ export const chat = onRequest(
 
 			// Handle function calls if tools are available
 			if (contentTools) {
-				let maxIterations = 5;
+				let maxIterations = MAX_CHAT_TOOL_ITERATIONS;
 				while (result.functionCalls && maxIterations > 0) {
 					maxIterations--;
 
 					const functionCalls = result.functionCalls;
-					console.log('Chat function calls:', functionCalls.map(fc => fc.name));
+					if (!IS_PRODUCTION) {
+						console.log('Chat function calls:', functionCalls.map(fc => fc.name));
+					}
 
 					const functionResponses = functionCalls.map(fc => {
 						const toolResult = executeToolCall(contentTools, fc.name!, fc.args);
@@ -298,8 +308,8 @@ FIT LEVELS:
 			let result = await chat.sendMessage({ message: initialPrompt });
 
 			// Handle function calls in a loop, intercept submit_analysis
-			let analysis: any = null;
-			let maxIterations = 10;
+			let analysis: Record<string, unknown> | null = null;
+			let maxIterations = MAX_FIT_FINDER_TOOL_ITERATIONS;
 			while (maxIterations > 0) {
 				maxIterations--;
 
@@ -309,7 +319,9 @@ FIT LEVELS:
 					break;
 				}
 
-				console.log('Function calls requested:', functionCalls.map(fc => fc.name));
+				if (!IS_PRODUCTION) {
+					console.log('Function calls requested:', functionCalls.map(fc => fc.name));
+				}
 
 				// Check if submit_analysis was called (may appear alongside other calls)
 				const submitCall = functionCalls.find(fc => fc.name === 'submit_analysis');
@@ -336,13 +348,17 @@ FIT LEVELS:
 
 			// Fallback: if model returned text instead of calling submit_analysis
 			if (!analysis && result.text) {
-				console.warn('Model returned text instead of calling submit_analysis, attempting JSON parse');
+				if (!IS_PRODUCTION) {
+					console.warn('Model returned text instead of calling submit_analysis, attempting JSON parse');
+				}
 				try {
 					const response = result.text;
 					const jsonStr = response.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
 					analysis = JSON.parse(jsonStr);
 				} catch (parseErr) {
-					console.error('Failed to parse fallback text as JSON:', result.text?.substring(0, 200));
+					if (!IS_PRODUCTION) {
+						console.error('Failed to parse fallback text as JSON:', result.text?.substring(0, 200));
+					}
 				}
 			}
 
