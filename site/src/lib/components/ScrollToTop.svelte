@@ -19,13 +19,13 @@
   }
 </script>
 
-{#if visible}
-  <button
-    onclick={scrollToTop}
-    class="fixed bottom-6 left-6 z-40 p-3 rounded-full bg-skin-accent/90 hover:bg-skin-accent text-skin-inverted shadow-lg hover:shadow-xl transition-all duration-300 print:hidden group"
-    aria-label="Scroll to top"
-    data-testid="scroll-to-top"
-  >
-    <ArrowUp size={20} class="group-hover:animate-bounce" />
-  </button>
-{/if}
+<button
+  onclick={scrollToTop}
+  class="fixed bottom-6 right-6 z-40 p-3 rounded-full bg-skin-accent text-skin-inverted shadow-lg hover:shadow-xl transition-all duration-300 print:hidden group"
+  class:opacity-0={!visible}
+  class:pointer-events-none={!visible}
+  aria-label="Scroll to top"
+  data-testid="scroll-to-top"
+>
+  <ArrowUp size={20} class="group-hover:animate-bounce" />
+</button>
