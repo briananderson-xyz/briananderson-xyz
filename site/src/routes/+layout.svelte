@@ -11,6 +11,7 @@
   import ScrollToTop from "$lib/components/ScrollToTop.svelte";
   import { useKeyboardShortcuts, type KeyboardShortcut } from "$lib/hooks/useKeyboardShortcuts";
   import { trackEvent } from "$lib/utils/analytics";
+  import { initWebVitals } from "$lib/utils/web-vitals";
   import { browser } from "$app/environment";
   import { beforeNavigate, afterNavigate } from "$app/navigation";
   import posthog from "posthog-js";
@@ -134,6 +135,9 @@
         });
         // Force capture initial pageview on mount to be sure
         posthog.capture("$pageview");
+
+        // Initialize Web Vitals tracking
+        initWebVitals();
       } else {
         console.warn("PostHog key not found");
       }
