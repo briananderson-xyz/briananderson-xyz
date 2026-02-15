@@ -29,6 +29,9 @@ importers:
       posthog-js:
         specifier: ^1.319.0
         version: 1.319.0
+      web-vitals:
+        specifier: ^4.2.4
+        version: 4.2.4
       zod:
         specifier: ^4.3.6
         version: 4.3.6
