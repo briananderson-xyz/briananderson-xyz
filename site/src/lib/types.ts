@@ -1,3 +1,9 @@
+export interface VisualArchiveImage {
+	path: string;
+	alt: string;
+	caption?: string;
+}
+
 export interface ContentMetadata {
 	title: string;
 	date: string;
@@ -8,6 +14,9 @@ export interface ContentMetadata {
 	featuredImageAlt?: string;
 	featuredImageCaption?: string;
 	readingTime?: string;
+	visualArchive?: {
+		images: VisualArchiveImage[];
+	};
 }
 
 export interface ContentItem {

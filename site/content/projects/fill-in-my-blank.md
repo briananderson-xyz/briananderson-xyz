@@ -6,6 +6,18 @@ tags: ["MobileGame", "iOS", "Android", "Java", "ObjectiveC", "Builder"]
 keywords: ["fimb", "party-game", "mobile-app"]
 featuredImage: "/projects/fimb/logo.png"
 featuredImageAlt: "Fill In My Blank Logo"
+visualArchive:
+  images:
+    - path: "/projects/fimb/home.png"
+      alt: "Home Screen"
+    - path: "/projects/fimb/home%20v2.png"
+      alt: "Home Screen v2"
+    - path: "/projects/fimb/login.png"
+      alt: "Login Screen"
+    - path: "/projects/fimb/my%20game.png"
+      alt: "Active Game"
+    - path: "/projects/fimb/my%20games.png"
+      alt: "My Games"
 ---
 
 ## Origin
@@ -44,12 +56,3 @@ The technical lessons were real: cross-platform architecture, API design, app st
 
 Fill In My Blank didn't become a company. But it's the reason I call myself a builder.
 
-## Visual Archive
-<div class="grid grid-cols-2 md:grid-cols-3 gap-4 not-prose mt-8">
-  <div class="border border-skin-border bg-skin-page p-2 rounded-lg">
-    <img src="/projects/fimb/home.png" alt="Home Screen" class="w-full h-auto grayscale hover:grayscale-0 transition-all"/>
-  </div>
-  <div class="border border-skin-border bg-skin-page p-2 rounded-lg">
-    <img src="/projects/fimb/my%20game.png" alt="Gameplay" class="w-full h-auto grayscale hover:grayscale-0 transition-all"/>
-  </div>
-</div>
