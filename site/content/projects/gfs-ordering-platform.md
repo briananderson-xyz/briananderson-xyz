@@ -5,6 +5,13 @@ summary: "Modernizing the core ordering engine for a $1B+ food distributor."
 tags: ["Architecture", "Ecommerce", "Microservices", "GKE", "Leader"]
 keywords: ["gfs", "gordon-food-service", "ordering-platform", "modernization"]
 showTableOfContents: true
+links:
+  - label: "Valtech Case Study"
+    url: "https://www.valtech.com/en-us/work/gordon-food-service/"
+    type: "case-study"
+  - label: "Google Cloud Customer Story"
+    url: "https://cloud.google.com/customers/gordon-food-service"
+    type: "case-study"
 ---
 
 ## The Challenge
@@ -33,6 +40,3 @@ This work was featured as an official **Google Cloud Customer Story**, highlight
 
 > "We went from four releases a year to multiple releases a day. That's not just a technology change, that's a culture change."
 
-**Case Studies:**
-- [Valtech: Digital Transformation](https://www.valtech.com/en-us/work/gordon-food-service/)
-- [Google Cloud Customer Story](https://cloud.google.com/customers/gordon-food-service)

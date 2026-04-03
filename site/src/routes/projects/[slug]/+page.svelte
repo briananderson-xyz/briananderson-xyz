@@ -2,6 +2,7 @@
   import SEO from "$lib/components/SEO.svelte";
   import ImageGallery from "$lib/components/ImageGallery.svelte";
   import VisualArchive from "$lib/components/VisualArchive.svelte";
+  import ProjectLinks from "$lib/components/ProjectLinks.svelte";
   import type { ContentMetadata } from "$lib/utils/content-loader";
 
   interface Props {
@@ -26,6 +27,10 @@
         {@html data.html}
       </div>
     </ImageGallery>
+
+    {#if data.metadata.links?.length}
+      <ProjectLinks links={data.metadata.links} />
+    {/if}
 
     {#if data.metadata.visualArchive?.images?.length}
       <VisualArchive images={data.metadata.visualArchive.images} />

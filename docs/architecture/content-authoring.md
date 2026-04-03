@@ -29,6 +29,20 @@ visualArchive:                # optional — drives the screenshot gallery
 - **Do not** embed raw HTML `<div>` galleries in the markdown body — use `visualArchive` frontmatter
 - Projects without `visualArchive` still work; `ImageGallery` auto-detects inline `<img>` tags in the prose
 
+## Links (projects and blog)
+
+Both projects and blog posts support a `links` frontmatter field rendered by `ProjectLinks.svelte` as a row of styled buttons below the prose.
+
+```yaml
+links:
+  - label: "Display text"
+    url: "https://..."
+    type: "case-study"   # case-study | github | live | article | docs
+```
+
+- `type` controls the icon (GitHub → `Github`, live → `Globe`, everything else → `ExternalLink`)
+- **Do not** put external link lists in the markdown prose — use `links` frontmatter instead
+
 ## Adding a Blog Post
 
-Create `content/blog/<slug>.md` with the same frontmatter fields (`title`, `date`, `summary`, `tags`, `keywords`). Blog posts do not support `visualArchive` — use inline markdown images instead (they will be lightbox-clickable via `ImageGallery`).
+Create `content/blog/<slug>.md` with the same frontmatter fields (`title`, `date`, `summary`, `tags`, `keywords`, and optionally `links`). Blog posts do not support `visualArchive` — use inline markdown images instead (they will be lightbox-clickable via `ImageGallery`).

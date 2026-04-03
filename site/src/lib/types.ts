@@ -1,3 +1,9 @@
+export interface ProjectLink {
+	label: string;
+	url: string;
+	type?: 'case-study' | 'github' | 'live' | 'article' | 'docs';
+}
+
 export interface VisualArchiveImage {
 	path: string;
 	alt: string;
@@ -17,6 +23,7 @@ export interface ContentMetadata {
 	visualArchive?: {
 		images: VisualArchiveImage[];
 	};
+	links?: ProjectLink[];
 }
 
 export interface ContentItem {

@@ -103,3 +103,50 @@ test.describe('Project Detail - Visual Archive', () => {
     await expect(galleryButtons).toHaveCount(5);
   });
 });
+
+test.describe('Project Detail - Links', () => {
+  test('shows links section when links frontmatter is set', async ({ page }) => {
+    await page.goto('/projects/discover-trident/');
+    await page.waitForLoadState('networkidle');
+    await expect(page.getByText('./links')).toBeVisible();
+  });
+
+  test('renders link as an anchor with correct href', async ({ page }) => {
+    await page.goto('/projects/discover-trident/');
+    await page.waitForLoadState('networkidle');
+    const link = page.locator('section.not-prose a', { hasText: 'Valtech Case Study' });
+    await expect(link).toBeVisible();
+    await expect(link).toHaveAttribute('href', 'https://www.valtech.com/en-us/work/discover/');
+    await expect(link).toHaveAttribute('target', '_blank');
+  });
+
+  test('gfs ordering shows multiple links', async ({ page }) => {
+    await page.goto('/projects/gfs-ordering-platform/');
+    await page.waitForLoadState('networkidle');
+    await expect(page.getByText('./links')).toBeVisible();
+    const links = page.locator('section.not-prose a');
+    await expect(links).toHaveCount(2);
+  });
+
+  test('project without links does not show links section', async ({ page }) => {
+    await page.goto('/projects/fairview-childrens-center/');
+    await page.waitForLoadState('networkidle');
+    await expect(page.getByText('./links')).not.toBeVisible();
+  });
+});
+
+test.describe('Blog Detail - Links', () => {
+  test('shows links section on blog post with links frontmatter', async ({ page }) => {
+    await page.goto('/blog/building-this-site/');
+    await page.waitForLoadState('networkidle');
+    await expect(page.getByText('./links')).toBeVisible();
+  });
+
+  test('renders github links correctly', async ({ page }) => {
+    await page.goto('/blog/building-this-site/');
+    await page.waitForLoadState('networkidle');
+    const links = page.locator('section.not-prose a');
+    await expect(links).toHaveCount(2);
+    await expect(links.first()).toHaveAttribute('href', /github\.com/);
+  });
+});

@@ -5,6 +5,10 @@ summary: "Standardizing GCP infrastructure and CI/CD pipelines at scale."
 tags: ["Terraform", "IaC", "GCP", "DevOps", "PlatformEngineering", "Ops"]
 keywords: ["gfs", "gordon-food-service", "icds", "cloud-enablement"]
 showTableOfContents: true
+links:
+  - label: "Valtech Case Study"
+    url: "https://www.valtech.com/work/gordon-food-service-data-modernization/"
+    type: "case-study"
 ---
 
 ## The Challenge
@@ -32,5 +36,3 @@ I joined as a **Senior Technical Principal** leading the cloud enablement strate
 
 ICDS is the kind of project that doesn't always get visibility. Platform engineering rarely does. But everything that followed at GFS, including the ordering platform modernization and its recognition as a Google Cloud Customer Story, was built on top of what we established here.
 
-**Case Study:**
-- [Valtech: Data Modernization & Infrastructure](https://www.valtech.com/work/gordon-food-service-data-modernization/)
