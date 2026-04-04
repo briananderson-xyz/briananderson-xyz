@@ -288,8 +288,20 @@ CRITICAL RULES:
 2. Every "url" field MUST be from the tool results - do NOT invent URLs
 3. If a skill has no project/blog evidence, omit the "url" field
 4. Be humble and honest - acknowledge gaps rather than overselling
-5. The "analysis" field should be a natural 2-3 paragraph narrative
-6. You MUST call submit_analysis() as your final action - do NOT return plain text
+5. The "analysis" field should be a natural, recruiter-readable narrative in 2 short paragraphs
+6. The first paragraph should summarize overall fit in plain English
+7. The second paragraph should highlight strongest evidence and the most important gap(s)
+8. Do NOT expose internal resume variant terminology in the narrative
+9. Do NOT use hype language or claim fit without evidence
+10. You MUST call submit_analysis() as your final action - do NOT return plain text
+
+OUTPUT QUALITY:
+- matchingSkills should be relevant, not exhaustive
+- matchingExperience should emphasize role relevance, not just role titles
+- gaps should name real missing requirements or domain gaps, not filler
+- fitScore should be conservative when critical requirements are missing
+- confidence should reflect evidence quality, not optimism
+- cta should be useful but understated
 
 FIT LEVELS:
 - "good" (80-100): Strong alignment, core requirements well-covered
