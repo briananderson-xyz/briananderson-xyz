@@ -26,6 +26,141 @@ const MAX_FIT_FINDER_TOOL_ITERATIONS = 10;
 let contentIndexCache: ContentIndex | null = null;
 let contentIndexVersion: string | null = null;
 
+function unique<T>(values: T[]): T[] {
+	return [...new Set(values)];
+}
+
+function detectRoleFamily(jobDescription: string): 'leader' | 'ops' | 'builder' {
+	const lower = jobDescription.toLowerCase();
+
+	const builderSignals = [
+		'full stack', 'full-stack', 'typescript', 'javascript', 'react', 'node', 'product',
+		'developer workflow', 'developer productivity', 'application engineer', 'frontend', 'backend'
+	];
+	const opsSignals = [
+		'platform', 'devops', 'sre', 'kubernetes', 'terraform', 'infrastructure',
+		'ci/cd', 'cloud', 'migration', 'reliability'
+	];
+	const leaderSignals = [
+		'architect', 'strategy', 'director', 'leadership', 'transformation',
+		'enterprise', 'stakeholder', 'multi-team'
+	];
+
+	const hasBuilder = builderSignals.some((signal) => lower.includes(signal));
+	const hasOps = opsSignals.some((signal) => lower.includes(signal));
+	const hasLeader = leaderSignals.some((signal) => lower.includes(signal));
+
+	if (hasBuilder && !hasOps) return 'builder';
+	if (hasOps && !hasBuilder) return 'ops';
+	if (hasLeader && !hasBuilder && !hasOps) return 'leader';
+	if (hasBuilder) return 'builder';
+	if (hasOps) return 'ops';
+	return 'leader';
+}
+
+function getRoleKeywords(roleFamily: 'leader' | 'ops' | 'builder', jobDescription: string): string[] {
+	const lower = jobDescription.toLowerCase();
+	const common = [];
+
+	if (lower.includes('ai')) common.push('ai');
+	if (lower.includes('developer')) common.push('developer');
+	if (lower.includes('workflow')) common.push('workflow');
+	if (lower.includes('typescript')) common.push('typescript');
+	if (lower.includes('node')) common.push('node');
+	if (lower.includes('react')) common.push('react');
+	if (lower.includes('kubernetes')) common.push('kubernetes');
+	if (lower.includes('aws')) common.push('aws');
+	if (lower.includes('terraform')) common.push('terraform');
+	if (lower.includes('product')) common.push('product');
+
+	const roleKeywords = {
+		leader: ['architecture', 'enterprise', 'leadership', 'strategy', 'transformation'],
+		ops: ['platform', 'cloud', 'kubernetes', 'terraform', 'migration', 'ci/cd'],
+		builder: ['typescript', 'node', 'developer', 'workflow', 'product', 'ai']
+	}[roleFamily];
+
+	return unique([...roleKeywords, ...common]);
+}
+
+function buildFallbackFitAnalysis(
+	contentTools: ContentTools,
+	jobDescription: string,
+	variantHint: 'leader' | 'ops' | 'builder'
+): Record<string, unknown> {
+	const roleFamily = detectRoleFamily(jobDescription);
+	const keywords = getRoleKeywords(roleFamily, jobDescription);
+	const skillResults = contentTools.searchSkills(keywords).slice(0, 6);
+	const experienceResults = contentTools.searchExperience(keywords).slice(0, 4);
+
+	const matchingSkills = skillResults.map((skill) => ({
+		name: skill.name,
+		context: skill.category
+	}));
+
+	const matchingExperience = experienceResults.map((exp) => ({
+		role: exp.role,
+		company: exp.company,
+		dateRange: exp.dateRange,
+		relevance: exp.highlights[0] || exp.description
+	}));
+
+	const gaps: string[] = [];
+	const lower = jobDescription.toLowerCase();
+
+	if (lower.includes('react')) {
+		gaps.push('React-specific depth is not strongly evidenced in the current background data.');
+	}
+	if (lower.includes('healthcare') || lower.includes('clinical')) {
+		gaps.push('Direct healthcare or clinical domain experience is not evident.');
+	}
+	if (lower.includes('phd') || lower.includes('research scientist')) {
+		gaps.push('Research-oriented academic credentials are not evident.');
+	}
+	if (lower.includes('terraform') && !keywords.includes('terraform')) {
+		gaps.push('Terraform-specific evidence is limited in the available background data.');
+	}
+
+	if (matchingExperience.length === 0) {
+		gaps.push('The strongest matching experience is limited for this role based on the current evidence.');
+	}
+
+	const resumeVariantRecommendation =
+		roleFamily === 'builder' || roleFamily === 'ops' || roleFamily === 'leader'
+			? roleFamily
+			: variantHint;
+
+	const fitScore = Math.max(
+		15,
+		Math.min(
+			85,
+			30 + matchingSkills.length * 6 + matchingExperience.length * 8 - gaps.length * 8
+		)
+	);
+
+	const fitLevel = fitScore >= 80 ? 'good' : fitScore >= 50 ? 'maybe' : 'not';
+	const confidence = matchingExperience.length >= 2 ? 'medium' : 'low';
+
+	const analysis = [
+		`Brian looks like a ${fitLevel === 'good' ? 'strong' : fitLevel === 'maybe' ? 'partial' : 'limited'} fit for this role based on the currently available evidence. The strongest overlap is in ${roleFamily === 'builder' ? 'application engineering, TypeScript-adjacent delivery, and AI-enabled developer workflow work' : roleFamily === 'ops' ? 'platform engineering, cloud modernization, and delivery systems' : 'architecture, enterprise modernization, and technical leadership'}.`,
+		`The clearest supporting evidence comes from ${matchingExperience.length > 0 ? `${matchingExperience[0].role} at ${matchingExperience[0].company}` : 'Brian’s broader resume summary'}, while the biggest gaps are ${gaps.length > 0 ? gaps.slice(0, 2).join(' ') : 'relatively minor based on the current requirements'}.`
+	].join('\n\n');
+
+	return {
+		fitScore,
+		fitLevel,
+		confidence,
+		matchingSkills,
+		matchingExperience,
+		gaps,
+		analysis,
+		resumeVariantRecommendation,
+		cta: {
+			text: 'Connect with Brian',
+			link: '/contact/'
+		}
+	};
+}
+
 /**
  * Fetch content index using versioned approach to avoid stale cache
  */
@@ -396,6 +531,25 @@ FIT LEVELS:
 
 		} catch (error) {
 			console.error('Fit finder error:', error);
+			try {
+				const { jobDescription, variant = 'leader' }: FitFinderRequest = req.body;
+				const contentIndex = await fetchContentIndex();
+				if (contentIndex && jobDescription) {
+					const fallbackAnalysis = buildFallbackFitAnalysis(
+						new ContentTools(contentIndex),
+						jobDescription,
+						variant
+					);
+					res.set(corsHeaders);
+					res.status(200).json({
+						analysis: fallbackAnalysis,
+						fallback: true
+					});
+					return;
+				}
+			} catch (fallbackError) {
+				console.error('Fit finder fallback error:', fallbackError);
+			}
 			res.status(500).json({ error: 'Internal server error' });
 		}
 	}
