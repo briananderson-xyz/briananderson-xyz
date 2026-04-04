@@ -320,18 +320,18 @@
 								</div>
 
 								{#if analysis.resumeVariantRecommendation}
-									<div class="mt-4 p-3 bg-terminal-green/10 border border-terminal-green/30 rounded">
-										<p class="text-sm">
-											<strong class="text-terminal-green">→ View Full Resume:</strong>
-											<a
-												href="/{analysis.resumeVariantRecommendation === 'leader' ? '' : analysis.resumeVariantRecommendation + '/'}resume/"
-												class="text-terminal-green hover:underline ml-1"
-												onclick={handleResumeClick}
-											>
-												{analysis.resumeVariantRecommendation === 'leader' ? 'Leadership' : analysis.resumeVariantRecommendation === 'ops' ? 'Operations' : 'Builder'} Resume
-											</a>
-										</p>
-									</div>
+										<div class="mt-4 p-3 bg-terminal-green/10 border border-terminal-green/30 rounded">
+											<p class="text-sm">
+												<strong class="text-terminal-green">→ Resume:</strong>
+												<a
+													href="/{analysis.resumeVariantRecommendation === 'leader' ? '' : analysis.resumeVariantRecommendation + '/'}resume/"
+													class="text-terminal-green hover:underline ml-1"
+													onclick={handleResumeClick}
+												>
+													Resume
+												</a>
+											</p>
+										</div>
 								{/if}
 							</div>
 						{/if}

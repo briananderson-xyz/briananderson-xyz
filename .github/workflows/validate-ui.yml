@@ -73,6 +73,22 @@ jobs:
         working-directory: site
         run: pnpm run test:posthog
 
+      - name: Run AI evals
+        working-directory: site
+        continue-on-error: true
+        env:
+          AI_EVAL_REPORT_PATH: artifacts/ai-evals-pr.json
+        run: pnpm run test:ai
+
+      - name: Upload AI eval report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-eval-report
+          path: site/artifacts/ai-evals-pr.json
+          if-no-files-found: ignore
+          retention-days: 7
+
       - name: Upload build output
         uses: actions/upload-artifact@v4
         with:

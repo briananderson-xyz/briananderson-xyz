@@ -11,6 +11,7 @@
 
 import fs from 'fs';
 import path from 'path';
+import { spawnSync } from 'child_process';
 
 const COLORS = {
   reset: '\x1b[0m',
@@ -395,6 +396,17 @@ async function validateContentSignals() {
   return { passed, total };
 }
 
+function runAIEval(configPath) {
+  info(`Running AI eval config: ${configPath}`);
+
+  const result = spawnSync('node', ['scripts/run-ai-evals.js', configPath], {
+    stdio: 'inherit',
+    env: process.env
+  });
+
+  return result.status === 0;
+}
+
 async function main() {
   info('\n=== AI Compatibility Validation ===\n');
 
@@ -408,8 +420,15 @@ async function main() {
     validateContentSignals()
   ]);
 
-  const totalPassed = results.reduce((sum, r) => sum + r.passed, 0);
-  const totalTests = results.reduce((sum, r) => sum + r.total, 0);
+  section('=== AI Behavior Evals ===');
+  const chatEvalPassed = runAIEval('ai-evals/chat.promptfoo.yaml');
+  const fitFinderEvalPassed = runAIEval('ai-evals/fit-finder.promptfoo.yaml');
+
+  const totalPassed =
+    results.reduce((sum, r) => sum + r.passed, 0) +
+    (chatEvalPassed ? 1 : 0) +
+    (fitFinderEvalPassed ? 1 : 0);
+  const totalTests = results.reduce((sum, r) => sum + r.total, 0) + 2;
 
   section('=== Summary ===');
   info(`Passed: ${totalPassed}/${totalTests}`);

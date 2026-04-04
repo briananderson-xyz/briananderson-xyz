@@ -18,6 +18,7 @@
     "test:posthog": "node scripts/validate-posthog.js",
     "test:resumes": "tsx scripts/validate-resumes.ts",
     "test:ai": "node scripts/validate-ai.js",
+    "test:ai:evals": "node scripts/run-ai-evals.js ai-evals/chat.promptfoo.yaml ai-evals/fit-finder.promptfoo.yaml",
     "test:content-index": "tsx scripts/validate-content-index.ts",
     "test:api": "node scripts/validate-api-endpoints.js",
     "test:e2e": "pnpm exec playwright test",
