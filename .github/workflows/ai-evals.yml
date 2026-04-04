@@ -18,7 +18,7 @@ on:
       judge_provider:
         description: "Optional judge provider"
         required: false
-        default: "none"
+        default: "openai"
         type: choice
         options:
           - none
@@ -27,7 +27,7 @@ on:
       judge_model:
         description: "Optional judge model name"
         required: false
-        default: ""
+        default: "gpt-5-mini"
         type: string
 
 jobs:
