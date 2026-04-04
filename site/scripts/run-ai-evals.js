@@ -181,6 +181,11 @@ async function runConfig(configPath) {
 
   let passed = 0;
   let total = 0;
+  let hardPassed = 0;
+  let hardTotal = 0;
+  let judgePassed = 0;
+  let judgeTotal = 0;
+  let judgeSkipped = 0;
 
   const tests = [];
   for (const testCase of config.tests || []) {
@@ -196,9 +201,13 @@ async function runConfig(configPath) {
       const assertionDetails = [];
       for (const assertion of testCase.assert || []) {
         if (assertion.type === "javascript") {
+          hardTotal++;
           const fn = new Function("output", "context", assertion.value);
           const ok = Boolean(fn(output, { vars, testCase, prompt }));
           assertionDetails.push({ type: assertion.type, ok });
+          if (ok) {
+            hardPassed++;
+          }
           if (!ok) {
             assertionsPassed = false;
             break;
@@ -207,6 +216,7 @@ async function runConfig(configPath) {
         }
 
         if (assertion.type === "llm-rubric") {
+          judgeTotal++;
           const judgment = await runJudgeAssertion(assertion, {
             vars,
             testCase,
@@ -215,8 +225,12 @@ async function runConfig(configPath) {
           });
           if (judgment.skipped) {
             skipCount++;
+            judgeSkipped++;
             assertionDetails.push({ type: assertion.type, skipped: true, reason: judgment.reason });
             continue;
+          }
+          if (judgment.ok) {
+            judgePassed++;
           }
           assertionDetails.push({
             type: assertion.type,
@@ -267,7 +281,16 @@ description: testCase.description,
     }
   }
 
-  return { passed, total, tests };
+  return {
+    passed,
+    total,
+    tests,
+    hardPassed,
+    hardTotal,
+    judgePassed,
+    judgeTotal,
+    judgeSkipped,
+  };
 }
 
 async function main() {
@@ -284,9 +307,16 @@ async function main() {
 
   let totalPassed = 0;
   let totalTests = 0;
+  let totalHardPassed = 0;
+  let totalHardTests = 0;
+  let totalJudgePassed = 0;
+  let totalJudgeTests = 0;
+  let totalJudgeSkipped = 0;
   const report = {
     endpointBaseUrl: process.env.AI_EVAL_BASE_URL || "https://api.briananderson.xyz",
     generatedAt: new Date().toISOString(),
+    judgeProvider: judgeProvider || null,
+    judgeEnabled: Boolean(judgeProvider && hasJudgeConfig()),
     configs: [],
   };
 
@@ -294,15 +324,29 @@ async function main() {
     const result = await runConfig(configPath);
     totalPassed += result.passed;
     totalTests += result.total;
+    totalHardPassed += result.hardPassed;
+    totalHardTests += result.hardTotal;
+    totalJudgePassed += result.judgePassed;
+    totalJudgeTests += result.judgeTotal;
+    totalJudgeSkipped += result.judgeSkipped;
     report.configs.push({
       path: configPath,
       passed: result.passed,
       total: result.total,
+      hardPassed: result.hardPassed,
+      hardTotal: result.hardTotal,
+      judgePassed: result.judgePassed,
+      judgeTotal: result.judgeTotal,
+      judgeSkipped: result.judgeSkipped,
       tests: result.tests,
     });
   }
 
   info(`AI eval summary: ${totalPassed}/${totalTests}`);
+  info(`Hard checks: ${totalHardPassed}/${totalHardTests}`);
+  if (totalJudgeTests > 0 || totalJudgeSkipped > 0) {
+    info(`Judge checks: ${totalJudgePassed}/${totalJudgeTests} passed, ${totalJudgeSkipped} skipped`);
+  }
   if (reportPath) {
     fs.mkdirSync(path.dirname(reportPath), { recursive: true });
     fs.writeFileSync(
@@ -312,6 +356,13 @@ async function main() {
           ...report,
           passed: totalPassed,
           total: totalTests,
+          summary: {
+            hardPassed: totalHardPassed,
+            hardTotal: totalHardTests,
+            judgePassed: totalJudgePassed,
+            judgeTotal: totalJudgeTests,
+            judgeSkipped: totalJudgeSkipped,
+          },
         },
         null,
         2
