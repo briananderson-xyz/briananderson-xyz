@@ -5,10 +5,11 @@ import { dev } from '$app/environment';
 export const POST: RequestHandler = async ({ request, fetch }) => {
 	try {
 		const body = await request.json();
+		const emulatorProjectId = process.env.FIREBASE_EMULATOR_PROJECT_ID || 'demo-no-project';
 
 		// Use local emulator in dev, Cloudflare Worker proxy in production
 		const functionUrl = dev
-			? 'http://127.0.0.1:5001/briananderson-xyz/us-central1/fitFinder'
+			? `http://127.0.0.1:5001/${emulatorProjectId}/us-central1/fitFinder`
 			: 'https://api.briananderson.xyz/fit-finder';
 
 		const response = await fetch(functionUrl, {

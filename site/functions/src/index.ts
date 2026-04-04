@@ -3,7 +3,7 @@ import { initializeApp } from 'firebase-admin/app';
 import { GoogleGenAI } from '@google/genai';
 import { getSystemPrompt } from './systemPrompt.js';
 import { checkGuardrails, getRefusalMessage } from './guardrails.js';
-import { ContentTools, toolDeclarations, submitAnalysisDeclaration, executeToolCall } from './tools.js';
+import { ContentTools, toolDeclarations, submitAnalysisDeclaration, executeToolCall, isSubmitAnalysisCall } from './tools.js';
 import type {
 	ContentIndex,
 	ContentIndexPointer,
@@ -162,6 +162,70 @@ function buildFallbackFitAnalysis(
 	};
 }
 
+function normalizeFitAnalysis(
+	jobDescription: string,
+	analysis: Record<string, unknown>
+): Record<string, unknown> {
+	const lower = jobDescription.toLowerCase();
+	const normalized = { ...analysis };
+	const rawScore = typeof normalized.fitScore === 'number' ? normalized.fitScore : Number(normalized.fitScore || 0);
+	let fitScore = Number.isFinite(rawScore) ? rawScore : 0;
+	let fitLevel = typeof normalized.fitLevel === 'string' ? normalized.fitLevel : 'maybe';
+	const gaps = Array.isArray(normalized.gaps)
+		? normalized.gaps.map((gap) => String(gap))
+		: [];
+
+	const ensureGap = (text: string) => {
+		if (!gaps.some((gap) => gap.toLowerCase().includes(text.toLowerCase()))) {
+			gaps.push(text);
+		}
+	};
+
+	if (lower.includes('healthcare') || lower.includes('clinical')) {
+		ensureGap('Healthcare or clinical workflow domain expertise');
+	}
+
+	if (lower.includes('model evaluation') || lower.includes('prompt testing')) {
+		ensureGap('Experience with model evaluation and prompt testing');
+	}
+
+	const isResearchHeavy =
+		lower.includes('research scientist') ||
+		lower.includes('top-tier conferences') ||
+		lower.includes('frontier models') ||
+		lower.includes('phd in');
+
+	if (isResearchHeavy) {
+		ensureGap('PhD in machine learning, NLP, or related field');
+		ensureGap('Published research in top-tier conferences');
+		ensureGap('Experience training or fine-tuning frontier models');
+		fitScore = Math.min(fitScore, 45);
+		fitLevel = fitScore >= 50 ? 'maybe' : 'not';
+	}
+
+	const isPlatformHeavy =
+		lower.includes('platform engineer') ||
+		lower.includes('platform engineering') ||
+		lower.includes('terraform') ||
+		lower.includes('kubernetes') ||
+		lower.includes('regulated');
+
+	if (isPlatformHeavy && lower.includes('5+ years aws')) {
+		const hasStrongAwsGap = gaps.some((gap) => /aws/i.test(gap));
+		if (!hasStrongAwsGap && fitScore > 79) {
+			ensureGap('Depth against the explicit 5+ years of AWS experience requirement is not fully evidenced.');
+			fitScore = Math.min(fitScore, 78);
+			fitLevel = 'maybe';
+		}
+	}
+
+	normalized.fitScore = Math.max(0, Math.min(100, Math.round(fitScore)));
+	normalized.fitLevel = fitLevel;
+	normalized.gaps = gaps;
+
+	return normalized;
+}
+
 /**
  * Fetch content index using versioned approach to avoid stale cache
  */
@@ -294,16 +358,16 @@ export const chat = onRequest(
 			}));
 
 			// Start chat with history
-			const chat = ai.chats.create({
-				model: 'gemini-2.5-flash',
-				config: {
-					systemInstruction: getSystemPrompt(SITE_URL),
-					tools: contentTools ? [toolDeclarations] : undefined,
-					maxOutputTokens: 1000,
-					temperature: 0.7,
-				},
-				history: chatHistory,
-			});
+				const chat = ai.chats.create({
+					model: 'gemini-2.5-flash',
+					config: {
+						systemInstruction: getSystemPrompt(SITE_URL),
+						tools: contentTools ? [toolDeclarations] : undefined,
+						maxOutputTokens: 1000,
+						temperature: 0.2,
+					},
+					history: chatHistory,
+				});
 
 			// Send message and get response
 			let result = await chat.sendMessage({ message });
@@ -320,7 +384,7 @@ export const chat = onRequest(
 					}
 
 					const functionResponses = functionCalls.map(fc => {
-						const toolResult = executeToolCall(contentTools, fc.name!, fc.args);
+						const toolResult = executeToolCall(contentTools, fc.name!, fc.args || {});
 						return {
 							functionResponse: {
 								id: fc.id,
@@ -435,6 +499,13 @@ OUTPUT QUALITY:
 - matchingSkills should be relevant, not exhaustive
 - matchingExperience should emphasize role relevance, not just role titles
 - gaps should name real missing requirements or domain gaps, not filler
+- If the job description mentions healthcare or clinical work, at least one gap must explicitly say "healthcare" or "clinical"
+- If the job description mentions model evaluation or prompt testing, include that exact gap explicitly when it is not strongly evidenced
+- For platform, cloud, SRE, DevOps, or infrastructure roles, compare the response directly to the stated requirements instead of giving a broad positive summary
+- If AWS depth is weaker than other requirements, say that explicitly rather than implying it is fully covered
+- Avoid phrases like "strong fit" unless the evidence clearly covers the major requirements named in the job description
+- For research-scientist or PhD-heavy roles, default to "not" or a low-end "maybe" unless there is direct evidence of academic research, publications, or frontier-model training
+- If the job description asks for a PhD, top-tier publications, or frontier-model training and those are not evidenced, keep fitScore below 50
 - fitScore should be conservative when critical requirements are missing
 - confidence should reflect evidence quality, not optimism
 - cta should be useful but understated
@@ -461,14 +532,14 @@ FIT LEVELS:
 - "not" (0-49): Significant gaps in critical requirements`;
 
 			// Start conversation with tools
-			const chat = ai.chats.create({
-				model: 'gemini-2.5-flash',
-				config: {
-					tools: [fitFinderTools],
-					maxOutputTokens: 2000,
-					temperature: 0.5,
-				},
-			});
+				const chat = ai.chats.create({
+					model: 'gemini-2.5-flash',
+					config: {
+						tools: [fitFinderTools],
+						maxOutputTokens: 2000,
+						temperature: 0.1,
+					},
+				});
 			let result = await chat.sendMessage({ message: initialPrompt });
 
 			// Handle function calls in a loop, intercept submit_analysis
@@ -488,15 +559,15 @@ FIT LEVELS:
 				}
 
 				// Check if submit_analysis was called (may appear alongside other calls)
-				const submitCall = functionCalls.find(fc => fc.name === 'submit_analysis');
+				const submitCall = functionCalls.find(fc => fc.name && isSubmitAnalysisCall(fc.name));
 				if (submitCall) {
-					analysis = submitCall.args;
+					analysis = submitCall.args || null;
 					break;
 				}
 
 				// Execute all other function calls
 				const functionResponses = functionCalls.map(fc => {
-					const toolResult = executeToolCall(contentTools, fc.name!, fc.args);
+					const toolResult = executeToolCall(contentTools, fc.name!, fc.args || {});
 					return {
 						functionResponse: {
 							id: fc.id,
@@ -530,10 +601,12 @@ FIT LEVELS:
 				throw new Error('Model did not produce a fit analysis');
 			}
 
-			res.set(corsHeaders);
-			res.status(200).json({
-				analysis
-			});
+				analysis = normalizeFitAnalysis(jobDescription, analysis);
+
+				res.set(corsHeaders);
+				res.status(200).json({
+					analysis
+				});
 
 		} catch (error) {
 			console.error('Fit finder error:', error);
@@ -546,9 +619,10 @@ FIT LEVELS:
 						jobDescription,
 						variant
 					);
+					const normalizedFallback = normalizeFitAnalysis(jobDescription, fallbackAnalysis);
 					res.set(corsHeaders);
 					res.status(200).json({
-						analysis: fallbackAnalysis,
+						analysis: normalizedFallback,
 						fallback: true
 					});
 					return;

@@ -64,10 +64,13 @@ function extractJsonObject(text) {
 
 function parseJudgeOutput(text) {
   const parsed = JSON.parse(extractJsonObject(text));
+  const normalized = parsed?.structured_output && typeof parsed.structured_output === "object"
+    ? parsed.structured_output
+    : parsed;
   return {
-    pass: Boolean(parsed.pass),
-    score: Number(parsed.score),
-    summary: String(parsed.summary || "").trim(),
+    pass: Boolean(normalized.pass),
+    score: Number(normalized.score),
+    summary: String(normalized.summary || "").trim(),
   };
 }
 
@@ -102,6 +105,10 @@ function loadProvider(providerRef, configDir) {
 
 function hasJudgeConfig() {
   if (judgeProvider === "codex") {
+    return true;
+  }
+
+  if (judgeProvider === "claude") {
     return true;
   }
 
@@ -266,6 +273,55 @@ async function runJudgeAssertion(assertion, context) {
 
     const outputText = fs.readFileSync(outputPath, "utf-8");
     const parsed = parseJudgeOutput(outputText);
+    const evaluated = evaluateJudgeResult(assertion, parsed);
+    return {
+      ok: evaluated.ok,
+      skipped: false,
+      reason: parsed.summary,
+      score: parsed.score,
+      minScore: evaluated.minScore,
+    };
+  }
+
+  if (judgeProvider === "claude") {
+    const schema = JSON.stringify({
+      type: "object",
+      additionalProperties: false,
+      properties: {
+        pass: { type: "boolean" },
+        score: { type: "number" },
+        summary: { type: "string" },
+      },
+      required: ["pass", "score", "summary"],
+    });
+
+    const result = spawnSync(
+      "claude",
+      [
+        "--print",
+        "--output-format",
+        "json",
+        "--json-schema",
+        schema,
+        "--permission-mode",
+        "dontAsk",
+        "--system-prompt",
+        "You grade AI responses. Return only the requested JSON object.",
+        prompt,
+      ],
+      {
+        cwd: process.cwd(),
+        encoding: "utf-8",
+      }
+    );
+
+    if (result.status !== 0) {
+      throw new Error(
+        `Claude judge failed with status ${result.status}: ${(result.stderr || result.stdout || "").trim()}`
+      );
+    }
+
+    const parsed = parseJudgeOutput(result.stdout);
     const evaluated = evaluateJudgeResult(assertion, parsed);
     return {
       ok: evaluated.ok,
