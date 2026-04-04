@@ -15,6 +15,20 @@ on:
         description: "Custom AI base URL, e.g. http://127.0.0.1:5173/api"
         required: false
         type: string
+      judge_provider:
+        description: "Optional judge provider"
+        required: false
+        default: "none"
+        type: choice
+        options:
+          - none
+          - openai
+          - anthropic
+      judge_model:
+        description: "Optional judge model name"
+        required: false
+        default: ""
+        type: string
 
 jobs:
   run-ai-evals:
@@ -53,6 +67,10 @@ jobs:
         env:
           AI_EVAL_BASE_URL: ${{ steps.target.outputs.base_url }}
           AI_EVAL_REPORT_PATH: artifacts/ai-evals-manual.json
+          AI_EVAL_JUDGE_PROVIDER: ${{ github.event.inputs.judge_provider != 'none' && github.event.inputs.judge_provider || '' }}
+          AI_EVAL_JUDGE_MODEL: ${{ github.event.inputs.judge_model }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: pnpm run test:ai:evals
 
       - name: Upload AI eval report
