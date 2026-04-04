@@ -3,9 +3,11 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+REPO_ROOT="$(cd "$ROOT_DIR/.." && pwd)"
 FUNCTIONS_DIR="$ROOT_DIR/functions"
 FUNCTIONS_ENV_FILE="$FUNCTIONS_DIR/.env.local"
 LOCAL_BASE_URL="${AI_EVAL_BASE_URL:-http://127.0.0.1:5173/api}"
+FIREBASE_EVAL_CONFIG="$REPO_ROOT/.firebase-ai-evals.json"
 EMULATOR_PID=""
 VITE_PID=""
 STARTED_EMULATOR=0
@@ -19,6 +21,8 @@ cleanup() {
   if [ -n "$EMULATOR_PID" ] && kill -0 "$EMULATOR_PID" 2>/dev/null; then
     kill "$EMULATOR_PID" 2>/dev/null || true
   fi
+
+  rm -f "$FIREBASE_EVAL_CONFIG"
 }
 
 trap cleanup EXIT INT TERM
@@ -43,7 +47,7 @@ wait_for_url() {
   local attempts="${3:-60}"
 
   for _ in $(seq 1 "$attempts"); do
-    if curl -sf "$url" >/dev/null 2>&1; then
+    if curl -s -o /dev/null --connect-timeout 1 --max-time 2 "$url"; then
       echo "$label is ready at $url"
       return 0
     fi
@@ -73,9 +77,34 @@ ensure_local_stack() {
     echo "Firebase Functions emulator already running"
   else
     echo "Starting Firebase Functions emulator..."
+    cat >"$FIREBASE_EVAL_CONFIG" <<EOF
+{
+  "functions": [
+    {
+      "source": "site/functions",
+      "codebase": "default",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log"
+      ]
+    }
+  ],
+  "emulators": {
+    "functions": {
+      "port": 5001
+    },
+    "ui": {
+      "enabled": false
+    }
+  }
+}
+EOF
     (
-      cd "$FUNCTIONS_DIR"
-      pnpm run serve >/tmp/brian-ai-evals-functions.log 2>&1
+      cd "$REPO_ROOT"
+      pnpm --dir "$FUNCTIONS_DIR" run build >/tmp/brian-ai-evals-functions.log 2>&1
+      pnpm --dir "$ROOT_DIR" exec firebase emulators:start --config "$FIREBASE_EVAL_CONFIG" --project demo-no-project --only functions >>/tmp/brian-ai-evals-functions.log 2>&1
     ) &
     EMULATOR_PID=$!
     STARTED_EMULATOR=1

@@ -16,6 +16,7 @@ test-results
 site/.env
 site/.env.local
 site/functions/.env.local
+site/functions/.secret.local
 
 # Local tool configs
 .claude/
