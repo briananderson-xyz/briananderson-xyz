@@ -8,6 +8,7 @@ import { createRequire } from "module";
 const require = createRequire(import.meta.url);
 const reportPath = process.env.AI_EVAL_REPORT_PATH;
 const judgeProvider = process.env.AI_EVAL_JUDGE_PROVIDER;
+const judgeModel = process.env.AI_EVAL_JUDGE_MODEL || null;
 
 const COLORS = {
   reset: "\x1b[0m",
@@ -39,6 +40,52 @@ function warn(message) {
 
 function renderTemplate(template, vars) {
   return template.replace(/\{\{\s*([\w.-]+)\s*\}\}/g, (_, key) => String(vars[key] ?? ""));
+}
+
+function extractJsonObject(text) {
+  if (!text || typeof text !== "string") {
+    return "{}";
+  }
+
+  const fencedMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/i);
+  if (fencedMatch?.[1]) {
+    return fencedMatch[1].trim();
+  }
+
+  const start = text.indexOf("{");
+  const end = text.lastIndexOf("}");
+  if (start !== -1 && end !== -1 && end > start) {
+    return text.slice(start, end + 1);
+  }
+
+  return text.trim();
+}
+
+function parseJudgeOutput(text) {
+  const parsed = JSON.parse(extractJsonObject(text));
+  return {
+    pass: Boolean(parsed.pass),
+    score: Number(parsed.score),
+    summary: String(parsed.summary || "").trim(),
+  };
+}
+
+function evaluateJudgeResult(assertion, judgment) {
+  const minScore = Number(assertion.threshold ?? assertion.minScore ?? 0);
+  const scoreOk = Number.isFinite(minScore) ? judgment.score >= minScore : true;
+  return {
+    ok: judgment.pass && scoreOk,
+    minScore,
+  };
+}
+
+function appendStepSummary(lines) {
+  const summaryPath = process.env.GITHUB_STEP_SUMMARY;
+  if (!summaryPath || !Array.isArray(lines) || lines.length === 0) {
+    return;
+  }
+
+  fs.appendFileSync(summaryPath, `${lines.join("\n")}\n`);
 }
 
 function loadProvider(providerRef, configDir) {
@@ -120,12 +167,14 @@ async function runJudgeAssertion(assertion, context) {
 
     const data = await response.json();
     const outputText = data.output_text || "{}";
-    const parsed = JSON.parse(outputText);
+    const parsed = parseJudgeOutput(outputText);
+    const evaluated = evaluateJudgeResult(assertion, parsed);
     return {
-      ok: Boolean(parsed.pass),
+      ok: evaluated.ok,
       skipped: false,
       reason: parsed.summary,
       score: parsed.score,
+      minScore: evaluated.minScore,
     };
   }
 
@@ -155,12 +204,14 @@ async function runJudgeAssertion(assertion, context) {
 
     const data = await response.json();
     const outputText = data.content?.[0]?.text || "{}";
-    const parsed = JSON.parse(outputText);
+    const parsed = parseJudgeOutput(outputText);
+    const evaluated = evaluateJudgeResult(assertion, parsed);
     return {
-      ok: Boolean(parsed.pass),
+      ok: evaluated.ok,
       skipped: false,
       reason: parsed.summary,
       score: parsed.score,
+      minScore: evaluated.minScore,
     };
   }
 
@@ -237,6 +288,7 @@ async function runConfig(configPath) {
             ok: judgment.ok,
             reason: judgment.reason,
             score: judgment.score,
+            minScore: judgment.minScore,
           });
           if (!judgment.ok) {
             assertionsPassed = false;
@@ -316,6 +368,7 @@ async function main() {
     endpointBaseUrl: process.env.AI_EVAL_BASE_URL || "https://api.briananderson.xyz",
     generatedAt: new Date().toISOString(),
     judgeProvider: judgeProvider || null,
+    judgeModel,
     judgeEnabled: Boolean(judgeProvider && hasJudgeConfig()),
     configs: [],
   };
@@ -347,6 +400,28 @@ async function main() {
   if (totalJudgeTests > 0 || totalJudgeSkipped > 0) {
     info(`Judge checks: ${totalJudgePassed}/${totalJudgeTests} passed, ${totalJudgeSkipped} skipped`);
   }
+
+  appendStepSummary([
+    "## AI Eval Summary",
+    `- Endpoint base URL: \`${report.endpointBaseUrl}\``,
+    `- Hard checks: \`${totalHardPassed}/${totalHardTests}\``,
+    `- Judge checks: \`${totalJudgePassed}/${totalJudgeTests}\` passed, \`${totalJudgeSkipped}\` skipped`,
+    `- Judge provider: \`${judgeProvider || "none"}\``,
+    `- Judge model: \`${judgeModel || "none"}\``,
+  ]);
+
+  for (const config of report.configs) {
+    const failingTests = config.tests.filter((test) => !test.passed);
+    if (failingTests.length === 0) {
+      continue;
+    }
+
+    appendStepSummary([
+      `### ${path.basename(config.path)}`,
+      ...failingTests.map((test) => `- Failed: ${test.description}${test.error ? ` — ${test.error}` : ""}`),
+    ]);
+  }
+
   if (reportPath) {
     fs.mkdirSync(path.dirname(reportPath), { recursive: true });
     fs.writeFileSync(
