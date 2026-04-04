@@ -24,6 +24,7 @@
     "test:ai:evals:local": "AI_EVAL_BASE_URL=http://127.0.0.1:5173/api AI_EVAL_REPORT_PATH=artifacts/ai-evals-local.json node scripts/run-ai-evals.js ai-evals/chat.promptfoo.yaml ai-evals/fit-finder.promptfoo.yaml",
     "test:ai:evals:local:chat": "AI_EVAL_BASE_URL=http://127.0.0.1:5173/api AI_EVAL_REPORT_PATH=artifacts/ai-evals-local-chat.json node scripts/run-ai-evals.js ai-evals/chat.promptfoo.yaml",
     "test:ai:evals:local:fit-finder": "AI_EVAL_BASE_URL=http://127.0.0.1:5173/api AI_EVAL_REPORT_PATH=artifacts/ai-evals-local-fit-finder.json node scripts/run-ai-evals.js ai-evals/fit-finder.promptfoo.yaml",
+    "test:ai:loop:local": "bash scripts/run-local-ai-evals.sh",
     "test:ai:evals:prod": "AI_EVAL_BASE_URL=https://api.briananderson.xyz AI_EVAL_REPORT_PATH=artifacts/ai-evals-prod.json node scripts/run-ai-evals.js ai-evals/chat.promptfoo.yaml ai-evals/fit-finder.promptfoo.yaml",
     "test:ai:evals:prod:chat": "AI_EVAL_BASE_URL=https://api.briananderson.xyz AI_EVAL_REPORT_PATH=artifacts/ai-evals-prod-chat.json node scripts/run-ai-evals.js ai-evals/chat.promptfoo.yaml",
     "test:ai:evals:prod:fit-finder": "AI_EVAL_BASE_URL=https://api.briananderson.xyz AI_EVAL_REPORT_PATH=artifacts/ai-evals-prod-fit-finder.json node scripts/run-ai-evals.js ai-evals/fit-finder.promptfoo.yaml",
