@@ -1,0 +1,105 @@
+description: Fit Finder feature evals
+providers:
+  - file://providers/fit-finder-provider.cjs
+
+prompts:
+  - "{{job_description}}"
+
+tests:
+  - description: Strong platform role shows evidence-backed fit
+    vars:
+      variant: ops
+      job_description: |
+        Senior Platform Engineer
+
+        Required:
+        - 5+ years AWS experience
+        - Kubernetes and container orchestration
+        - Infrastructure as Code with Terraform
+        - CI/CD and platform engineering background
+        - Experience leading migrations in regulated environments
+    assert:
+      - type: javascript
+        value: |
+          const result = JSON.parse(output);
+          return result.fitScore >= 65 &&
+            ['good', 'maybe'].includes(result.fitLevel) &&
+            Array.isArray(result.matchingExperience) &&
+            result.matchingExperience.some((entry) => entry.relevance && entry.relevance.length >= 20);
+
+  - description: Builder-oriented role surfaces builder-relevant evidence
+    vars:
+      variant: builder
+      job_description: |
+        Staff Full Stack Engineer
+
+        Required:
+        - TypeScript and React
+        - Node.js backend development
+        - Product-minded engineering
+        - Experience building AI-powered developer workflows
+    assert:
+      - type: javascript
+        value: |
+          const result = JSON.parse(output);
+          const lower = (result.analysis || '').toLowerCase();
+          return result.fitScore >= 50 &&
+            ['good', 'maybe'].includes(result.fitLevel) &&
+            (lower.includes('typescript') || lower.includes('developer') || lower.includes('ai'));
+
+  - description: Partially aligned AI role calls out meaningful gaps
+    vars:
+      variant: leader
+      job_description: |
+        AI Product Manager
+
+        Required:
+        - Shipped enterprise AI features
+        - Experience with model evaluation and prompt testing
+        - Healthcare or clinical workflow domain expertise
+        - Cross-functional leadership
+    assert:
+      - type: javascript
+        value: |
+          const result = JSON.parse(output);
+          return ['maybe', 'not'].includes(result.fitLevel) &&
+            Array.isArray(result.gaps) &&
+            result.gaps.length > 0 &&
+            result.gaps.some((gap) => /health|clinical|domain/i.test(gap));
+
+  - description: Unrelated clinical role is scored as not fit with gaps
+    vars:
+      variant: leader
+      job_description: |
+        Registered Nurse - ICU
+
+        Required:
+        - Current RN license
+        - ICU experience
+        - ACLS certification
+        - Patient care background
+    assert:
+      - type: javascript
+        value: |
+          const result = JSON.parse(output);
+          return result.fitLevel === 'not' && result.fitScore < 50 && Array.isArray(result.gaps) && result.gaps.length > 0;
+
+  - description: Research-heavy AI role does not overclaim fit
+    vars:
+      variant: leader
+      job_description: |
+        Applied AI Research Scientist
+
+        Required:
+        - PhD in machine learning, NLP, or related field
+        - Published research in top-tier conferences
+        - Experience training or fine-tuning frontier models
+        - Python-based research workflows
+    assert:
+      - type: javascript
+        value: |
+          const result = JSON.parse(output);
+          return result.fitScore < 80 &&
+            Array.isArray(result.gaps) &&
+            result.gaps.length > 0 &&
+            ['maybe', 'not'].includes(result.fitLevel);
