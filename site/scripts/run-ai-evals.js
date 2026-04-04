@@ -4,6 +4,7 @@ import fs from "fs";
 import path from "path";
 import yaml from "js-yaml";
 import { createRequire } from "module";
+import { spawnSync } from "child_process";
 
 const require = createRequire(import.meta.url);
 const reportPath = process.env.AI_EVAL_REPORT_PATH;
@@ -100,6 +101,10 @@ function loadProvider(providerRef, configDir) {
 }
 
 function hasJudgeConfig() {
+  if (judgeProvider === "codex") {
+    return true;
+  }
+
   if (judgeProvider === "openai") {
     return Boolean(process.env.OPENAI_API_KEY && process.env.AI_EVAL_JUDGE_MODEL);
   }
@@ -204,6 +209,62 @@ async function runJudgeAssertion(assertion, context) {
 
     const data = await response.json();
     const outputText = data.content?.[0]?.text || "{}";
+    const parsed = parseJudgeOutput(outputText);
+    const evaluated = evaluateJudgeResult(assertion, parsed);
+    return {
+      ok: evaluated.ok,
+      skipped: false,
+      reason: parsed.summary,
+      score: parsed.score,
+      minScore: evaluated.minScore,
+    };
+  }
+
+  if (judgeProvider === "codex") {
+    const schemaPath = path.join("/tmp", `codex-judge-schema-${process.pid}.json`);
+    const outputPath = path.join("/tmp", `codex-judge-output-${process.pid}.json`);
+    fs.writeFileSync(
+      schemaPath,
+      JSON.stringify({
+        type: "object",
+        additionalProperties: false,
+        properties: {
+          pass: { type: "boolean" },
+          score: { type: "number" },
+          summary: { type: "string" },
+        },
+        required: ["pass", "score", "summary"],
+      })
+    );
+
+    const result = spawnSync(
+      "codex",
+      [
+        "exec",
+        "--skip-git-repo-check",
+        "--sandbox",
+        "read-only",
+        "--color",
+        "never",
+        "--output-schema",
+        schemaPath,
+        "--output-last-message",
+        outputPath,
+        prompt,
+      ],
+      {
+        cwd: process.cwd(),
+        encoding: "utf-8",
+      }
+    );
+
+    if (result.status !== 0) {
+      throw new Error(
+        `Codex judge failed with status ${result.status}: ${(result.stderr || result.stdout || "").trim()}`
+      );
+    }
+
+    const outputText = fs.readFileSync(outputPath, "utf-8");
     const parsed = parseJudgeOutput(outputText);
     const evaluated = evaluateJudgeResult(assertion, parsed);
     return {
