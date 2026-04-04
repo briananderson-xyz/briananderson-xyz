@@ -34,8 +34,9 @@ function detectRoleFamily(jobDescription: string): 'leader' | 'ops' | 'builder' 
 	const lower = jobDescription.toLowerCase();
 
 	const builderSignals = [
-		'full stack', 'full-stack', 'typescript', 'javascript', 'react', 'node', 'product',
-		'developer workflow', 'developer productivity', 'application engineer', 'frontend', 'backend'
+		'full stack', 'full-stack', 'typescript', 'javascript', 'react', 'node',
+		'product-minded', 'product engineering', 'developer workflow', 'developer productivity',
+		'application engineer', 'frontend', 'backend'
 	];
 	const opsSignals = [
 		'platform', 'devops', 'sre', 'kubernetes', 'terraform', 'infrastructure',
@@ -71,7 +72,7 @@ function getRoleKeywords(roleFamily: 'leader' | 'ops' | 'builder', jobDescriptio
 	if (lower.includes('kubernetes')) common.push('kubernetes');
 	if (lower.includes('aws')) common.push('aws');
 	if (lower.includes('terraform')) common.push('terraform');
-	if (lower.includes('product')) common.push('product');
+	if (lower.includes('product-minded') || lower.includes('product engineering')) common.push('product');
 
 	const roleKeywords = {
 		leader: ['architecture', 'enterprise', 'leadership', 'strategy', 'transformation'],
@@ -142,7 +143,7 @@ function buildFallbackFitAnalysis(
 
 	const analysis = [
 		`Brian looks like a ${fitLevel === 'good' ? 'strong' : fitLevel === 'maybe' ? 'partial' : 'limited'} fit for this role based on the currently available evidence. The strongest overlap is in ${roleFamily === 'builder' ? 'application engineering, TypeScript-adjacent delivery, and AI-enabled developer workflow work' : roleFamily === 'ops' ? 'platform engineering, cloud modernization, and delivery systems' : 'architecture, enterprise modernization, and technical leadership'}.`,
-		`The clearest supporting evidence comes from ${matchingExperience.length > 0 ? `${matchingExperience[0].role} at ${matchingExperience[0].company}` : 'Brian’s broader resume summary'}, while the biggest gaps are ${gaps.length > 0 ? gaps.slice(0, 2).join(' ') : 'relatively minor based on the current requirements'}.`
+		`The clearest supporting evidence comes from ${matchingExperience.length > 0 ? `${matchingExperience[0].role} at ${matchingExperience[0].company}` : 'Brian’s broader resume summary'}, while the biggest gaps are ${gaps.length > 0 ? gaps.slice(0, 2).join(' ') : 'relatively minor based on the current requirements'}. Keep the recommendation measured rather than promotional.`
 	].join('\n\n');
 
 	return {
@@ -437,11 +438,16 @@ OUTPUT QUALITY:
 - fitScore should be conservative when critical requirements are missing
 - confidence should reflect evidence quality, not optimism
 - cta should be useful but understated
+- Avoid generic openings like "demonstrates strong capabilities" or "has a passion for"
+- Name the strongest evidence concretely using actual roles, projects, or tool-derived skills
+- If the role is only a partial match, say that plainly in the first sentence
+- Keep the narrative to 120-170 words total unless the role is unusually complex
 
 RESUME RECOMMENDATION:
 - Choose "leader" for architecture, strategy, transformation, multi-team leadership, and enterprise modernization roles
 - Choose "ops" for platform engineering, DevOps, SRE, cloud infrastructure, CI/CD, migrations, and operational excellence roles
 - Choose "builder" for full-stack engineering, TypeScript/JavaScript product development, developer tooling, application engineering, and AI-powered developer workflow roles
+- Do NOT choose "builder" solely because the role includes the word "product"; product management roles are usually better aligned to "leader" unless the evidence clearly points to hands-on application engineering
 - Treat the incoming variant "${variant}" as a soft hint only when the evidence is otherwise a close call
 - The recommendation must follow the role evidence, not the hint, when the fit is clearly stronger elsewhere
 
