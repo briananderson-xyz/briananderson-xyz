@@ -232,7 +232,7 @@ export const fitFinder = onRequest(
 		}
 
 		try {
-			const { jobDescription, variant: _variant = 'leader' }: FitFinderRequest = req.body;
+			const { jobDescription, variant = 'leader' }: FitFinderRequest = req.body;
 
 			if (!jobDescription || typeof jobDescription !== 'string') {
 				res.status(400).json({ error: 'Job description is required' });
@@ -302,6 +302,17 @@ OUTPUT QUALITY:
 - fitScore should be conservative when critical requirements are missing
 - confidence should reflect evidence quality, not optimism
 - cta should be useful but understated
+
+RESUME RECOMMENDATION:
+- Choose "leader" for architecture, strategy, transformation, multi-team leadership, and enterprise modernization roles
+- Choose "ops" for platform engineering, DevOps, SRE, cloud infrastructure, CI/CD, migrations, and operational excellence roles
+- Choose "builder" for full-stack engineering, TypeScript/JavaScript product development, developer tooling, application engineering, and AI-powered developer workflow roles
+- Treat the incoming variant "${variant}" as a soft hint only when the evidence is otherwise a close call
+- The recommendation must follow the role evidence, not the hint, when the fit is clearly stronger elsewhere
+
+BUILDER ROLE GUIDANCE:
+- If the role emphasizes TypeScript, Node.js, full-stack delivery, product-minded engineering, internal tools, or AI-powered developer workflows, actively look for builder-relevant evidence
+- In those cases, prefer citing application delivery, developer productivity work, and AI workflow implementation over broad platform modernization language
 
 FIT LEVELS:
 - "good" (80-100): Strong alignment, core requirements well-covered
