@@ -1,9 +1,15 @@
 <script lang="ts">
   import SEO from "$lib/components/SEO.svelte";
   import ImageGallery from "$lib/components/ImageGallery.svelte";
+  import VisualArchive from "$lib/components/VisualArchive.svelte";
+  import ProjectLinks from "$lib/components/ProjectLinks.svelte";
   import type { ContentMetadata } from "$lib/utils/content-loader";
 
-  export let data: { html: string | null; metadata: ContentMetadata };
+  interface Props {
+    data: { html: string | null; metadata: ContentMetadata };
+  }
+
+  let { data }: Props = $props();
 </script>
 
 {#if data?.html}
@@ -21,6 +27,14 @@
         {@html data.html}
       </div>
     </ImageGallery>
+
+    {#if data.metadata.links?.length}
+      <ProjectLinks links={data.metadata.links} />
+    {/if}
+
+    {#if data.metadata.visualArchive?.images?.length}
+      <VisualArchive images={data.metadata.visualArchive.images} />
+    {/if}
   </article>
 {:else}
   <div class="max-w-3xl mx-auto px-4 py-16 font-mono text-skin-muted">

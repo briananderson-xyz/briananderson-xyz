@@ -74,27 +74,27 @@
     <article>
       <!-- Terminal Window -->
       <div
-        class="bg-terminal-black border border-zinc-700 shadow-2xl overflow-hidden rounded-t-lg"
+        class="bg-terminal-black border border-terminal-border shadow-2xl overflow-hidden rounded-t-lg"
       >
         <!-- Window Header -->
         <div
-          class="bg-zinc-800 px-4 py-2 flex items-center gap-2 border-b border-zinc-700"
+          class="bg-terminal-chrome px-4 py-2 flex items-center gap-2 border-b border-terminal-border"
         >
           <div class="w-3 h-3 rounded-full bg-red-500"></div>
           <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
           <div class="w-3 h-3 rounded-full bg-green-500"></div>
-          <span class="ml-2 text-xs text-zinc-300 font-mono"
+          <span class="ml-2 text-xs text-terminal-text/70 font-mono"
             >user@briananderson: ~ (zsh)</span
           >
         </div>
 
         <!-- Window Content -->
         <div
-          class="p-6 md:p-8 font-mono text-sm md:text-base leading-relaxed text-zinc-300 min-h-[300px] flex flex-col md:flex-row gap-8"
+          class="p-6 md:p-8 font-mono text-sm md:text-base leading-relaxed text-terminal-text min-h-[300px] flex flex-col md:flex-row gap-8"
         >
           <div class="flex-1">
           <div class="mb-4 text-terminal-green">$ whoami</div>
-          <h1 class="text-2xl md:text-3xl font-bold text-white mb-4 block">
+          <h1 class="text-2xl md:text-3xl font-bold text-terminal-text mb-4 block">
             {formattedTitle}
           </h1>
             <p class="mb-6 opacity-80">
@@ -102,7 +102,7 @@
             </p>
 
             <div class="mb-4 text-terminal-green">$ cat mission.txt</div>
-            <p class="mb-6 border-l-2 border-zinc-700 pl-4 italic opacity-80">
+            <p class="mb-6 border-l-2 border-terminal-border pl-4 italic opacity-80">
               "{resume.mission}"
             </p>
 
@@ -149,7 +149,7 @@
 
               <!-- Image Container -->
               <div
-                class="w-full h-full overflow-hidden border border-zinc-700 bg-zinc-800 grayscale group-hover:grayscale-0 transition-all duration-500"
+                class="w-full h-full overflow-hidden border border-terminal-border bg-terminal-dark grayscale group-hover:grayscale-0 transition-all duration-500"
               >
                 <img
                   src="/headshot.jpg"

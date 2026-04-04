@@ -20,10 +20,11 @@ module.exports = {
       colors: {
         terminal: {
           black: withOpacity('--color-terminal-black'),
-          dark: '#1e1e1e',
+          dark: withOpacity('--color-terminal-dark'),
           green: withOpacity('--color-terminal-accent'),
-          dim: '#2d2d2d',
-          text: '#cccccc'
+          text: withOpacity('--color-terminal-text'),
+          chrome: withOpacity('--color-terminal-chrome'),
+          border: withOpacity('--color-terminal-border'),
         },
         skin: {
           page: withOpacity('--color-bg-page'),

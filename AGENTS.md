@@ -74,6 +74,8 @@
 - **Resume data:** YAML files loaded with `js-yaml` — three variants (leader, ops, builder)
 - **Quick Actions:** Static + dynamic content via `content-loader.ts`
 
+> Detail: [`docs/architecture/content-authoring.md`](docs/architecture/content-authoring.md)
+
 ### Variant System
 
 Three resume variants: **leader** (default), **ops**, **builder**.

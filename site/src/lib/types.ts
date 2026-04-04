@@ -1,3 +1,15 @@
+export interface ProjectLink {
+	label: string;
+	url: string;
+	type?: 'case-study' | 'github' | 'live' | 'article' | 'docs';
+}
+
+export interface VisualArchiveImage {
+	path: string;
+	alt: string;
+	caption?: string;
+}
+
 export interface ContentMetadata {
 	title: string;
 	date: string;
@@ -8,11 +20,20 @@ export interface ContentMetadata {
 	featuredImageAlt?: string;
 	featuredImageCaption?: string;
 	readingTime?: string;
+	visualArchive?: {
+		images: VisualArchiveImage[];
+	};
+	links?: ProjectLink[];
 }
 
 export interface ContentItem {
 	metadata: ContentMetadata;
 	route: string;
+}
+
+export interface ResumeHighlight {
+  text: string;
+  link?: string;
 }
 
 export interface ResumeJob {
@@ -22,7 +43,7 @@ export interface ResumeJob {
   start_date: string;
   end_date?: string;
   description?: string;
-  highlights: string[];
+  highlights: (string | ResumeHighlight)[];
 }
 
 export interface SkillItem {

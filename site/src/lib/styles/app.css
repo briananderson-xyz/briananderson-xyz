@@ -13,8 +13,12 @@
     --color-border: 228, 228, 231; /* zinc-200 */
     --color-accent: 4, 120, 87; /* emerald-700 */
     --color-accent-contrast: 255, 255, 255;
-    --color-terminal-accent: 74, 246, 38; /* Neon Green stays for terminal window */
-    --color-terminal-black: 12, 12, 12;
+    --color-terminal-accent: 21, 128, 61; /* green-700 — readable on white bg */
+    --color-terminal-black: 255, 255, 255; /* white — Mac terminal default */
+    --color-terminal-dark: 243, 244, 246; /* gray-100 — secondary bg */
+    --color-terminal-text: 39, 39, 42; /* zinc-800 — body text */
+    --color-terminal-chrome: 228, 228, 231; /* zinc-200 — title bar */
+    --color-terminal-border: 212, 212, 216; /* zinc-300 — borders */
   }
 
   html.dark {
@@ -27,6 +31,10 @@
     --color-accent-contrast: 12, 12, 12;
     --color-terminal-accent: 74, 246, 38;
     --color-terminal-black: 12, 12, 12;
+    --color-terminal-dark: 30, 30, 30;
+    --color-terminal-text: 204, 204, 204;
+    --color-terminal-chrome: 39, 39, 42; /* zinc-800 */
+    --color-terminal-border: 63, 63, 70; /* zinc-700 */
   }
 
   html[data-theme="catppuccin"] {
@@ -39,6 +47,10 @@
     --color-accent-contrast: 30, 30, 46;
     --color-terminal-accent: 166, 227, 161;
     --color-terminal-black: 30, 30, 46;
+    --color-terminal-dark: 24, 24, 37; /* mantle */
+    --color-terminal-text: 205, 214, 244; /* text */
+    --color-terminal-chrome: 49, 50, 68; /* surface0 */
+    --color-terminal-border: 69, 71, 90; /* surface1 */
   }
 }
 

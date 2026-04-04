@@ -76,6 +76,9 @@ Tailwind was chosen for this project because:
 - **Resume data:** YAML files (`resume.yaml`, `resume-ops.yaml`, `resume-builder.yaml`) loaded with `js-yaml`
 - **Quick Actions:** Static actions + dynamic content actions loaded via `content-loader.ts`
 
+
+> Detail: [`docs/architecture/content-authoring.md`](docs/architecture/content-authoring.md)
+
 ### Variant System
 
 Three resume variants target different audiences: **leader** (default), **ops**, **builder**.
