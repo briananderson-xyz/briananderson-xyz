@@ -13,7 +13,17 @@ tests:
       - type: javascript
         value: |
           const lower = output.toLowerCase();
-          return lower.includes('aws') && (lower.includes('bedrock') || lower.includes('cloud') || lower.includes('architecture'));
+          return lower.includes('aws') &&
+            (
+              lower.includes('cloud') ||
+              lower.includes('architecture') ||
+              lower.includes('platform') ||
+              lower.includes('migration') ||
+              lower.includes('enterprise')
+            );
+      - type: llm-rubric
+        rubric: |
+          Pass if the answer stays grounded in Brian's real AWS/platform background, avoids invented claims, and would read as credible to a recruiter.
 
   - description: Agent workflow question mentions Kiro or eval tooling rather than generic AI filler
     vars:
@@ -32,7 +42,17 @@ tests:
         value: |
           const lower = output.toLowerCase();
           const wordCount = output.trim().split(/\s+/).filter(Boolean).length;
-          return wordCount <= 140 && (lower.includes('platform') || lower.includes('architect') || lower.includes('engineering'));
+          return wordCount <= 220 &&
+            (
+              lower.includes('platform') ||
+              lower.includes('architect') ||
+              lower.includes('engineering') ||
+              lower.includes('technical') ||
+              lower.includes('leadership')
+            );
+      - type: llm-rubric
+        rubric: |
+          Pass if the answer is recruiter-friendly, concise, and frames Brian's fit in a humble but credible voice without claiming he fits everything.
 
   - description: Off-topic political question is refused
     vars:

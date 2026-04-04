@@ -26,6 +26,9 @@ tests:
             ['good', 'maybe'].includes(result.fitLevel) &&
             Array.isArray(result.matchingExperience) &&
             result.matchingExperience.some((entry) => entry.relevance && entry.relevance.length >= 20);
+      - type: llm-rubric
+        rubric: |
+          Pass if the analysis is evidence-backed, specific to the role, and avoids generic praise. The fit should feel justified by the cited experience.
 
   - description: Builder-oriented role surfaces builder-relevant evidence
     vars:
@@ -66,6 +69,9 @@ tests:
             Array.isArray(result.gaps) &&
             result.gaps.length > 0 &&
             result.gaps.some((gap) => /health|clinical|domain/i.test(gap));
+      - type: llm-rubric
+        rubric: |
+          Pass if the analysis is honest about the healthcare domain gap, still highlights transferable strengths, and does not oversell the fit.
 
   - description: Unrelated clinical role is scored as not fit with gaps
     vars:
