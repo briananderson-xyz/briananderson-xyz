@@ -1,12 +1,12 @@
 name: Brian Anderson
 jobTitles:
-  - Technical Director
+  - Principal AI Platform Architect
   - Enterprise Solutions Architect
-tagline: Specializing in Agentic AI, Cloud Native transformation, and DevOps. Passion for designing autonomous systems and scalable architectures that empower teams to deliver high-quality solutions through collaboration, developer experience, and continuous delivery.
+tagline: Enterprise architect focused on AI platform strategy, cloud modernization, and developer productivity at Fortune 500 scale.
 mission: Driving measurable business automation and customer outcomes through Agentic AI and Cloud Native strategies.
 email: brian@briananderson.xyz
 location: Denver, CO
-summary: Career spanning from hands-on mobile and web engineering to leading multi-team Fortune 500 deliveries, including Kubernetes migrations, CI/CD standardization, and Agentic AI platforms with observability. Expert in AWS/GCP architecture and bridging executive strategy with technical execution. Now applying that foundation to AI agent development, evaluation, and observability.
+summary: Principal-level architect with 10+ years leading complex modernization programs across AWS, GCP, Kubernetes, and platform engineering. Delivered zero-downtime migrations, enterprise CI/CD standards, and cloud operating models across thousands of applications. Now applying that same rigor to agentic AI systems, including tool orchestration, evaluation workflows, and observability for reliability, cost, and adoption.
 skills:
   Leadership & Strategy:
     - name: Executive Stakeholder Management
@@ -55,7 +55,7 @@ skills:
       url: https://kafka.apache.org/
     - name: Pub/Sub
       url: https://cloud.google.com/products/pubsub/
-  Agentic AI:
+  AI Systems & Agent Workflows:
     - name: Amazon Bedrock
       url: https://docs.aws.amazon.com/bedrock/
     - name: Model Context Protocol (MCP)
@@ -66,6 +66,11 @@ skills:
       url: https://strandsagents.com/
     - name: VoltAgent SDK
       url: https://voltagent.dev/
+  AI Evaluation & Tooling:
+    - name: Prompt Evaluation
+    - name: Tool / MCP Schema Design
+    - name: OpenTelemetry Tracing
+    - name: Reliability & Cost Observability
     - name: promptfoo
       url: https://www.promptfoo.dev/
   AI Development Tools:
@@ -85,9 +90,10 @@ experience:
       - "Industrial Data & Agentic AI (ProveIT): Built a cross-industry prototype for Glass and Pharma manufacturing that ingested MQTT data streams via a Unified Namespace (UNS) architecture, categorized and standardized stream contents into a time-series database, and integrated an Agentic AI layer using AgentCore and Bedrock for anomaly detection and automated SOP-driven troubleshooting. Delivered persona-specific dashboards (OEE, equipment state) and natural-language querying of production line status."
       - "Customer Experience and Rapid Prototyping (Amazon Connect): Identified the opportunity and built a working prototype that demonstrated multi-threaded conversation support and extended customer support hours for a global manufacturer. Personally engineered a secure SMS image-upload integration to address a specific visual troubleshooting gap, using this technical deep dive to earn the trust required to influence their broader modernization strategy."
       - "Enterprise Modernization (SAP Integration): Guided a global manufacturer through architecting secure, scalable AWS infrastructure for a Document Management System integrated with SAP ERP. Established best practices for infrastructure as code, private VPC architecture with VPC endpoints, and S3 gateway patterns for high scalability, resiliency, and cost efficiency. Leveraging trust built through earlier prototypes, secured executive buy-in for a comprehensive multi-year cloud migration roadmap."
-      - text: "Agentic AI Platform (Stallion): Built a local-first AI agent platform to explore the full lifecycle of AI agent development. Instrumented with OpenTelemetry and Prometheus/Grafana dashboards for observability into agent behavior, cost, and reliability. Extensible via a plugin system and Agent Communication Protocol (ACP), enabling domain-specific agent workflows to integrate without coupling to the vendor-neutral core."
-        link: https://github.com/briananderson1222/work-agent
-      - "Agentic Developer Tooling (Kiro): Ranked top 75 globally out of 275k+ CLI users. Developed a suite of AI agents for Kiro to standardize developer and solutions architect workflows — including structured ideation-to-verification development loops, automated note-taking with Obsidian integration, and AWS documentation skills. Reduced personal administrative overhead by ~4 hours/week. Used promptfoo to evaluate and harden agent system prompts and skills before release, catching contradictions and ensuring reliable behavior for internal adopters."
+      - text: "Agentic AI Platform (Stallion): Built a local-first AI agent platform to explore the full lifecycle of agent delivery, including tool orchestration, plugin-based extensibility, and observability for cost, reliability, and agent behavior. Instrumented the platform with OpenTelemetry and Prometheus/Grafana dashboards to make agent runs debuggable and production-ready."
+        link: /projects/stallion-agent-platform/
+      - text: "Agentic Developer Tooling (Kiro): Ranked top 75 globally out of 275k+ CLI users. Built AI workflows for Kiro that standardized ideation, implementation, and verification loops for developer and solutions architecture work. Reduced personal admin overhead by ~4 hours/week and used promptfoo-based evals to catch prompt contradictions before release."
+        link: /projects/kiro-agent-workflows/
     start_date: September 2024
   - role: Technical Director
     company: Valtech | Kin + Carta
