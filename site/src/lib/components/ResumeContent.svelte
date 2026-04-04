@@ -120,11 +120,22 @@
             </span>
             <div class="print:hidden">
               {#each items as skill}
-                <span
-                  class="inline-block px-2 py-0.5 text-xs font-semibold rounded-md border border-skin-border text-skin-base bg-skin-page shadow-sm mr-1 mb-1 hover:scale-105 hover:border-skin-accent hover:text-skin-accent transition-all duration-200"
-                >
-                  {typeof skill === "string" ? skill : skill.name}
-                </span>
+                {#if typeof skill !== "string" && skill.url}
+                  <a
+                    href={skill.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    class="inline-block px-2 py-0.5 text-xs font-semibold rounded-md border border-skin-border text-skin-base bg-skin-page shadow-sm mr-1 mb-1 hover:scale-105 hover:border-skin-accent hover:text-skin-accent transition-all duration-200 no-underline"
+                  >
+                    {skill.name}
+                  </a>
+                {:else}
+                  <span
+                    class="inline-block px-2 py-0.5 text-xs font-semibold rounded-md border border-skin-border text-skin-base bg-skin-page shadow-sm mr-1 mb-1 hover:scale-105 hover:border-skin-accent hover:text-skin-accent transition-all duration-200"
+                  >
+                    {typeof skill === "string" ? skill : skill.name}
+                  </span>
+                {/if}
               {/each}
             </div>
           </div>
@@ -193,10 +204,18 @@
             class="mt-3 space-y-1 text-skin-muted leading-relaxed print:text-black print:text-[10px] print:space-y-0 print:leading-tight print:font-serif"
           >
             {#each job.highlights as highlight}
+              {@const text = typeof highlight === "string" ? highlight : highlight.text}
+              {@const link = typeof highlight === "string" ? undefined : highlight.link}
               <li
                 class="relative pl-4 before:content-['-'] before:absolute before:left-0 before:text-skin-muted print:before:text-black"
               >
-                {highlight}
+                {text}{#if link}<a
+                    href={link}
+                    target={link.startsWith("http") ? "_blank" : undefined}
+                    rel={link.startsWith("http") ? "noreferrer" : undefined}
+                    class="print:hidden inline-flex items-center gap-1 text-skin-muted hover:text-skin-accent transition-colors ml-1 text-xs"
+                    title="View project details"
+                  >↗</a>{/if}
               </li>
             {/each}
           </ul>

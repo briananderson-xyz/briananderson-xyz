@@ -31,6 +31,11 @@ export interface ContentItem {
 	route: string;
 }
 
+export interface ResumeHighlight {
+  text: string;
+  link?: string;
+}
+
 export interface ResumeJob {
   role: string;
   company: string;
@@ -38,7 +43,7 @@ export interface ResumeJob {
   start_date: string;
   end_date?: string;
   description?: string;
-  highlights: string[];
+  highlights: (string | ResumeHighlight)[];
 }
 
 export interface SkillItem {
