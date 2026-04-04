@@ -15,10 +15,55 @@
   let visible = $state(false);
   let expanded = $state(false);
   let dismissed = $state(false);
+  let hiding = $state(false);
+  let typedText = $state("");
 
   const DISMISS_KEY = "connect_banner_dismissed";
   const DISMISS_DURATION_DAYS = 7;
   const SHOW_DELAY_MS = 30000; // 30 seconds
+  const CONNECT_TEXT = "connect";
+  const TYPE_SPEED_MS = 120; // ms per character
+  const AUTO_HIDE_DELAY_MS = 8000; // fade out after 8s (post-typing)
+  const FADE_OUT_MS = 600; // fade-out animation duration
+
+  let autoHideTimer: ReturnType<typeof setTimeout> | null = null;
+  let typeInterval: ReturnType<typeof setInterval> | null = null;
+
+  function startTyping() {
+    typedText = "";
+    let i = 0;
+    typeInterval = setInterval(() => {
+      if (i < CONNECT_TEXT.length) {
+        typedText = CONNECT_TEXT.slice(0, i + 1);
+        i++;
+      } else {
+        if (typeInterval) clearInterval(typeInterval);
+        typeInterval = null;
+        startAutoHideTimer();
+      }
+    }, TYPE_SPEED_MS);
+  }
+
+  function startAutoHideTimer() {
+    if (autoHideTimer) clearTimeout(autoHideTimer);
+    autoHideTimer = setTimeout(() => {
+      if (!expanded && !dismissed) {
+        hiding = true;
+        // After fade-out animation completes, fully hide
+        setTimeout(() => {
+          visible = false;
+          hiding = false;
+        }, FADE_OUT_MS);
+      }
+    }, AUTO_HIDE_DELAY_MS);
+  }
+
+  function cancelAutoHide() {
+    if (autoHideTimer) {
+      clearTimeout(autoHideTimer);
+      autoHideTimer = null;
+    }
+  }
 
   onMount(() => {
     if (!browser) return;
@@ -38,6 +83,7 @@
     const timer = setTimeout(() => {
       if (!dismissed) {
         visible = true;
+        startTyping();
 
         if (PUBLIC_POSTHOG_KEY) {
           posthog.capture("connect_banner_shown", {
@@ -48,7 +94,11 @@
       }
     }, SHOW_DELAY_MS);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      cancelAutoHide();
+      if (typeInterval) clearInterval(typeInterval);
+    };
   });
 
   function handleDismiss() {
@@ -70,6 +120,11 @@
 
   function toggleExpanded() {
     expanded = !expanded;
+    hiding = false;
+
+    if (expanded) {
+      cancelAutoHide();
+    }
 
     if (browser && PUBLIC_POSTHOG_KEY) {
       posthog.capture(expanded ? "connect_banner_expanded" : "connect_banner_collapsed");
@@ -97,7 +152,8 @@
 
 {#if visible && !dismissed}
   <div
-    class="fixed bottom-6 right-6 z-40 print:hidden"
+    class="connect-banner fixed bottom-6 right-6 z-40 print:hidden"
+    class:hiding
     data-testid="connect-banner"
     role="complementary"
     aria-label="Connect with Brian"
@@ -112,7 +168,9 @@
       >
         <div class="flex items-center gap-3">
           <span class="text-xl">▸</span>
-          <span class="font-mono text-terminal-green font-semibold">$ connect</span>
+          <span class="font-mono text-terminal-green font-semibold"
+            >$ {typedText}<span class="cursor">_</span></span
+          >
         </div>
 
         <!-- Pulse indicator -->
@@ -246,5 +304,33 @@
       transform: scale(1);
       opacity: 1;
     }
+  }
+
+  /* Blinking terminal cursor */
+  .cursor {
+    animation: blink 600ms step-end infinite;
+  }
+
+  @keyframes blink {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0;
+    }
+  }
+
+  /* Fade-out when auto-hiding */
+  .connect-banner {
+    transition:
+      opacity 600ms ease-out,
+      transform 600ms ease-out;
+  }
+
+  .connect-banner.hiding {
+    opacity: 0;
+    transform: translateY(20px);
+    pointer-events: none;
   }
 </style>
