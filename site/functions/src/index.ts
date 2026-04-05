@@ -836,26 +836,6 @@ FIT LEVELS:
 
 		} catch (error) {
 			console.error('Fit finder error:', error);
-			try {
-				const { jobDescription, variant = 'leader' }: FitFinderRequest = req.body;
-				const contentIndex = await fetchContentIndex();
-				if (contentIndex && jobDescription) {
-					const fallbackAnalysis = buildFallbackFitAnalysis(
-						new ContentTools(contentIndex),
-						jobDescription,
-						variant
-					);
-					const normalizedFallback = normalizeFitAnalysis(jobDescription, fallbackAnalysis);
-					res.set(corsHeaders);
-					res.status(200).json({
-						analysis: normalizedFallback,
-						fallback: true
-					});
-					return;
-				}
-			} catch (fallbackError) {
-				console.error('Fit finder fallback error:', fallbackError);
-			}
 			res.status(500).json({ error: 'Internal server error' });
 		}
 	}
