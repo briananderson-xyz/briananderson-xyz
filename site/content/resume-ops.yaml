@@ -2,7 +2,7 @@ name: Brian Anderson
 meta:
   order: 1
 jobTitles:
-  - Staff Platform Architect for AI Systems
+  - Platform Architect
   - Site Reliability Architect
 tagline: >
   Platform and reliability architect focused on cloud-native delivery, paved-road automation,
@@ -11,12 +11,12 @@ mission: Driving operational excellence and engineering velocity through platfor
 email: brian@briananderson.xyz
 location: Denver, CO
 summary: >
-  Staff-level platform engineer and architect with deep experience building reliable
-  delivery systems for Fortune 500 environments, including zero-downtime migrations,
-  enterprise CI/CD standards, and production observability. Experienced in Kubernetes,
-  release engineering, and high-availability design for financial and e-commerce systems.
-  Now applying the same operational rigor to AI systems through tracing, evaluation, and
-  agent reliability instrumentation.
+  Platform engineering has always been about one thing: making the path to production reliable
+  enough that teams stop thinking about it. Over 10 years that meant paved-road CI/CD,
+  zero-downtime migrations, Kubernetes platforms for financial and e-commerce systems, and
+  observability stacks that surface problems before they become incidents. AI agent workloads
+  have the same failure modes as distributed systems: unpredictable behavior, cost spikes,
+  silent failures. I'm applying the same instrumentation and reliability discipline to them.
 skills:
   Cloud & Infrastructure:
     - name: AWS
@@ -93,7 +93,7 @@ experience:
       - "Enterprise Infrastructure & Migration (SAP Integration): Guided a global manufacturer through architecting secure AWS infrastructure for a Document Management System integrated with SAP ERP. Established best practices for infrastructure as code, private VPC architecture with VPC endpoints, and S3 gateway patterns for scalability, resiliency, and cost efficiency at scale. Led architectural discovery to establish migration roadmaps for broader legacy-to-cloud transitions."
       - text: "AI Agent Observability (Stallion): Built a local-first AI agent platform and instrumented it with OpenTelemetry plus Prometheus/Grafana to trace agent behavior, surface cost and reliability signals, and make tool-driven workflows debuggable."
         link: /projects/stallion-agent-platform/
-      - text: "Agentic Developer Tooling (Kiro): Ranked top 75 globally out of 275k+ CLI users. Built agent workflows for Kiro that standardized ideation-to-verification loops and used promptfoo-based evals to harden prompts and improve reliability before release."
+      - text: "Agentic Developer Tooling (Kiro): Among the top 75 most active users out of 275k+ internal Kiro CLI users. Built agent workflows for Kiro that standardized ideation-to-verification loops and used promptfoo-based evals to harden prompts and improve reliability before release."
         link: /projects/kiro-agent-workflows/
     start_date: September 2024
   - role: Technical Director

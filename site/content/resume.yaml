@@ -1,12 +1,19 @@
 name: Brian Anderson
 jobTitles:
-  - Principal AI Platform Architect
+  - AI Platform Architect
   - Enterprise Solutions Architect
 tagline: Enterprise architect focused on AI platform strategy, cloud modernization, and developer productivity at Fortune 500 scale.
 mission: Driving measurable business automation and customer outcomes through Agentic AI and Cloud Native strategies.
 email: brian@briananderson.xyz
 location: Denver, CO
-summary: Principal-level architect with 10+ years leading complex modernization programs across AWS, GCP, Kubernetes, and platform engineering. Delivered zero-downtime migrations, enterprise CI/CD standards, and cloud operating models across thousands of applications. Now applying that same rigor to agentic AI systems, including tool orchestration, evaluation workflows, and observability for reliability, cost, and adoption.
+summary: >
+  A decade of making automation work at enterprise scale: standardizing CI/CD across Fortune 500
+  delivery teams, migrating production Kubernetes workloads without downtime, and building cloud
+  operating models that teams could depend on. That foundation shapes how I think about AI: not as
+  a new discipline to learn, but as the most capable automation primitive I've worked with, one that
+  demands the same engineering discipline as any production system. Currently building agentic
+  platforms and AI-powered prototypes for enterprise customers at AWS, with a focus on tool
+  orchestration, evaluation, and reliability from day one.
 skills:
   Leadership & Strategy:
     - name: Executive Stakeholder Management
@@ -92,7 +99,7 @@ experience:
       - "Enterprise Modernization (SAP Integration): Guided a global manufacturer through architecting secure, scalable AWS infrastructure for a Document Management System integrated with SAP ERP. Established best practices for infrastructure as code, private VPC architecture with VPC endpoints, and S3 gateway patterns for high scalability, resiliency, and cost efficiency. Leveraging trust built through earlier prototypes, secured executive buy-in for a comprehensive multi-year cloud migration roadmap."
       - text: "Agentic AI Platform (Stallion): Built a local-first AI agent platform to explore the full lifecycle of agent delivery, including tool orchestration, plugin-based extensibility, and observability for cost, reliability, and agent behavior. Instrumented the platform with OpenTelemetry and Prometheus/Grafana dashboards to make agent runs debuggable and production-ready."
         link: /projects/stallion-agent-platform/
-      - text: "Agentic Developer Tooling (Kiro): Ranked top 75 globally out of 275k+ CLI users. Built AI workflows for Kiro that standardized ideation, implementation, and verification loops for developer and solutions architecture work. Reduced personal admin overhead by ~4 hours/week and used promptfoo-based evals to catch prompt contradictions before release."
+      - text: "Agentic Developer Tooling (Kiro): Among the top 75 most active users out of 275k+ internal Kiro CLI users. Built AI workflows for Kiro that standardized ideation, implementation, and verification loops for developer and solutions architecture work. Reduced personal admin overhead by ~4 hours/week and used promptfoo-based evals to catch prompt contradictions before release."
         link: /projects/kiro-agent-workflows/
     start_date: September 2024
   - role: Technical Director

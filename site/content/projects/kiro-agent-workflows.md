@@ -23,7 +23,7 @@ I wanted repeatable AI workflows that improved engineering output instead of cre
 
 ## Results
 
-- Ranked **top 75 globally out of 275k+ CLI users**.
+- Among the **top 75 most active users out of 275k+ internal Kiro CLI users**.
 - Reduced my own administrative overhead by roughly **4 hours per week**.
 - Created a more reliable personal workflow for using AI as a systems-thinking partner rather than an autocomplete layer.
 
