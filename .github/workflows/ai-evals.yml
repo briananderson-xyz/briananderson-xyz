@@ -1,0 +1,83 @@
+name: AI Evals
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Eval target environment"
+        required: true
+        default: "production"
+        type: choice
+        options:
+          - production
+          - custom
+      custom_base_url:
+        description: "Custom AI base URL, e.g. http://127.0.0.1:5173/api"
+        required: false
+        type: string
+      judge_provider:
+        description: "Optional judge provider"
+        required: false
+        default: "openai"
+        type: choice
+        options:
+          - none
+          - openai
+          - anthropic
+      judge_model:
+        description: "Optional judge model name"
+        required: false
+        default: "gpt-5-mini"
+        type: string
+
+jobs:
+  run-ai-evals:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "pnpm"
+          cache-dependency-path: site/pnpm-lock.yaml
+
+      - name: Install dependencies
+        working-directory: site
+        run: pnpm i --frozen-lockfile || pnpm i
+
+      - name: Resolve AI eval target
+        id: target
+        run: |
+          if [ "${{ github.event.inputs.target }}" = "custom" ] && [ -n "${{ github.event.inputs.custom_base_url }}" ]; then
+            echo "base_url=${{ github.event.inputs.custom_base_url }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "base_url=https://api.briananderson.xyz" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run AI eval suite
+        working-directory: site
+        env:
+          AI_EVAL_BASE_URL: ${{ steps.target.outputs.base_url }}
+          AI_EVAL_REPORT_PATH: artifacts/ai-evals-manual.json
+          AI_EVAL_JUDGE_PROVIDER: ${{ github.event.inputs.judge_provider != 'none' && github.event.inputs.judge_provider || '' }}
+          AI_EVAL_JUDGE_MODEL: ${{ github.event.inputs.judge_model }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: pnpm run test:ai:evals
+
+      - name: Upload AI eval report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-eval-report-manual
+          path: site/artifacts/ai-evals-manual.json
+          if-no-files-found: ignore
+          retention-days: 14

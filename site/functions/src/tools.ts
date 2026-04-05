@@ -140,7 +140,8 @@ export class ContentTools {
 			email: this.index.resume.email,
 			tagline: this.index.resume.tagline,
 			summary: this.index.resume.summary,
-			skillCategories: Object.keys(this.index.resume.skillCategories || {})
+			skillCategories: Object.keys(this.index.resume.skillCategories || {}),
+			certificates: this.index.resume.certificates || []
 		};
 	}
 }
@@ -225,7 +226,7 @@ export const toolDeclarations: { functionDeclarations: FunctionDeclaration[] } =
 		},
 		{
 			name: 'get_resume_summary',
-			description: 'Get Brian\'s resume summary including name, title, location, tagline, and overview.',
+			description: 'Get Brian\'s resume summary including name, title, location, tagline, overview, skill categories, and certifications.',
 			parameters: {
 				type: Type.OBJECT,
 				properties: {}
@@ -290,6 +291,14 @@ export const submitAnalysisDeclaration: FunctionDeclaration = {
 	}
 };
 
+function normalizeToolName(functionName: string): string {
+	return functionName.toLowerCase().replace(/[^a-z]/g, '');
+}
+
+export function isSubmitAnalysisCall(functionName: string): boolean {
+	return normalizeToolName(functionName).startsWith('submitanalysis');
+}
+
 /**
  * Execute a tool function call
  */
@@ -298,6 +307,10 @@ export function executeToolCall(
 	functionName: string,
 	args: ToolExecutionArgs
 ): SkillResult[] | ProjectEntry | ProjectResult[] | ExperienceResult[] | Pick<SkillResult, 'name' | 'projects' | 'blog'>[] | ResumeSummary | ToolExecutionArgs | null {
+	if (isSubmitAnalysisCall(functionName)) {
+		return args;
+	}
+
 	switch (functionName) {
 		case 'search_skills':
 			return tools.searchSkills(args.keywords || []);
@@ -311,8 +324,6 @@ export function executeToolCall(
 			return tools.getSkillsByCategory(args.category || '');
 		case 'get_resume_summary':
 			return tools.getResumeSummary();
-		case 'submit_analysis':
-			return args;
 		default:
 			throw new Error(`Unknown tool: ${functionName}`);
 	}

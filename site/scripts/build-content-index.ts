@@ -33,6 +33,7 @@ interface ContentIndex {
     location: string;
     email: string;
     skillCategories: Record<string, string[]>;
+    certificates: string[];
   };
   metadata: {
     buildDate: string;
@@ -308,7 +309,11 @@ async function buildContentIndex(): Promise<void> {
       tagline: resumeData.tagline || "",
       summary: resumeData.summary || "",
       location: resumeData.location || "",
-      email: resumeData.email || ""
+      email: resumeData.email || "",
+      skillCategories,
+      certificates: Array.isArray(resumeData.certificates)
+        ? resumeData.certificates.map((cert: { name?: string }) => cert.name || "").filter(Boolean)
+        : []
     },
     metadata: {
       buildDate: new Date().toISOString(),

@@ -56,6 +56,7 @@ export interface ResumeData {
   location: string;
   email: string;
   skillCategories: Record<string, string[]>;
+  certificates: string[];
 }
 
 export interface IndexMetadata {
@@ -118,6 +119,7 @@ export interface ResumeSummary {
   tagline: string;
   summary: string;
   skillCategories: string[];
+  certificates: string[];
 }
 
 export interface ToolExecutionArgs {

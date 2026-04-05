@@ -17,6 +17,15 @@
 	let isAnalyzing = $state(false);
 	let error = $state<string | null>(null);
 
+	function getCurrentVariant(): 'leader' | 'ops' | 'builder' {
+		if (!browser) return 'leader';
+
+		if (window.location.pathname.startsWith('/ops')) return 'ops';
+		if (window.location.pathname.startsWith('/builder')) return 'builder';
+
+		return 'leader';
+	}
+
 	async function handleAnalyze() {
 		if (!jobDescription.trim()) return;
 
@@ -33,7 +42,7 @@
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
 					jobDescription,
-					variant: 'leader' // Could be dynamic based on current page
+					variant: getCurrentVariant()
 				})
 			});
 
@@ -311,18 +320,18 @@
 								</div>
 
 								{#if analysis.resumeVariantRecommendation}
-									<div class="mt-4 p-3 bg-terminal-green/10 border border-terminal-green/30 rounded">
-										<p class="text-sm">
-											<strong class="text-terminal-green">→ View Full Resume:</strong>
-											<a
-												href="/{analysis.resumeVariantRecommendation === 'leader' ? '' : analysis.resumeVariantRecommendation + '/'}resume/"
-												class="text-terminal-green hover:underline ml-1"
-												onclick={handleResumeClick}
-											>
-												{analysis.resumeVariantRecommendation === 'leader' ? 'Leadership' : analysis.resumeVariantRecommendation === 'ops' ? 'Operations' : 'Builder'} Resume
-											</a>
-										</p>
-									</div>
+										<div class="mt-4 p-3 bg-terminal-green/10 border border-terminal-green/30 rounded">
+											<p class="text-sm">
+												<strong class="text-terminal-green">→ Resume:</strong>
+												<a
+													href="/{analysis.resumeVariantRecommendation === 'leader' ? '' : analysis.resumeVariantRecommendation + '/'}resume/"
+													class="text-terminal-green hover:underline ml-1"
+													onclick={handleResumeClick}
+												>
+													Resume
+												</a>
+											</p>
+										</div>
 								{/if}
 							</div>
 						{/if}

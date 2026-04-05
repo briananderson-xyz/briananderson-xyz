@@ -49,6 +49,35 @@
     blog: addVariant('/blog/', variant)
   };
 
+  $: recruiterSummary =
+    variant === "ops"
+      ? "I build reliable delivery platforms and observability systems for high-stakes production environments, and I apply that same discipline to AI workloads."
+      : variant === "builder"
+        ? "I ship production software across the stack and now build agent-driven products with tracing, tool orchestration, and evaluation in mind."
+        : "I help enterprises modernize delivery systems at scale and now bring that same rigor to AI platforms, agent workflows, and developer productivity.";
+
+  $: proofPoints =
+    variant === "ops"
+      ? [
+          "14 mission-critical apps migrated with zero downtime",
+          "90% deployment lead-time reduction",
+          "8-9 production deployments per day",
+          "AI tracing with OpenTelemetry + Prometheus/Grafana"
+        ]
+      : variant === "builder"
+        ? [
+            "Top 75 of 275k+ Kiro CLI users",
+            "4 hours/week saved with AI workflows",
+            "Full-stack agent platform with MCP orchestration",
+            "Production systems across web, mobile, and cloud"
+          ]
+        : [
+            "5,000+ applications in platform scope",
+            "$30M estimated savings",
+            "90% deployment lead-time reduction",
+            "Top 75 of 275k+ Kiro CLI users"
+          ];
+
   let openCategories: Record<string, boolean> = {};
   let showAllExperience = false;
 
@@ -101,6 +130,10 @@
               {resume.tagline}
             </p>
 
+            <p class="mb-6 text-terminal-text/90">
+              {recruiterSummary}
+            </p>
+
             <div class="mb-4 text-terminal-green">$ cat mission.txt</div>
             <p class="mb-6 border-l-2 border-terminal-border pl-4 italic opacity-80">
               "{resume.mission}"
@@ -125,6 +158,17 @@
                 class="text-terminal-green border-terminal-green hover:bg-terminal-green hover:text-terminal-black"
                 >./read_blog.md</Button
               >
+            </div>
+
+            <div class="mt-8">
+              <div class="mb-4 text-terminal-green">$ cat selected-proof.log</div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+                {#each proofPoints as proofPoint}
+                  <div class="border border-terminal-border px-3 py-2 text-terminal-text/90">
+                    {proofPoint}
+                  </div>
+                {/each}
+              </div>
             </div>
           </div>
 

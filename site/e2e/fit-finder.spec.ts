@@ -2,6 +2,138 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Fit Finder', () => {
   test.beforeEach(async ({ page }) => {
+    await page.route('**/fit-finder', async (route) => {
+      const request = route.request();
+      const body = request.postDataJSON?.() as { jobDescription?: string } | undefined;
+      const jobDescription = body?.jobDescription?.toLowerCase() || '';
+
+      let analysis = {
+        fitScore: 42,
+        fitLevel: 'not',
+        confidence: 'high',
+        matchingSkills: [
+          {
+            name: 'General Architecture',
+            context: 'Broad systems and delivery experience'
+          }
+        ],
+        matchingExperience: [
+          {
+            role: 'Enterprise Solutions Architect',
+            company: 'Amazon Web Services',
+            dateRange: 'September 2024 - Present',
+            relevance: 'Relevant cloud and platform background'
+          }
+        ],
+        gaps: ['Domain-specific credentials not found'],
+        analysis: 'This role is not a strong fit based on the requested domain specialization.',
+        resumeVariantRecommendation: 'leader',
+        cta: {
+          text: 'Start a conversation',
+          link: 'mailto:brian@briananderson.xyz'
+        }
+      };
+
+      if (jobDescription.includes('aws') && jobDescription.includes('kubernetes') && jobDescription.includes('leadership')) {
+        analysis = {
+          fitScore: 91,
+          fitLevel: 'good',
+          confidence: 'high',
+          matchingSkills: [
+            { name: 'AWS', context: 'Enterprise delivery across AWS customers and certifications' },
+            { name: 'Kubernetes', context: 'EKS, GKE, and OpenShift architecture and migrations' },
+            { name: 'Terraform', context: 'Golden paths and cloud enablement' }
+          ],
+          matchingExperience: [
+            {
+              role: 'Enterprise Solutions Architect',
+              company: 'Amazon Web Services',
+              dateRange: 'September 2024 - Present',
+              relevance: 'Direct AWS platform and customer modernization experience'
+            }
+          ],
+          gaps: [],
+          analysis: 'Strong fit based on AWS, Kubernetes, leadership, and platform engineering experience.',
+          resumeVariantRecommendation: 'ops',
+          cta: {
+            text: 'Connect with Brian',
+            link: 'mailto:brian@briananderson.xyz'
+          }
+        };
+      } else if (jobDescription.includes('aws') && jobDescription.includes('kubernetes')) {
+        analysis = {
+          fitScore: 84,
+          fitLevel: 'good',
+          confidence: 'high',
+          matchingSkills: [
+            { name: 'AWS', context: 'Enterprise architecture and modernization' },
+            { name: 'Kubernetes', context: 'Platform engineering across EKS, GKE, and OCP' }
+          ],
+          matchingExperience: [
+            {
+              role: 'Senior Technical Principal',
+              company: 'Kin + Carta',
+              dateRange: 'February 2020 - March 2024',
+              relevance: 'Built cloud platforms and standardized delivery patterns'
+            }
+          ],
+          gaps: [],
+          analysis: 'Good fit with matching skills and relevant platform experience.',
+          resumeVariantRecommendation: 'ops',
+          cta: {
+            text: 'Connect with Brian',
+            link: 'mailto:brian@briananderson.xyz'
+          }
+        };
+      } else if (jobDescription.includes('react') || jobDescription.includes('node.js')) {
+        analysis = {
+          fitScore: 68,
+          fitLevel: 'maybe',
+          confidence: 'medium',
+          matchingSkills: [
+            { name: 'React', context: 'Full-stack and product development work' },
+            { name: 'TypeScript', context: 'Modern web and AI tooling projects' }
+          ],
+          matchingExperience: [
+            {
+              role: 'Staff Applied AI Engineer',
+              company: 'Independent / AWS-adjacent builder work',
+              dateRange: 'Recent',
+              relevance: 'Strong builder alignment with some but not all requirements'
+            }
+          ],
+          gaps: ['GraphQL experience not emphasized'],
+          analysis: 'There is meaningful overlap, but the match is partial rather than exact.',
+          resumeVariantRecommendation: 'builder',
+          cta: {
+            text: 'Review builder resume',
+            link: 'mailto:brian@briananderson.xyz'
+          }
+        };
+      } else if (jobDescription.includes('registered nurse') || jobDescription.includes('icu')) {
+        analysis = {
+          fitScore: 7,
+          fitLevel: 'not',
+          confidence: 'high',
+          matchingSkills: [],
+          matchingExperience: [],
+          gaps: ['Clinical credentials', 'ICU experience', 'Patient care background'],
+          analysis: 'This role is outside Brian’s background, so the fit is low.',
+          resumeVariantRecommendation: 'leader',
+          cta: {
+            text: 'View resume anyway',
+            link: 'mailto:brian@briananderson.xyz'
+          }
+        };
+      }
+
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ analysis })
+      });
+    });
+
     await page.goto('/');
   });
 
