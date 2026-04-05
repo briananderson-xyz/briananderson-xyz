@@ -20,7 +20,7 @@ const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
 // Tool call iteration limits
 const MAX_CHAT_TOOL_ITERATIONS = 5;
-const MAX_FIT_FINDER_TOOL_ITERATIONS = 10;
+const MAX_FIT_FINDER_TOOL_ITERATIONS = 12;
 
 // Content index cache with versioning
 let contentIndexCache: ContentIndex | null = null;
@@ -792,8 +792,17 @@ FIT LEVELS:
 					};
 				});
 
-				// Send function results back to model
-				result = await chat.sendMessage({ message: functionResponses });
+				// When iterations are almost exhausted, nudge the model to submit
+				if (maxIterations <= 2) {
+					result = await chat.sendMessage({
+						message: [
+							...functionResponses,
+							{ text: 'You have gathered enough evidence. You MUST call submit_analysis() now as your only response.' }
+						]
+					});
+				} else {
+					result = await chat.sendMessage({ message: functionResponses });
+				}
 			}
 
 			// Fallback: if model returned text instead of calling submit_analysis
@@ -827,26 +836,6 @@ FIT LEVELS:
 
 		} catch (error) {
 			console.error('Fit finder error:', error);
-			try {
-				const { jobDescription, variant = 'leader' }: FitFinderRequest = req.body;
-				const contentIndex = await fetchContentIndex();
-				if (contentIndex && jobDescription) {
-					const fallbackAnalysis = buildFallbackFitAnalysis(
-						new ContentTools(contentIndex),
-						jobDescription,
-						variant
-					);
-					const normalizedFallback = normalizeFitAnalysis(jobDescription, fallbackAnalysis);
-					res.set(corsHeaders);
-					res.status(200).json({
-						analysis: normalizedFallback,
-						fallback: true
-					});
-					return;
-				}
-			} catch (fallbackError) {
-				console.error('Fit finder fallback error:', fallbackError);
-			}
 			res.status(500).json({ error: 'Internal server error' });
 		}
 	}

@@ -34,3 +34,4 @@ site/static/content-index*.json
 
 # Windows artifacts
 nul
+site/package-lock.json
