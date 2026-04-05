@@ -5,10 +5,6 @@ summary: "Establishing enterprise platform engineering and CI/CD at financial se
 tags: ["DevOps", "PlatformEngineering", "CICD", "Kubernetes", "Governance", "Leader"]
 keywords: ["discover", "trident", "golden-paths", "financial-services"]
 showTableOfContents: true
-links:
-  - label: "Valtech Case Study"
-    url: "https://www.valtech.com/en-us/work/discover/"
-    type: "case-study"
 ---
 
 ## The Challenge
@@ -33,3 +29,5 @@ I joined as a **Technical Director** leading the integration side of the Trident
 
 Financial services taught me that governance isn't the enemy of velocity. It's a design constraint. The best platform engineering work doesn't fight compliance requirements, it encodes them. When security and compliance are built into the pipeline itself, teams actually move faster *because* they don't have to think about it.
 
+**Official Case Study:**
+- [Valtech: Discover Financial Services](https://www.valtech.com/en-us/work/discover/)

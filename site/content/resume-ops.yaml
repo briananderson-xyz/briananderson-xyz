@@ -2,34 +2,43 @@ name: Brian Anderson
 meta:
   order: 1
 jobTitles:
-  - Staff Platform Architect for AI Systems
   - Site Reliability Architect
+  - DevOps Platform Engineer
 tagline: >
-  Platform and reliability architect focused on cloud-native delivery, paved-road automation,
-  and observability for both traditional services and AI agent workloads.
-mission: Driving operational excellence and engineering velocity through platform automation, reliability engineering, and Agentic AI.
+  Specializing in Cloud Native Transformation, Platform Engineering, and Production Reliability.
+  Expert in designing 'Paved Road' automation, high-availability architectures, and observability
+  systems that ensure resilient production environments at scale.
+mission: Driving operational excellence and engineering velocity through platform automation, reliability engineering, and infrastructure as code.
 email: brian@briananderson.xyz
 location: Denver, CO
 summary: >
-  Staff-level platform engineer and architect with deep experience building reliable
-  delivery systems for Fortune 500 environments, including zero-downtime migrations,
-  enterprise CI/CD standards, and production observability. Experienced in Kubernetes,
-  release engineering, and high-availability design for financial and e-commerce systems.
-  Now applying the same operational rigor to AI systems through tracing, evaluation, and
-  agent reliability instrumentation.
+  Platform engineering leader with over a decade of experience designing and operating 
+  production systems for Fortune 500 companies. Expert in Kubernetes orchestration, 
+  CI/CD standardization, and observability implementation. Proven track record of 
+  achieving zero-downtime migrations, reducing deployment cycles from weeks to hours, 
+  and maintaining high availability for mission-critical financial and e-commerce systems.
 skills:
-  Cloud & Infrastructure:
+  Cloud & Orchestration:
     - name: AWS
       url: https://aws.amazon.com/
     - name: Google Cloud
       url: https://cloud.google.com/
-    - name: Kubernetes (EKS/GKE/OCP)
+    - name: Kubernetes
       url: https://kubernetes.io/
+    - name: OpenShift
+      url: https://www.openshift.com/
+    - name: Docker
+      url: https://www.docker.com/
+    - name: Liquibase
+      url: https://www.liquibase.org/
+    - name: Terraform Cloud
+      url: https://www.hashicorp.com/products/terraform/cloud
+  Infrastructure as Code:
     - name: Terraform
       url: https://www.terraform.io
     - name: AWS CDK / CloudFormation
       url: https://aws.amazon.com/cdk/
-    - name: Helm
+    - name: Helm Charts
       url: https://helm.sh/
   CI/CD & Release Engineering:
     - name: GitHub Actions
@@ -38,40 +47,37 @@ skills:
       url: https://docs.gitlab.com/ci/
     - name: Spinnaker
       url: https://spinnaker.io/
+    - name: Jenkins
+      url: https://www.jenkins.io/
+    - name: Fastlane
+      url: https://fastlane.tools/
   Reliability & Observability:
-    - name: Datadog
+    - name: Datadog 
       url: https://www.datadoghq.com/
     - name: Instana
       url: https://www.instana.com/
-    - name: OpenTelemetry
-      url: https://opentelemetry.io/
+    - name: Elasticsearch
+      url: https://www.elastic.co/
+  Networking & Security:
+    - name: VPC / Transit Gateway
+      url: https://aws.amazon.com/vpc/
+    - name: Istio
+      url: https://istio.io/
   Data & Messaging:
     - name: PostgreSQL
       url: https://www.postgresql.org/
+    - name: RDS (Aurora)
+      url: https://aws.amazon.com/rds/
     - name: Redis
       url: https://redis.io/
+    - name: Memorystore
+      url: https://cloud.google.com/memorystore
     - name: Kafka
       url: https://kafka.apache.org/
     - name: Pub/Sub
       url: https://cloud.google.com/pubsub
-  AI Systems & Agent Reliability:
-    - name: Amazon Bedrock
-      url: https://docs.aws.amazon.com/bedrock/
-    - name: Agentcore
-      url: https://aws.amazon.com/bedrock/agentcore/
-    - name: Model Context Protocol (MCP)
-      url: https://modelcontextprotocol.io/
-    - name: Prompt Evaluation
-    - name: OpenTelemetry Tracing
-    - name: Reliability & Cost Observability
-    - name: Kiro
-      url: https://kiro.dev/
-    - name: Claude Code
-      url: https://www.anthropic.com/
-    - name: Codex
-      url: https://openai.com/codex/
-    - name: promptfoo
-      url: https://www.promptfoo.dev/
+    - name: EventBridge
+      url: https://aws.amazon.com/eventbridge/
   Languages:
     - name: Java (Spring Boot)
       url: https://spring.io/projects/spring-boot
@@ -88,20 +94,16 @@ experience:
     location: Denver, CO
     description: Specializing in cloud-native transformation, infrastructure modernization, and platform reliability.
     highlights:
-      - "Industrial IoT & Observability (ProveIT): Built a prototype for manufacturing environments that ingested MQTT data streams via a Unified Namespace (UNS) architecture, categorized and standardized stream contents into a time-series database, and integrated an Agentic AI layer using AgentCore and Bedrock for anomaly detection. Delivered persona-specific dashboards (OEE, equipment state) and natural-language querying of production line status."
-      - "Customer Support Automation (Amazon Connect): Identified an operational gap for a global manufacturer and built a working prototype demonstrating multi-threaded conversation support and extended customer support hours. Personally engineered a secure SMS image-upload integration to showcase the platform's extensibility for visual troubleshooting workflows."
-      - "Enterprise Infrastructure & Migration (SAP Integration): Guided a global manufacturer through architecting secure AWS infrastructure for a Document Management System integrated with SAP ERP. Established best practices for infrastructure as code, private VPC architecture with VPC endpoints, and S3 gateway patterns for scalability, resiliency, and cost efficiency at scale. Led architectural discovery to establish migration roadmaps for broader legacy-to-cloud transitions."
-      - text: "AI Agent Observability (Stallion): Built a local-first AI agent platform and instrumented it with OpenTelemetry plus Prometheus/Grafana to trace agent behavior, surface cost and reliability signals, and make tool-driven workflows debuggable."
-        link: /projects/stallion-agent-platform/
-      - text: "Agentic Developer Tooling (Kiro): Ranked top 75 globally out of 275k+ CLI users. Built agent workflows for Kiro that standardized ideation-to-verification loops and used promptfoo-based evals to harden prompts and improve reliability before release."
-        link: /projects/kiro-agent-workflows/
+      - "Cloud Migration Architecture: Led architectural discovery for Greenfield enterprise customers, identifying high-impact opportunities for cloud-native modernization, Generative AI integration, and establishing migration roadmaps for legacy-to-cloud transitions."
+      - "Platform Automation: Engineered a GenAI-powered automation platform using Amazon Bedrock and Agentcore, reducing operational overhead by ~4 hours/week through automated CRM updates, documentation generation, and workflow orchestration."
+      - "Developer Tooling Integration: Championed adoption of developer productivity tools (Amazon Q Developer/Kiro) and integrated AI-assisted development frameworks (SpecKit/OpenSpec) to showcase thought leadership in driving adoption across enterprise customers."
     start_date: September 2024
   - role: Technical Director
     company: Valtech | Kin + Carta
     location: Denver, CO
     description: Led zero-downtime migration of mission-critical credit card applications from legacy Websphere and Pivotal Cloud Foundry (PCF) to OpenShift (OCP on AWS).
     highlights:
-      - "Zero-Downtime Migration: Orchestrated migration of 14 mission-critical Java SpringBoot credit card applications from legacy Websphere and Pivotal Cloud Foundry (PCF) to OpenShift (OCP on AWS), maintaining 100% availability throughout the transition."
+      - "Zero-Downtime Migration: Orchestrated migration of 6 mission-critical Java SpringBoot credit card applications from legacy Websphere and Pivotal Cloud Foundry (PCF) to OpenShift (OCP on AWS), maintaining 100% availability throughout the transition."
       - "CI/CD Transformation: Implemented trunk-based CI/CD and TDD mandates, reducing deployment cycles from monthly releases to multiple on-demand daily deployments while maintaining strict financial sector change management compliance with ServiceNow and LeanIX."
       - "Observability Enablement: Standardized enterprise-wide integration patterns using Helm Charts, enabling consistency in application deployments and seamless adoption of Datadog and Instana for managing SLIs, SLOs, and error budgets across multiple delivery teams for unified production monitoring."
     start_date: March 2024
@@ -109,14 +111,10 @@ experience:
   - role: Senior Technical Principal
     company: Kin + Carta
     location: Denver, CO
-    description: Led CI/CD platform engineering at Discover Financial and infrastructure standardization at Gordon Food Service.
+    description: Designed enterprise-wide 'Golden Path' for standardized cloud adoption and CI/CD.
     highlights:
-      - text: "CI/CD & Platform Engineering (Discover Financial): Led the integration layer for the Trident pipeline, a standardized CI/CD framework spanning 5,000+ applications. Defined Golden Paths and integration playbooks for production adoption, identified gaps in monitoring and observability, implemented AWS integration via Kubernetes Operators, and established deployment strategies (canary, blue/green). Resulted in a 90% reduction in deployment lead time."
-        link: /projects/discover-trident/
-      - text: "Infrastructure as Code (Gordon Food Service): Developed a comprehensive library of shared Terraform Modules and Liquibase patterns to centralize product provisioning, ensuring infrastructure consistency, automated security compliance, budgetary guardrails, and CI/CD templates across GitLab, SonarCloud, NexusIQ, and Apigee to enable rapid, secure deployment cycles across all enterprise product teams."
-        link: /projects/gfs-cloud-enablement/
-      - text: "Data Modernization (Gordon Food Service): Built ICDS (Integrated Consumption Data Store), normalizing fragmented data sources into a centralized BigQuery repository with Dataflow batch pipelines and a standardized API layer on GKE, eliminating duplicated data dependencies across consumer applications."
-        link: /projects/gfs-cloud-enablement/
+      - "CI/CD & Platform Engineering (Discover Financial): Architected the integration layer for the \"Trident\" pipeline, a massive-scale CI/CD framework. Established \"Golden Paths\" to automate compliance, high availability, and trunk-based, continuous delivery, resulting in a 90% reduction in deployment lead time for microservices."
+      - "Infrastructure as Code (Gordon Food Service): Developed a comprehensive library of shared Terraform Modules and Liquibase patterns to centralize product provisioning, ensuring infrastructure consistency, automated security compliance, budgetary guardrails, and CI/CD templates across GitLab, SonarCloud, NexusIQ, and Apigee to enable rapid, secure deployment cycles across all enterprise product teams."
     start_date: February 2020
     end_date: March 2024
   - role: Technical Principal
@@ -124,8 +122,7 @@ experience:
     location: Denver, CO
     description: Architected high-concurrency GKE platform achieving 8-9 daily production deployments.
     highlights:
-      - text: "GKE Platform Operations: Architected and operated a high-concurrency ordering platform on Google Kubernetes Engine, integrating Firestore, Pub/Sub, and Memorystore (Redis) to handle massive traffic spikes with sub-second latency."
-        link: /projects/gfs-ordering-platform/
+      - "GKE Platform Operations: Architected and operated a high-concurrency ordering platform on Google Kubernetes Engine, integrating Firestore, Pub/Sub, and Memorystore (Redis) to handle massive traffic spikes with sub-second latency."
       - "Release Engineering: Achieved 8-9 production deployments per day via Spinnaker while scaling engineering team to 60+ developers."
       - "Mobile CD Pipeline: Built a dual-platform continuous delivery pipeline using Fastlane, Jenkins, and Docker, integrating AWS Device Farm for automated testing across iOS and Android. Reduced release overhead for 6 production apps from 4 weeks to 1 week through pipeline automation."
     start_date: January 2017
@@ -145,7 +142,8 @@ experience:
     location: Chicago, IL
     description: Implemented automated deployment pipelines and hybrid application architectures.
     highlights:
-      - "Product Delivery: Sole developer and architect for a premium Swift iOS application for an executive society. Separately, built an AngularJS e-commerce platform for a food distributor with automated deployment via Octopus Deploy, and architected reusable WebView components to share data visualization across native mobile platforms for a wealth management client."
+      - "Deployment Automation: Architected an AngularJS web application with automated deployment pipelines using Octopus Deploy and TFS, establishing early CI/CD patterns for the organization."
+      - "Hybrid Integration: Built custom WebView integrations for native mobile apps, enabling Chart.js data visualization within iOS/Android applications for wealth management clients."
     start_date: April 2014
     end_date: July 2015
   - role: Technical Analyst
