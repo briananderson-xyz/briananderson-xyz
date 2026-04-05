@@ -1,34 +1,35 @@
 export interface ProjectLink {
-	label: string;
-	url: string;
-	type?: 'case-study' | 'github' | 'live' | 'article' | 'docs';
+  label: string;
+  url: string;
+  type?: "case-study" | "github" | "live" | "article" | "docs";
 }
 
 export interface VisualArchiveImage {
-	path: string;
-	alt: string;
-	caption?: string;
+  path: string;
+  alt: string;
+  caption?: string;
 }
 
 export interface ContentMetadata {
-	title: string;
-	date: string;
-	summary?: string;
-	tags?: string[];
-	keywords?: string[];
-	featuredImage?: string;
-	featuredImageAlt?: string;
-	featuredImageCaption?: string;
-	readingTime?: string;
-	visualArchive?: {
-		images: VisualArchiveImage[];
-	};
-	links?: ProjectLink[];
+  title: string;
+  date: string;
+  period?: string;
+  summary?: string;
+  tags?: string[];
+  keywords?: string[];
+  featuredImage?: string;
+  featuredImageAlt?: string;
+  featuredImageCaption?: string;
+  readingTime?: string;
+  visualArchive?: {
+    images: VisualArchiveImage[];
+  };
+  links?: ProjectLink[];
 }
 
 export interface ContentItem {
-	metadata: ContentMetadata;
-	route: string;
+  metadata: ContentMetadata;
+  route: string;
 }
 
 export interface ResumeHighlight {
@@ -95,47 +96,47 @@ export interface Resume {
   experience: ResumeJob[];
   education: ResumeEducation[];
   certificates: ResumeCertificate[];
-  'early-career'?: ResumeEarlyCareer[];
+  "early-career"?: ResumeEarlyCareer[];
 }
 
 export interface QuickAction {
-	id: string;
-	title: string;
-	description?: string;
-	category: 'page' | 'blog' | 'project' | 'variant' | 'action';
-	url?: string;
-	handler?: () => void;
-	keywords?: string[];
+  id: string;
+  title: string;
+  description?: string;
+  category: "page" | "blog" | "project" | "variant" | "action";
+  url?: string;
+  handler?: () => void;
+  keywords?: string[];
 }
 
 export interface ChatMessage {
-	id: string;
-	role: 'user' | 'assistant' | 'system';
-	content: string;
-	timestamp: number;
+  id: string;
+  role: "user" | "assistant" | "system";
+  content: string;
+  timestamp: number;
 }
 
 export interface FitAnalysis {
-	fitScore: number;
-	fitLevel: 'good' | 'maybe' | 'not';
-	confidence: 'high' | 'medium' | 'low';
-	matchingSkills: Array<{
-		name: string;
-		url?: string;
-		context?: string;
-	}>;
-	matchingExperience: Array<{
-		role: string;
-		company: string;
-		dateRange: string;
-		url?: string;
-		relevance: string;
-	}>;
-	gaps: string[];
-	analysis: string;
-	resumeVariantRecommendation: 'leader' | 'ops' | 'builder';
-	cta: {
-		text: string;
-		link: string;
-	};
+  fitScore: number;
+  fitLevel: "good" | "maybe" | "not";
+  confidence: "high" | "medium" | "low";
+  matchingSkills: Array<{
+    name: string;
+    url?: string;
+    context?: string;
+  }>;
+  matchingExperience: Array<{
+    role: string;
+    company: string;
+    dateRange: string;
+    url?: string;
+    relevance: string;
+  }>;
+  gaps: string[];
+  analysis: string;
+  resumeVariantRecommendation: "leader" | "ops" | "builder";
+  cta: {
+    text: string;
+    link: string;
+  };
 }

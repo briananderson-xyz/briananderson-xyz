@@ -1,13 +1,23 @@
 ---
 title: Fill In My Blank
-date: 2014-01-01
+date: 2012-09-01
+period: "2012 – 2014"
 summary: A mobile party game that allowed users to play with friends to create hilarious results using Blanks and Fillers.
 tags: ["MobileGame", "iOS", "Android", "Java", "ObjectiveC", "Builder"]
 keywords: ["fimb", "party-game", "mobile-app"]
-featuredImage: "/projects/fimb/logo.png"
-featuredImageAlt: "Fill In My Blank Logo"
+featuredImage: "/projects/fimb/app-icon-designer.jpg"
+featuredImageAlt: "Fill In My Blank App Icon"
 visualArchive:
   images:
+    - path: "/projects/fimb/login-designer-evolution.jpg"
+      alt: "Login Screen Evolution — original to designer-led"
+      caption: "The evolution from our original login screen to the designer-led version with dynamic backgrounds"
+    - path: "/projects/fimb/gameplay-designer.jpg"
+      alt: "Gameplay — designer era"
+      caption: "Core gameplay loop: active blank, fill-in options, and player selection — designer-led version"
+    - path: "/projects/fimb/app-icon-designer.jpg"
+      alt: "App Icon — designer era"
+      caption: "The polished app icon produced by our hired designer"
     - path: "/projects/fimb/home.png"
       alt: "Home Screen"
     - path: "/projects/fimb/home%20v2.png"

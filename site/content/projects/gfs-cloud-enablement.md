@@ -1,6 +1,7 @@
 ---
 title: "Enterprise Cloud Enablement & ICDS"
-date: 2023-06-15
+date: 2020-02-01
+period: "2020 – 2024"
 summary: "Standardizing GCP infrastructure, CI/CD pipelines, and data consolidation at scale."
 tags: ["Terraform", "IaC", "GCP", "DevOps", "PlatformEngineering", "Ops"]
 keywords: ["gfs", "gordon-food-service", "icds", "cloud-enablement"]

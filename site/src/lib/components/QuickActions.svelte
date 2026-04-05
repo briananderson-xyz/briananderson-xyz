@@ -21,6 +21,7 @@
 		{ id: 'resume', title: 'Resume', category: 'page', url: '/resume/', keywords: ['resume', 'cv', 'experience'] },
 		{ id: 'projects', title: 'Projects', category: 'page', url: '/projects/', keywords: ['projects', 'work', 'portfolio'] },
 		{ id: 'blog', title: 'Blog', category: 'page', url: '/blog/', keywords: ['blog', 'articles', 'posts'] },
+		{ id: 'following', title: 'Following', description: 'Creators and channels worth your attention', category: 'page', url: '/following/', keywords: ['following', 'youtube', 'creators', 'influencers', 'watch'] },
 
 		// Variant switches
 		{

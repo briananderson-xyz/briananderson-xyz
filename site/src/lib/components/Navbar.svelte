@@ -193,6 +193,14 @@
         href={addVariant("/blog/", variant)}>./blog</a
       >
       <a
+        class="hover:text-skin-accent transition-colors {activeRoute.startsWith(
+          '/following',
+        )
+          ? 'text-skin-accent'
+          : 'text-skin-muted'}"
+        href="/following/">./following</a
+      >
+      <a
         class="hover:text-skin-accent transition-colors text-skin-muted"
         href={addVariant("/#contact", variant)}>./contact</a
       >
@@ -239,6 +247,13 @@
             : 'text-skin-muted'}"
           onclick={() => (open = false)}
           href={addVariant("/blog/", variant)}>./blog</a
+        >
+        <a
+          class="hover:text-skin-accent {activeRoute.startsWith('/following')
+            ? 'text-skin-accent'
+            : 'text-skin-muted'}"
+          onclick={() => (open = false)}
+          href="/following/">./following</a
         >
         <a
           class="text-skin-muted hover:text-skin-accent"
