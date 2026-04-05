@@ -140,7 +140,8 @@ export class ContentTools {
 			email: this.index.resume.email,
 			tagline: this.index.resume.tagline,
 			summary: this.index.resume.summary,
-			skillCategories: Object.keys(this.index.resume.skillCategories || {})
+			skillCategories: Object.keys(this.index.resume.skillCategories || {}),
+			certificates: this.index.resume.certificates || []
 		};
 	}
 }
@@ -225,7 +226,7 @@ export const toolDeclarations: { functionDeclarations: FunctionDeclaration[] } =
 		},
 		{
 			name: 'get_resume_summary',
-			description: 'Get Brian\'s resume summary including name, title, location, tagline, and overview.',
+			description: 'Get Brian\'s resume summary including name, title, location, tagline, overview, skill categories, and certifications.',
 			parameters: {
 				type: Type.OBJECT,
 				properties: {}
