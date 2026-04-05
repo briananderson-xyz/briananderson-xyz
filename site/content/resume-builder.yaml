@@ -2,44 +2,32 @@ name: Brian Anderson
 meta:
   order: 2
 jobTitles:
+  - Staff Applied AI Engineer
   - Full Stack Cloud Architect
-  - GenAI/DevOps Specialist
 tagline: >
-  Hands-on engineer specializing in Full-Stack Product Development, GenAI Integration,
-  and Mobile/Web Architecture. Passionate about shipping high-quality code, building
-  intuitive user experiences, and solving complex technical challenges across the entire stack.
-mission: Delivering elegant, high-performance digital products by building systems that scale and fostering a culture of quality and consistency.
+  Hands-on builder focused on full-stack product development, agent workflows,
+  and modern cloud architecture from prototype through production.
+mission: Delivering elegant, high-performance digital products through Agentic AI, scalable systems, and a culture of quality and consistency.
 email: brian@briananderson.xyz
 location: Denver, CO
 summary: >
-  Full-stack engineer with over a decade of hands-on experience shipping production 
-  applications for Fortune 500 brands. Expert in modern web frameworks, native mobile 
-  development, and cloud-native backend services. Built and shipped high-concurrency 
-  e-commerce platforms, mobile banking apps, and GenAI-powered automation tools to enhance
-  developer experience and product delivery.
+  Staff-level engineer with experience shipping production software across web,
+  mobile, cloud platforms, and high-concurrency backend systems. Built enterprise
+  applications for Fortune 500 brands and now applies that delivery background to
+  agentic AI products, including tool orchestration, plugin systems, evaluation,
+  and observability for real-world reliability.
 skills:
-  Frontend Frameworks:
-    - name: React / Next.js
+  Frontend & Mobile:
+    - name: React
       url: https://react.dev/
     - name: SvelteKit
       url: https://svelte.dev/docs/kit/introduction
-    - name: Angular
-      url: https://angular.dev/
-    - name: Vue
-      url: https://vuejs.org/
     - name: TypeScript
       url: https://www.typescriptlang.org/
-  Mobile Development:
-    - name: iOS (Objective-C/Swift)
+    - name: iOS (Swift)
       url: https://developer.apple.com/
     - name: Android (Java)
       url: https://developer.android.com/
-    - name: React Native
-      url: https://reactnative.dev/
-    - name: Ionic
-      url: https://ionicframework.com/
-    - name: Cordova
-      url: https://cordova.apache.org/
   Backend & APIs:
     - name: Node.js / Express
       url: https://nodejs.org/
@@ -47,22 +35,24 @@ skills:
       url: https://spring.io/projects/spring-boot
     - name: Python (Flask/FastAPI)
       url: https://www.python.org/
-  Generative AI:
-    - name: Amazon Bedrock
-      url: https://docs.aws.amazon.com/bedrock/
-    - name: LangGraph
-      url: https://langchain.com/langgraph/
-    - name: Kiro
-      url: https://kiro.dev/
-    - name: Antigravity
-      url: https://antigravity.google/
-    - name: Strands Agents SDK
-      url: https://strandsagents.com/
-  Data & Persistence:
+    - name: Hono
+      url: https://hono.dev/
+  Cloud & DevOps:
+    - name: AWS
+      url: https://aws.amazon.com/
+    - name: Google Cloud
+      url: https://cloud.google.com/
+    - name: Kubernetes
+      url: https://kubernetes.io/
+    - name: GitHub Actions
+      url: https://github.com/features/actions
+    - name: Terraform
+      url: https://www.terraform.io/
+    - name: Spinnaker
+      url: https://www.spinnaker.io/
+  Data & Messaging:
     - name: PostgreSQL
       url: https://www.postgresql.org/
-    - name: DynamoDB
-      url: https://aws.amazon.com/dynamodb/
     - name: Firestore
       url: https://firebase.google.com/products/firestore
     - name: Redis
@@ -71,62 +61,63 @@ skills:
       url: https://kafka.apache.org/
     - name: Pub/Sub
       url: https://cloud.google.com/pubsub
-  Cloud & DevOps:
-    - name: AWS
-      url: https://aws.amazon.com/
-    - name: Google Cloud
-      url: https://cloud.google.com/
-    - name: Kubernetes
-      url: https://kubernetes.io/
-    - name: Docker
-      url: https://www.docker.com/
-    - name: GitHub Actions
-      url: https://github.com/features/actions
-    - name: GitLab CI
-      url: https://about.gitlab.com/gitlab-ci/
-    - name: Terraform
-      url: https://www.terraform.io/
-    - name: AWS CDK / CloudFormation
-      url: https://aws.amazon.com/cdk/
-    - name: Liquibase
-      url: https://www.liquibase.com/
-    - name: Spinnaker
-      url: https://www.spinnaker.io/
-  Testing & Quality:
-    - name: TDD / BDD
-    - name: Playwright
-      url: https://playwright.dev/
-    - name: AWS Device Farm
-      url: https://aws.amazon.com/device-farm/
-    - name: Extreme Programming
-      url: https://www.extremeprogramming.org/
+  AI Systems & Agent Workflows:
+    - name: Amazon Bedrock
+      url: https://docs.aws.amazon.com/bedrock/
+    - name: Model Context Protocol (MCP)
+      url: https://modelcontextprotocol.io/
+    - name: Strands SDK
+      url: https://strandsagents.com/
+    - name: VoltAgent SDK
+      url: https://voltagent.dev/
+    - name: Tool / MCP Schema Design
+    - name: Prompt Evaluation
+    - name: OpenTelemetry Tracing
+    - name: promptfoo
+      url: https://www.promptfoo.dev/
+  AI Development Tools:
+    - name: Kiro
+      url: https://kiro.dev/
+    - name: Claude Code
+      url: https://www.anthropic.com/
+    - name: Codex
+      url: https://openai.com/codex/
 experience:
   - role: Enterprise Solutions Architect
     company: Amazon Web Services
     location: Denver, CO
-    description: Building GenAI-powered automation tools and customer-facing integrations.
+    description: Building Agentic AI platforms, developer tooling, and customer-facing prototypes.
     highlights:
-      - "GenAI Agent Development: Built a custom GenAI agent platform using Amazon Bedrock and Agentcore in Python, implementing RAG patterns for automated CRM updates and documentation generation. Reduced team administrative overhead by ~4 hours/week."
-      - "Full-Stack Integration: Implemented Amazon Q Developer (Kiro) integrations for GitHub's SpecKit and FissionAI's OpenSpec APIs, becoming an early adopter and driving customer adoption through thought leadership and demos."
-      - "Customer Solution Delivery: Built an Amazon Connect-based SMS automation pilot for a global manufacturer, writing customer third-party applications and integrating with backend APIs to automate customer support workflows."
+      - "Industrial Data Platform (ProveIT): Built a full-stack prototype for manufacturing environments that ingested MQTT data streams via a Unified Namespace (UNS) architecture, categorized and standardized stream contents into a time-series database, and integrated an Agentic AI layer using AgentCore and Bedrock for anomaly detection. Delivered persona-specific dashboards (OEE, equipment state) and natural-language querying of production line status."
+      - text: "Agentic AI Platform (Stallion): Built a full-stack AI agent platform from scratch with a React/TypeScript UI, Hono API layer, Tauri desktop wrapper, manifest-driven plugins, and MCP tool orchestration. Added OpenTelemetry and Prometheus/Grafana instrumentation so agent behavior, cost, and reliability could be observed instead of guessed."
+        link: /projects/stallion-agent-platform/
+      - text: "Agentic Developer Tooling (Kiro): Ranked top 75 globally out of 275k+ CLI users. Built agent workflows that standardized ideation, implementation, and verification loops, reduced personal admin overhead by ~4 hours/week, and used promptfoo evals to harden prompts before release."
+        link: /projects/kiro-agent-workflows/
+      - "Enterprise Architecture (SAP Integration): Guided a global manufacturer through architecting AWS infrastructure for a Document Management System integrated with SAP ERP, implementing infrastructure as code, private VPC with VPC endpoints, and S3 gateway patterns for scalability, resiliency, and cost efficiency."
+      - "Customer Solution Prototyping (Amazon Connect): Built a working prototype for a global manufacturer demonstrating Amazon Connect's extensibility, including a secure SMS image-upload integration and multi-threaded conversation support to address visual troubleshooting and extended support hour requirements."
     start_date: September 2024
   - role: Technical Director
     company: Valtech | Kin + Carta
     location: Denver, CO
     description: Hands-on technical leadership for credit card application modernization.
     highlights:
-      - "Application Migration: Lead Architect responsible for migrating 6 core credit card applications from legacy Websphere to OpenShift, refactoring Java Spring Boot services and implementing Helm-based deployments with zero downtime."
+      - "Application Migration: Lead Architect responsible for migrating 14 core credit card applications from legacy Websphere to OpenShift, refactoring Java Spring Boot services and implementing Helm-based deployments with zero downtime."
       - "Testing Excellence: Implemented TDD practices and automated testing guardrails, significantly reducing production bugs and increasing deployment confidence for the engineering team."
-      - "Integration Development (Discover Financial): Integrated Helm Charts on top of OpenShift, establishing best practices across the organization for estbalishing SLIs/SLOs with Datadog/Instana and high availability/scalability with Kubernetes."
+      - "Integration Development (Discover Financial): Integrated Helm Charts on top of OpenShift, establishing best practices across the organization for establishing SLIs/SLOs with Datadog/Instana and high availability/scalability with Kubernetes."
     start_date: March 2024
     end_date: September 2024
   - role: Senior Technical Principal
     company: Kin + Carta
     location: Denver, CO
-    description: Built developer platform tooling and shared component libraries.
+    description: Built CI/CD platform tooling at Discover Financial and developer infrastructure at Gordon Food Service.
     highlights:
-      - "Cloud Developer Platform (Gordon Food Service): Built the enterprise 'Golden Path' developer platform, implementing self-service project scaffolding that automated CI/CD setup across GitLab, SonarCloud, NexusIQ, and Apigee."
+      - text: "CI/CD Platform Engineering (Discover Financial): Built the integration layer for the Trident pipeline, a standardized CI/CD framework spanning 5,000+ applications. Defined Golden Paths and integration playbooks, implemented AWS integration via Kubernetes Operators, and established CD pipeline strategies (canary, blue/green). Resulted in a 90% reduction in deployment lead time."
+        link: /projects/discover-trident/
+      - text: "Cloud Developer Platform (Gordon Food Service): Built the enterprise 'Golden Path' developer platform, implementing self-service project scaffolding that automated CI/CD setup across GitLab, SonarCloud, NexusIQ, and Apigee."
+        link: /projects/gfs-cloud-enablement/
       - "Enterprise Applications (Gordon Food Service): Lead architect in developing a comprehensive library of shared Terraform modules and Liquibase patterns, enabling consistent infrastructure provisioning across all product teams."
+      - text: "Data Modernization (Gordon Food Service): Built the data normalization pipelines (Dataflow) and domain access API layer (GKE) for ICDS (Integrated Consumption Data Store), centralizing fragmented data into BigQuery and replacing one-off data duplication patterns across core financial workflows."
+        link: /projects/gfs-cloud-enablement/
     start_date: February 2020
     end_date: March 2024
   - role: Technical Principal
@@ -134,7 +125,8 @@ experience:
     location: Denver, CO
     description: Built high-concurrency e-commerce platform and mobile applications.
     highlights:
-      - "E-Commerce Platform: Built a high-concurrency ordering platform using Angular frontend and Java Spring Boot microservices, integrating Firestore for real-time updates, Pub/Sub for event streaming, and Memorystore (Redis) for caching."
+      - text: "E-Commerce Platform: Built a high-concurrency ordering platform using Angular frontend and Java Spring Boot microservices, integrating Firestore for real-time updates, Pub/Sub for event streaming, and Memorystore (Redis) for caching. Achieved 8-9 production deployments per day via Spinnaker while scaling the engineering team to 60+ developers."
+        link: /projects/gfs-ordering-platform/
       - "Mobile Architect & CI/CD: Engineered a data-rich native Android application for a major agriculture client, integrating complex mapping features with Mapbox to visualize satellite and drone imagery. Built and deployed a comprehensive Continuous Delivery pipeline from scratch using Fastlane, Jenkins, and Docker, automating parallel builds for iOS and Android. Implemented automated testing via AWS Device Farm and static analysis with SonarQube, significantly reducing deployment friction and ensuring code quality across platforms."
       - "Innovation Leadership: Engineered an internal DevOps framework for standardized distribution of Android, iOS, and Cordova Hybrid applications. Reduced release overhead from 4 weeks to 1 week for 6 production-supported applications via Fabric Beta."
     start_date: January 2017
@@ -145,6 +137,7 @@ experience:
     description: Built native mobile apps and experiential commerce prototypes.
     highlights:
       - "iOS & Android Development: Built native iOS and Android applications for a Global Fast Food enterprise, implementing complex user flows and ServiceNow backend integrations."
+      - "Modernization Roadmaps: Led technical sales engagements for fleet management clients, performing architectural audits and delivering strategic roadmaps to modernize legacy platforms."
       - "R&D Prototyping: Built experiential commerce prototypes using Raspberry Pi (Flask backend), Amazon Echo (voice UI), and Oculus Rift (Unity 3D) for demonstration at industry conferences."
       - "Location-Based Features: Implemented iBeacon (BLE) proximity detection and Parse real-time messaging for a high-traffic healthcare conference application."
     start_date: July 2015
@@ -154,9 +147,7 @@ experience:
     location: Chicago, IL
     description: Built web and hybrid mobile applications for enterprise clients.
     highlights:
-      - "iOS App Development: Sole developer for a premium Swift-based iOS application, implementing the full user experience including subscription management, content delivery, and push notifications."
-      - "Web Application: Built an AngularJS e-commerce application for a specialty food distributor, implementing responsive UI components and integrating automated deployment via Octopus Deploy."
-      - "Hybrid Integration: Implemented Chart.js data visualization within native mobile apps using custom WebView bridges for a wealth management client."
+      - "Product Delivery: Sole developer and architect for a premium Swift iOS application for an executive society. Separately, built an AngularJS e-commerce platform for a food distributor with automated deployment via Octopus Deploy, and architected reusable WebView components to share data visualization across native mobile platforms for a wealth management client."
     start_date: April 2014
     end_date: July 2015
   - role: Technical Analyst
@@ -164,8 +155,7 @@ experience:
     location: Chicago, IL
     description: Built core mobile banking features for iOS.
     highlights:
-      - "Mobile Banking Features: Shipped Photo Check Deposit and Scheduled Payments features for a large financial services client, implementing camera integration, image processing, and API connectivity."
-      - "UI Implementation: Executed a complete home screen refactor using Auto Layout, ensuring consistent and adaptive UI across all iOS device sizes."
+      - "Mobile Banking: Shipped Photo Check Deposit and Scheduled Payments features for a large financial services client, including camera integration, image processing, and a full home screen refactor using Auto Layout."
     start_date: June 2013
     end_date: April 2014
 early-career:

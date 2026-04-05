@@ -6,6 +6,22 @@ tags: ["WordPress", "CustomTheme", "PHP", "JavaScript", "Modernization", "Consul
 keywords: ["fairview", "childcare", "website-redesign", "ux"]
 featuredImage: "/projects/fairview/desktop_home_dark.png"
 featuredImageAlt: "Fairview Children's Center - Desktop Home Dark Theme"
+visualArchive:
+  images:
+    - path: "/projects/fairview/desktop_home_dark.png"
+      alt: "Desktop Home - Dark Theme"
+    - path: "/projects/fairview/desktop_home_light.png"
+      alt: "Desktop Home - Light Theme"
+    - path: "/projects/fairview/mobile_home_dark.png"
+      alt: "Mobile Home - Dark Theme"
+    - path: "/projects/fairview/mobile_home_light.png"
+      alt: "Mobile Home - Light Theme"
+    - path: "/projects/fairview/mobile_footer_dark.png"
+      alt: "Mobile Footer - Dark Theme"
+    - path: "/projects/fairview/desktop_footer_light.png"
+      alt: "Desktop Footer - Light Theme"
+    - path: "/projects/fairview/theme_options.png"
+      alt: "Theme Options UI"
 ---
 
 ## The Project
@@ -54,24 +70,3 @@ I didn't want to just finish the site and leave Melissa hanging. I took the time
 
 Not every project needs to be enterprise-scale to be meaningful. Fairview serves families in a local community, and a good website can be the difference between a parent enrolling their child or moving on to the next search result. This project reminded me why I got into building things in the first place.
 
-## Visual Archive
-<div class="grid grid-cols-2 md:grid-cols-3 gap-4 not-prose mt-8">
-  <div class="border border-skin-border bg-skin-page p-2 rounded-lg">
-    <img src="/projects/fairview/desktop_home_light.png" alt="Desktop Home - Light Theme" class="w-full h-auto grayscale hover:grayscale-0 transition-all"/>
-  </div>
-  <div class="border border-skin-border bg-skin-page p-2 rounded-lg">
-    <img src="/projects/fairview/mobile_home_dark.png" alt="Mobile Home - Dark Theme" class="w-full h-auto grayscale hover:grayscale-0 transition-all"/>
-  </div>
-  <div class="border border-skin-border bg-skin-page p-2 rounded-lg">
-    <img src="/projects/fairview/mobile_home_light.png" alt="Mobile Home - Light Theme" class="w-full h-auto grayscale hover:grayscale-0 transition-all"/>
-  </div>
-  <div class="border border-skin-border bg-skin-page p-2 rounded-lg">
-    <img src="/projects/fairview/mobile_footer_dark.png" alt="Mobile Footer - Dark Theme" class="w-full h-auto grayscale hover:grayscale-0 transition-all"/>
-  </div>
-  <div class="border border-skin-border bg-skin-page p-2 rounded-lg">
-    <img src="/projects/fairview/desktop_footer_light.png" alt="Desktop Footer - Light Theme" class="w-full h-auto grayscale hover:grayscale-0 transition-all"/>
-  </div>
-  <div class="border border-skin-border bg-skin-page p-2 rounded-lg">
-    <img src="/projects/fairview/theme_options.png" alt="Theme Options UI" class="w-full h-auto grayscale hover:grayscale-0 transition-all"/>
-  </div>
-</div>

@@ -4,6 +4,13 @@ date: 2026-01-12
 summary: A deep dive into the stack behind briananderson.xyz - SvelteKit, Tailwind, Catppuccin, and Agentic workflows.
 tags: ["SvelteKit", "AI", "Tailwind", "CICD", "GCP", "Firebase", "Builder"]
 keywords: ["site", "meta", "agentic", "catppuccin"]
+links:
+  - label: "briananderson-xyz/briananderson-xyz"
+    url: "https://github.com/briananderson-xyz/briananderson-xyz"
+    type: "github"
+  - label: "briananderson-xyz/briananderson-xyz-dns"
+    url: "https://github.com/briananderson-xyz/briananderson-xyz-dns"
+    type: "github"
 ---
 
 This site exists because I needed a place that was more than a resume. Resumes flatten everything. A multi-year enterprise engagement becomes a bullet point, a startup you poured yourself into becomes a line item. I wanted something that could hold the full picture: the technical depth, the narrative, and the proof that I build things. The site itself is the first portfolio piece.
@@ -83,6 +90,3 @@ This site is a living project. Every feature I add is both useful and demonstrat
 ## Source
 
 All of the code behind this site is open source.
-
-- [briananderson-xyz/briananderson-xyz](https://github.com/briananderson-xyz/briananderson-xyz) - SvelteKit site, Firebase Cloud Functions, Terraform infrastructure
-- [briananderson-xyz/briananderson-xyz-dns](https://github.com/briananderson-xyz/briananderson-xyz-dns) - Cloudflare DNS configuration

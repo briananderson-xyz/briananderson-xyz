@@ -1,36 +1,29 @@
 name: Brian Anderson
 jobTitles:
-  - Technical Director
+  - Principal AI Platform Architect
   - Enterprise Solutions Architect
-tagline: Specializing in GenAI integration, Cloud Native transformation, and DevOps. Passion for designing autonomous systems and scalable architectures that empower teams to deliver high-quality solutions by fostering a culture of collaboration, focusing on developer experience, and enabling rapid innovation with continuous delivery.
+tagline: Enterprise architect focused on AI platform strategy, cloud modernization, and developer productivity at Fortune 500 scale.
 mission: Driving measurable business automation and customer outcomes through Agentic AI and Cloud Native strategies.
 email: brian@briananderson.xyz
 location: Denver, CO
-summary: Proven track record of leading multi-team deliveries for Fortune 500 companies, specializing in migrating monolithic systems to Kubernetes-based microservices and implementing end-to-end automation. Expert in AWS/GCP architecture, CI/CD standardization, and bridging the gap between executive strategy and technical execution.
+summary: Principal-level architect with 10+ years leading complex modernization programs across AWS, GCP, Kubernetes, and platform engineering. Delivered zero-downtime migrations, enterprise CI/CD standards, and cloud operating models across thousands of applications. Now applying that same rigor to agentic AI systems, including tool orchestration, evaluation workflows, and observability for reliability, cost, and adoption.
 skills:
   Leadership & Strategy:
     - name: Executive Stakeholder Management
     - name: Solution Discovery
     - name: Strategic Roadmapping
     - name: Cross-Functional Leadership
-  Cloud Platforms:
+  Cloud & Infrastructure:
     - name: AWS
       url: https://aws.amazon.com/
     - name: Google Cloud
       url: https://cloud.google.com/
-    - name: OpenShift
-      url: https://www.redhat.com/en/technologies/openshift-platform
-  Infrastructure & IaC:
+    - name: Kubernetes (EKS/GKE/OCP)
+      url: https://kubernetes.io/
     - name: Terraform
       url: https://www.terraform.io
-    - name: Terraform Cloud
-      url: https://www.terraform.io/cloud
     - name: AWS CDK / CloudFormation
       url: https://aws.amazon.com/cdk/
-    - name: Kubernetes (EKS/GKE)
-      url: https://kubernetes.io/
-    - name: Networking (VPC/TGW)
-      url: https://aws.amazon.com/networking/
   DevOps & CI/CD:
     - name: GitHub Actions
       url: https://github.com/actions
@@ -38,88 +31,69 @@ skills:
       url: https://docs.gitlab.com/ci/
     - name: Helm
       url: https://helm.sh/
-    - name: Jenkins
-      url: https://www.jenkins.io/
     - name: Spinnaker
       url: https://spinnaker.io/
-  Languages:
+  Languages & Frameworks:
+    - name: TypeScript
+      url: https://www.typescriptlang.org/
     - name: Java (Spring Boot)
       url: https://spring.io/projects/spring-boot
     - name: Python
       url: https://www.python.org/
-    - name: Node.js
-      url: https://nodejs.org/
-    - name: TypeScript
-      url: https://www.typescriptlang.org/
-  Web Frameworks:
     - name: React
       url: https://react.dev/
-    - name: Angular
-      url: https://angular.dev/
     - name: SvelteKit
       url: https://kit.svelte.dev/
-    - name: Next.js
-      url: https://nextjs.org/
-    - name: Vue
-      url: https://vuejs.org/
   Data & Messaging:
     - name: PostgreSQL
       url: https://www.postgresql.org/
-    - name: DynamoDB
-      url: https://docs.aws.amazon.com/dynamodb/
-    - name: Redis
-      url: https://redis.io/
     - name: Firestore
       url: https://cloud.google.com/products/firestore/
-    - name: Pub/Sub
-      url: https://cloud.google.com/products/pubsub/
+    - name: Redis
+      url: https://redis.io/
     - name: Apache Kafka
       url: https://kafka.apache.org/
-    - name: EventBridge
-      url: https://docs.aws.amazon.com/eventbridge/
-  Generative AI:
+    - name: Pub/Sub
+      url: https://cloud.google.com/products/pubsub/
+  AI Systems & Agent Workflows:
     - name: Amazon Bedrock
       url: https://docs.aws.amazon.com/bedrock/
-    - name: RAG
-      url: https://docs.aws.amazon.com/bedrock/latest/userguide/rag-overview.html
-    - name: Prompt Engineering
-      url: https://docs.aws.amazon.com/bedrock/latest/userguide/prompt-engineering.html
     - name: Model Context Protocol (MCP)
       url: https://modelcontextprotocol.io/
-  AI Agent Frameworks:
-    - name: LangGraph
-      url: https://langchain-ai.github.io/langgraph
     - name: Agentcore
       url: https://aws.amazon.com/bedrock/agentcore/
     - name: Strands SDK
       url: https://strandsagents.com/
     - name: VoltAgent SDK
       url: https://voltagent.dev/
+  AI Evaluation & Tooling:
+    - name: Prompt Evaluation
+    - name: Tool / MCP Schema Design
+    - name: OpenTelemetry Tracing
+    - name: Reliability & Cost Observability
+    - name: promptfoo
+      url: https://www.promptfoo.dev/
   AI Development Tools:
     - name: Kiro
       altName: Amazon Q Developer
       url: https://kiro.dev/
     - name: Claude Code
       url: https://www.anthropic.com/
-    - name: Antigravity
-      url: https://antigravity.google/
     - name: Codex
       url: https://openai.com/codex/
-    - name: SpecKit
-      url: https://github.com/github/spec-kit
-    - name: OpenSpec
-      url: https://openspec.dev/
 experience:
   - role: Enterprise Solutions Architect
     company: Amazon Web Services
     location: Denver, CO
-    description: Specializing in GenAI integration, Cloud Native transformation, and Logistics Control Towers.
+    description: Specializing in Agentic AI, Cloud Native transformation, and customer solution delivery.
     highlights:
-      - "Industrial Data & Agentic AI (ProveIT): Built a cross-industry prototype simulating MQTT data streams for Glass and Pharma manufacturing using a Unified Namespace (UNS) architecture. Integrated an Agentic AI layer using AgentCore and Bedrock to enable real-time observability, allowing users to query equipment status and automate SOP-driven troubleshooting for production lines."
-      - "Customer Experience and Rapid Prototyping (Amazon Connect): Identified the opportunity and led the delivery of a pilot that enabled a global manufacturer to support multi-threaded conversations and expanded customer support hours. Personally engineered a secure SMS image-upload third-party app integration to address a specific visual troubleshooting gap, using this technical deep dive into the customer problem to earn the trust required to influence their broader modernization strategy."
-      - "Enterprise Modernization and SAP Integration: Architected a Document Management System integrated with SAP ERP to modernize legacy workflows. Leveraging the trust built through earlier successful prototypes, I secured executive buy-in to establish a comprehensive multi-year cloud migration roadmap for the enterprise."
-      - "GenAI Innovation and Automation: Engineered a custom GenAI agent platform using Amazon Bedrock and Agentcore, reducing team administrative overhead by 4 hours per week. Focused on improving CRM data hygiene and automated note-taking to provide leadership with enhanced visibility into customer engagement trends."
-      - "Product Influence and Developer Tooling: Championed Amazon Q Developer (Kiro) as a top 100 global CLI user and beta contributor, providing feedback to refine agentic features for real-world developer workflows. Engineered integrations for SpecKit and OpenSpec to support enterprise AI rollouts and drive internal adoption of spec-driven development."
+      - "Industrial Data & Agentic AI (ProveIT): Built a cross-industry prototype for Glass and Pharma manufacturing that ingested MQTT data streams via a Unified Namespace (UNS) architecture, categorized and standardized stream contents into a time-series database, and integrated an Agentic AI layer using AgentCore and Bedrock for anomaly detection and automated SOP-driven troubleshooting. Delivered persona-specific dashboards (OEE, equipment state) and natural-language querying of production line status."
+      - "Customer Experience and Rapid Prototyping (Amazon Connect): Identified the opportunity and built a working prototype that demonstrated multi-threaded conversation support and extended customer support hours for a global manufacturer. Personally engineered a secure SMS image-upload integration to address a specific visual troubleshooting gap, using this technical deep dive to earn the trust required to influence their broader modernization strategy."
+      - "Enterprise Modernization (SAP Integration): Guided a global manufacturer through architecting secure, scalable AWS infrastructure for a Document Management System integrated with SAP ERP. Established best practices for infrastructure as code, private VPC architecture with VPC endpoints, and S3 gateway patterns for high scalability, resiliency, and cost efficiency. Leveraging trust built through earlier prototypes, secured executive buy-in for a comprehensive multi-year cloud migration roadmap."
+      - text: "Agentic AI Platform (Stallion): Built a local-first AI agent platform to explore the full lifecycle of agent delivery, including tool orchestration, plugin-based extensibility, and observability for cost, reliability, and agent behavior. Instrumented the platform with OpenTelemetry and Prometheus/Grafana dashboards to make agent runs debuggable and production-ready."
+        link: /projects/stallion-agent-platform/
+      - text: "Agentic Developer Tooling (Kiro): Ranked top 75 globally out of 275k+ CLI users. Built AI workflows for Kiro that standardized ideation, implementation, and verification loops for developer and solutions architecture work. Reduced personal admin overhead by ~4 hours/week and used promptfoo-based evals to catch prompt contradictions before release."
+        link: /projects/kiro-agent-workflows/
     start_date: September 2024
   - role: Technical Director
     company: Valtech | Kin + Carta
@@ -134,11 +108,14 @@ experience:
   - role: Senior Technical Principal
     company: Kin + Carta
     location: Denver, CO
-    description: Orchestrated enterprise cloud adoption strategy and established governance for Gordon Food Service.
+    description: Led CI/CD platform engineering at Discover Financial and enterprise cloud adoption at Gordon Food Service.
     highlights:
-      - "Architectural Governance & Provisioning (Gordon Food Service): Engineered a standardized 'Golden Path' for enterprise cloud adoption by architecting a centralized Terraform module library. This automated the provisioning of fragmented tools (GitLab, SonarCloud, Apigee, NexusIQ) across the enterprise, ensuring security compliance and budgetary guardrails."
-      - "Data Modernization Strategy: Led the architectural redesign of fragmented legacy systems into a unified GCP Data Lake. This strategic consolidation eliminated data silos and delivered a 30% improvement in decision-making velocity for executive leadership."
-      - "Operational Excellence: Developed common CI/CD Pipeline Templates to standardize integration across current and future product teams, enabling rapid testing and deployment while maintaining rigorous compliance and security."
+      - text: "CI/CD Platform Engineering (Discover Financial): Led the integration layer for the Trident pipeline, a standardized CI/CD framework spanning 300+ dedicated staff and 5,000+ applications with an estimated $30M in savings. Defined Golden Paths and integration playbooks for production adoption, socialized standards across the organization, and identified gaps in monitoring, AWS integration (via Kubernetes Operators), and deployment strategies (canary, blue/green). Resulted in a 90% reduction in deployment lead time."
+        link: /projects/discover-trident/
+      - text: "Architectural Governance & Provisioning (Gordon Food Service): Engineered a standardized 'Golden Path' for enterprise cloud adoption by architecting a centralized Terraform module library. This automated the provisioning of fragmented tools (GitLab, SonarCloud, Apigee, NexusIQ) across the enterprise, ensuring security compliance and budgetary guardrails."
+        link: /projects/gfs-cloud-enablement/
+      - text: "Data Modernization (Gordon Food Service): Led the development of ICDS (Integrated Consumption Data Store), normalizing fragmented data sources into a centralized BigQuery repository with Dataflow pipelines and a standardized API layer on GKE, replacing multiple one-off data duplication patterns that teams relied on for core financial workflows."
+        link: /projects/gfs-cloud-enablement/
     start_date: February 2020
     end_date: March 2024
   - role: Technical Principal
@@ -146,7 +123,8 @@ experience:
     location: Denver, CO
     description: Architected high-concurrency ordering platforms and geospatial data solutions for agriculture.
     highlights:
-      - "Google Cloud Ecommerce Architecture (Gordon Food Service): Architected a high-concurrency platform using Angular and Java Spring Boot on GKE, leveraging Firestore, Pub/Sub, and Memorystore. Scaled the organization to 60+ developers across 5 teams, achieving 8–9 production deployments per day."
+      - text: "Google Cloud Ecommerce Architecture (Gordon Food Service): Architected a high-concurrency platform using Angular and Java Spring Boot on GKE, leveraging Firestore, Pub/Sub, and Memorystore. Scaled the organization to 60+ developers across 5 teams, achieving 8–9 production deployments per day."
+        link: /projects/gfs-ordering-platform/
       - "Mobile Architecture: Served as Solution Architect and Android Lead for a geospatial field-mapping solution for a large agriculture company. Engineered the architecture to visualize satellite/drone data and integrated a proprietary Nitrogen simulation analysis tool. Built a dual-platform CD pipeline using Fastlane, Docker, and AWS Device Farm to ensure feature parity."
       - "Innovation Leadership: Engineered an internal DevOps framework for standardized distribution of Android, iOS, and Cordova Hybrid applications. Reduced release overhead from 4 weeks to 1 week for 6 production-supported applications via Fabric Beta."
     start_date: January 2017
@@ -167,8 +145,7 @@ experience:
     location: Chicago, IL
     description: Developed native mobile and hybrid web applications for high-profile clients.
     highlights:
-      - "iOS Product Delivery: Acted as sole developer and architect for a premium Swift-based iOS application for a high-profile executive society, transitioning a legacy subscription model into a user-centric mobile experience."
-      - "Web & Hybrid Development: Architected an AngularJS web application for a specialty food distributor, implementing automated deployment pipelines using Octopus and TFS. Integrated Chart.js via custom WebViews into native mobile apps for a wealth management company using Bower and Gulp for streamlined package management and integration."
+      - "Product Delivery: Sole developer and architect for a premium Swift iOS application for an executive society. Separately, built an AngularJS e-commerce platform for a food distributor with automated deployment via Octopus Deploy, and architected reusable WebView components to share data visualization across native mobile platforms for a wealth management client."
     start_date: April 2014
     end_date: July 2015
   - role: Technical Analyst
