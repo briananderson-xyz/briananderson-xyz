@@ -8,7 +8,7 @@
 
 <SEO
   title="Brian Anderson - Ops"
-  description="Operations & SRE."
+  description="Platform and reliability architecture for cloud-native systems and AI workloads."
   canonical={getCanonicalUrl("/ops/")}
 />
 

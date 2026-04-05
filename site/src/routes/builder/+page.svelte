@@ -8,7 +8,7 @@
 
 <SEO
   title="Brian Anderson - Builder"
-  description="Systems Builder."
+  description="Hands-on product and platform engineering across web, cloud, and agent-driven systems."
   canonical={getCanonicalUrl("/builder/")}
 />
 

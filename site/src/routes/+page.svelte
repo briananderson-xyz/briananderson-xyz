@@ -19,7 +19,7 @@
 
 <SEO
   title="Brian Anderson"
-  description="Brian Anderson is a Systems Engineer & Full Stack Developer."
+  description="Enterprise architect and hands-on builder focused on AI platforms, cloud modernization, and developer productivity."
   canonical={getCanonicalUrl("/")}
 />
 

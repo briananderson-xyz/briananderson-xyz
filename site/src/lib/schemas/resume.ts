@@ -1,5 +1,13 @@
 import { z } from 'zod';
 
+const ResumeHighlightSchema = z.union([
+    z.string(),
+    z.object({
+        text: z.string(),
+        link: z.string().optional(),
+    })
+]);
+
 export const ResumeSchema = z.object({
     name: z.string(),
     title: z.string().optional(),
@@ -34,7 +42,7 @@ export const ResumeSchema = z.object({
             company: z.string(),
             location: z.string().optional(),
             description: z.string().optional(),
-            highlights: z.array(z.string()).optional(),
+            highlights: z.array(ResumeHighlightSchema).optional(),
             start_date: z.string().optional(),
             end_date: z.string().optional(),
         })

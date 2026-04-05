@@ -16,53 +16,31 @@
 <header
   class="border-b-2 border-skin-border pb-8 mb-10 print:mb-4 print:pb-4 print:border-black"
 >
-  <div
-    class="flex flex-col-reverse md:flex-row justify-between items-start gap-6 print:flex-row"
-  >
-    <div class="flex-1">
-      <h1
-        class="text-4xl md:text-5xl font-bold tracking-tight text-skin-base mb-2 print:text-black print:text-3xl print:font-serif"
+  <div>
+    <h1
+      class="text-4xl md:text-5xl font-bold tracking-tight text-skin-base mb-2 print:text-black print:text-3xl print:font-serif"
+    >
+      {resume.name}
+    </h1>
+    <p
+      class="text-xl text-skin-accent mb-4 print:text-black print:text-lg print:mb-2 print:font-bold print:font-serif"
+    >
+      {formattedTitle}
+    </p>
+    <div
+      class="flex flex-col gap-1 text-sm text-skin-muted print:text-black print:text-[10px] print:flex-row print:gap-4 print:font-serif"
+    >
+      <p>{resume.location}</p>
+      <a
+        href="mailto:{resume.email}"
+        class="hover:text-skin-accent transition-colors print:no-underline print:text-black"
+        >{resume.email}</a
       >
-        {resume.name}
-      </h1>
-      <p
-        class="text-xl text-skin-accent mb-4 print:text-black print:text-lg print:mb-2 print:font-bold print:font-serif"
+      <a
+        href={siteUrl}
+        class="hover:text-skin-accent transition-colors print:no-underline print:text-black"
+        >https://briananderson.xyz</a
       >
-        {formattedTitle}
-      </p>
-      <div
-        class="flex flex-col gap-1 text-sm text-skin-muted print:text-black print:text-[10px] print:flex-row print:gap-4 print:font-serif"
-      >
-        <p>{resume.location}</p>
-        <a
-          href="mailto:{resume.email}"
-          class="hover:text-skin-accent transition-colors print:no-underline print:text-black"
-          >{resume.email}</a
-        >
-        <a
-          href={siteUrl}
-          class="hover:text-skin-accent transition-colors print:no-underline print:text-black"
-          >https://briananderson.xyz</a
-        >
-      </div>
-    </div>
-
-    <div class="flex flex-col items-center md:items-end gap-2">
-      <div
-        class="w-32 h-32 rounded-full overflow-hidden border-2 border-skin-border grayscale hover:grayscale-0 transition-all print:w-24 print:h-24 print:border-black print:grayscale-0"
-      >
-        <img
-          src="/me.jpg"
-          alt={resume.name}
-          class="w-full h-full object-cover"
-        />
-      </div>
-      <div
-        class="hidden md:block text-right text-xs text-skin-muted mt-1 print:hidden"
-      >
-        <p>LAST_UPDATED: {new Date().toISOString().split("T")[0]}</p>
-        <p>STATUS: ACTIVE</p>
-      </div>
     </div>
   </div>
 </header>
@@ -78,13 +56,7 @@
   <p
     class="text-skin-base leading-relaxed text-lg border-l-2 border-skin-border pl-4 print:text-black print:text-xs print:leading-normal print:border-black print:pl-3 print:font-serif"
   >
-    <span class="print:text-black print:text-xs print:font-serif"
-      >{resume.summary}</span
-    >
-    <span
-      class="print:inline print:mt-0 print:ml-1 print:text-black print:text-xs print:font-serif"
-      >{resume.tagline}</span
-    >
+    {resume.summary}
   </p>
 </section>
 

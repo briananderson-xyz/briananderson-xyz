@@ -2,6 +2,34 @@ import { test, expect } from '@playwright/test';
 
 test.describe('AI Chat', () => {
   test.beforeEach(async ({ page }) => {
+    await page.route('**/chat', async (route) => {
+      const request = route.request();
+      const body = request.postDataJSON?.() as { message?: string } | undefined;
+      const message = body?.message?.toLowerCase() || '';
+
+      let response = 'Brian has broad experience across cloud, platform engineering, and product delivery.';
+
+      if (message.includes('aws')) {
+        response = 'Brian has deep AWS experience spanning Bedrock, VPC architecture, CI/CD, and enterprise cloud modernization.';
+      } else if (message.includes('kubernetes')) {
+        response = 'Brian has extensive Kubernetes experience across EKS, GKE, and OpenShift, including platform standards and production operations.';
+      } else if (message.includes('gfs')) {
+        response = 'Brian led major Gordon Food Service work including cloud enablement, ICDS, and the ordering platform modernization.';
+      } else if (message.includes('what technologies do you work with')) {
+        response = 'Brian works with AWS, GCP, Kubernetes, TypeScript, Java, Python, Terraform, and AI tooling such as MCP and promptfoo.';
+      } else if (message.includes('which of those do you prefer')) {
+        response = 'He tends to prefer TypeScript, cloud architecture, platform engineering, and tool-driven AI workflows where observability matters.';
+      } else if (message.includes('quick question')) {
+        response = 'Brian brings a mix of enterprise architecture, hands-on engineering, and AI workflow design.';
+      }
+
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ response })
+      });
+    });
+
     await page.goto('/');
     await page.waitForLoadState('networkidle');
   });

@@ -17,6 +17,15 @@
 	let isAnalyzing = $state(false);
 	let error = $state<string | null>(null);
 
+	function getCurrentVariant(): 'leader' | 'ops' | 'builder' {
+		if (!browser) return 'leader';
+
+		if (window.location.pathname.startsWith('/ops')) return 'ops';
+		if (window.location.pathname.startsWith('/builder')) return 'builder';
+
+		return 'leader';
+	}
+
 	async function handleAnalyze() {
 		if (!jobDescription.trim()) return;
 
@@ -33,7 +42,7 @@
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
 					jobDescription,
-					variant: 'leader' // Could be dynamic based on current page
+					variant: getCurrentVariant()
 				})
 			});
 
