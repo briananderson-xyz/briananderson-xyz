@@ -8,8 +8,40 @@ import { spawnSync } from "child_process";
 
 const require = createRequire(import.meta.url);
 const reportPath = process.env.AI_EVAL_REPORT_PATH;
-const judgeProvider = process.env.AI_EVAL_JUDGE_PROVIDER;
-const judgeModel = process.env.AI_EVAL_JUDGE_MODEL || null;
+
+function commandExists(command) {
+  const result = spawnSync("bash", ["-lc", `command -v ${command}`], {
+    cwd: process.cwd(),
+    encoding: "utf-8",
+  });
+
+  return result.status === 0;
+}
+
+function detectDefaultJudgeProvider() {
+  if (process.env.AI_EVAL_JUDGE_PROVIDER) {
+    return process.env.AI_EVAL_JUDGE_PROVIDER;
+  }
+
+  if (commandExists("codex")) {
+    return "codex";
+  }
+
+  if (commandExists("claude")) {
+    return "claude";
+  }
+
+  return null;
+}
+
+const judgeProvider = detectDefaultJudgeProvider();
+const judgeModel =
+  process.env.AI_EVAL_JUDGE_MODEL ||
+  (judgeProvider === "codex"
+    ? "codex-cli"
+    : judgeProvider === "claude"
+      ? "claude-cli"
+      : null);
 
 const COLORS = {
   reset: "\x1b[0m",
@@ -103,13 +135,45 @@ function loadProvider(providerRef, configDir) {
   return new Provider({ id: relPath });
 }
 
+function resolveJudgeReference(assertion, context) {
+  if (assertion.reference) {
+    return renderTemplate(String(assertion.reference), context.vars || {});
+  }
+
+  if (!assertion.referenceFrom) {
+    return null;
+  }
+
+  if (!String(assertion.referenceFrom).startsWith("file://")) {
+    throw new Error(`Unsupported judge reference: ${assertion.referenceFrom}`);
+  }
+
+  const rawRef = String(assertion.referenceFrom).replace("file://", "");
+  const [moduleRelPath, exportName = "default"] = rawRef.split("#");
+  const modulePath = path.resolve(context.configDir, moduleRelPath);
+  const loaded = require(modulePath);
+  const factory = exportName === "default" ? loaded : loaded[exportName];
+
+  if (typeof factory !== "function") {
+    throw new Error(`Judge reference export "${exportName}" is not a function in ${modulePath}`);
+  }
+
+  return String(
+    factory({
+      vars: context.vars,
+      prompt: context.prompt,
+      testCase: context.testCase,
+    }) || ""
+  ).trim();
+}
+
 function hasJudgeConfig() {
   if (judgeProvider === "codex") {
-    return true;
+    return commandExists("codex");
   }
 
   if (judgeProvider === "claude") {
-    return true;
+    return commandExists("claude");
   }
 
   if (judgeProvider === "openai") {
@@ -133,13 +197,59 @@ async function runJudgeAssertion(assertion, context) {
   }
 
   const rubric = assertion.rubric || "Evaluate the response for quality, groundedness, and usefulness.";
+  const resolvedReference = resolveJudgeReference(assertion, context);
+  const reference = resolvedReference ? `Reference facts:\n${resolvedReference}` : null;
   const prompt = [
     "You are grading an AI response against a rubric.",
     "Return JSON only with keys: pass, score, summary.",
     `Rubric:\n${rubric}`,
+    reference,
     `User prompt:\n${context.prompt}`,
     `AI response:\n${context.output}`,
-  ].join("\n\n");
+  ]
+    .filter(Boolean)
+    .join("\n\n");
+
+  const runClaudeJudge = () => {
+    const schema = JSON.stringify({
+      type: "object",
+      additionalProperties: false,
+      properties: {
+        pass: { type: "boolean" },
+        score: { type: "number" },
+        summary: { type: "string" },
+      },
+      required: ["pass", "score", "summary"],
+    });
+
+    const result = spawnSync(
+      "claude",
+      [
+        "--print",
+        "--output-format",
+        "json",
+        "--json-schema",
+        schema,
+        "--permission-mode",
+        "dontAsk",
+        "--system-prompt",
+        "You grade AI responses. Return only the requested JSON object.",
+        prompt,
+      ],
+      {
+        cwd: process.cwd(),
+        encoding: "utf-8",
+      }
+    );
+
+    if (result.status !== 0) {
+      throw new Error(
+        `Claude judge failed with status ${result.status}: ${(result.stderr || result.stdout || "").trim()}`
+      );
+    }
+
+    return parseJudgeOutput(result.stdout);
+  };
 
   if (judgeProvider === "openai") {
     const response = await fetch(
@@ -265,14 +375,21 @@ async function runJudgeAssertion(assertion, context) {
       }
     );
 
+    let parsed;
     if (result.status !== 0) {
-      throw new Error(
-        `Codex judge failed with status ${result.status}: ${(result.stderr || result.stdout || "").trim()}`
-      );
+      const failureText = `${result.stderr || ""}\n${result.stdout || ""}`;
+      if (/usage limit|purchase more credits|try again/i.test(failureText)) {
+        parsed = runClaudeJudge();
+      } else {
+        throw new Error(
+          `Codex judge failed with status ${result.status}: ${failureText.trim()}`
+        );
+      }
+    } else {
+      const outputText = fs.readFileSync(outputPath, "utf-8");
+      parsed = parseJudgeOutput(outputText);
     }
 
-    const outputText = fs.readFileSync(outputPath, "utf-8");
-    const parsed = parseJudgeOutput(outputText);
     const evaluated = evaluateJudgeResult(assertion, parsed);
     return {
       ok: evaluated.ok,
@@ -284,44 +401,7 @@ async function runJudgeAssertion(assertion, context) {
   }
 
   if (judgeProvider === "claude") {
-    const schema = JSON.stringify({
-      type: "object",
-      additionalProperties: false,
-      properties: {
-        pass: { type: "boolean" },
-        score: { type: "number" },
-        summary: { type: "string" },
-      },
-      required: ["pass", "score", "summary"],
-    });
-
-    const result = spawnSync(
-      "claude",
-      [
-        "--print",
-        "--output-format",
-        "json",
-        "--json-schema",
-        schema,
-        "--permission-mode",
-        "dontAsk",
-        "--system-prompt",
-        "You grade AI responses. Return only the requested JSON object.",
-        prompt,
-      ],
-      {
-        cwd: process.cwd(),
-        encoding: "utf-8",
-      }
-    );
-
-    if (result.status !== 0) {
-      throw new Error(
-        `Claude judge failed with status ${result.status}: ${(result.stderr || result.stdout || "").trim()}`
-      );
-    }
-
-    const parsed = parseJudgeOutput(result.stdout);
+    const parsed = runClaudeJudge();
     const evaluated = evaluateJudgeResult(assertion, parsed);
     return {
       ok: evaluated.ok,
@@ -386,6 +466,7 @@ async function runConfig(configPath) {
         if (assertion.type === "llm-rubric") {
           judgeTotal++;
           const judgment = await runJudgeAssertion(assertion, {
+            configDir,
             vars,
             testCase,
             prompt,

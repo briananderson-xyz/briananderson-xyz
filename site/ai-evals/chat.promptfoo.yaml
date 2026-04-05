@@ -29,6 +29,7 @@ tests:
           4 = mostly grounded and useful with only minor vagueness.
           3 or below = generic, inflated, or potentially invented.
           Pass only for scores >= 4.
+        referenceFrom: file://references.cjs#awsExperienceReference
 
   - description: Agent workflow question mentions Kiro or eval tooling rather than generic AI filler
     vars:
