@@ -16,31 +16,42 @@
 <header
   class="border-b-2 border-skin-border pb-8 mb-10 print:mb-4 print:pb-4 print:border-black"
 >
-  <div>
-    <h1
-      class="text-4xl md:text-5xl font-bold tracking-tight text-skin-base mb-2 print:text-black print:text-3xl print:font-serif"
-    >
-      {resume.name}
-    </h1>
-    <p
-      class="text-xl text-skin-accent mb-4 print:text-black print:text-lg print:mb-2 print:font-bold print:font-serif"
-    >
-      {formattedTitle}
-    </p>
-    <div
-      class="flex flex-col gap-1 text-sm text-skin-muted print:text-black print:text-[10px] print:flex-row print:gap-4 print:font-serif"
-    >
-      <p>{resume.location}</p>
-      <a
-        href="mailto:{resume.email}"
-        class="hover:text-skin-accent transition-colors print:no-underline print:text-black"
-        >{resume.email}</a
+  <div class="flex items-start justify-between gap-6">
+    <div class="flex-1">
+      <h1
+        class="text-4xl md:text-5xl font-bold tracking-tight text-skin-base mb-2 print:text-black print:text-3xl print:font-serif"
       >
-      <a
-        href={siteUrl}
-        class="hover:text-skin-accent transition-colors print:no-underline print:text-black"
-        >https://briananderson.xyz</a
+        {resume.name}
+      </h1>
+      <p
+        class="text-xl text-skin-accent mb-4 print:text-black print:text-lg print:mb-2 print:font-bold print:font-serif"
       >
+        {formattedTitle}
+      </p>
+      <div
+        class="flex flex-col gap-1 text-sm text-skin-muted print:text-black print:text-[10px] print:flex-row print:gap-4 print:font-serif"
+      >
+        <p>{resume.location}</p>
+        <a
+          href="mailto:{resume.email}"
+          class="hover:text-skin-accent transition-colors print:no-underline print:text-black"
+          >{resume.email}</a
+        >
+        <a
+          href={siteUrl}
+          class="hover:text-skin-accent transition-colors print:no-underline print:text-black"
+          >https://briananderson.xyz</a
+        >
+      </div>
+    </div>
+    <div class="flex-shrink-0 print:hidden">
+      <div class="w-24 h-24 md:w-28 md:h-28 overflow-hidden border border-skin-border grayscale hover:grayscale-0 transition-all duration-500">
+        <img
+          src="/headshot.jpg"
+          alt="Brian Anderson"
+          class="w-full h-full object-cover object-top opacity-80 hover:opacity-100 transition-opacity"
+        />
+      </div>
     </div>
   </div>
 </header>

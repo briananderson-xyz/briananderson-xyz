@@ -1,6 +1,7 @@
 ---
 title: "Kiro Agent Workflows & Eval Harnesses"
-date: 2026-03-05
+date: 2024-09-01
+period: "2024 – Present"
 summary: "Structured AI workflows for ideation, implementation, and verification, backed by prompt evaluation before release."
 tags: ["AgenticAI", "DeveloperProductivity", "Evals", "PromptEngineering", "Builder"]
 keywords: ["kiro", "agent-workflows", "promptfoo", "evals", "developer-productivity"]

@@ -53,7 +53,7 @@
             <span
               class="text-xs font-mono text-skin-muted border border-skin-border px-2 py-1 rounded"
             >
-              {new Date(p.metadata.date).getFullYear()}
+              {p.metadata.period ?? new Date(p.metadata.date).getFullYear()}
             </span>
           </div>
 

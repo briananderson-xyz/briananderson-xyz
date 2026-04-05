@@ -15,11 +15,6 @@ summary: >
   platforms and AI-powered prototypes for enterprise customers at AWS, with a focus on tool
   orchestration, evaluation, and reliability from day one.
 skills:
-  Leadership & Strategy:
-    - name: Executive Stakeholder Management
-    - name: Solution Discovery
-    - name: Strategic Roadmapping
-    - name: Cross-Functional Leadership
   Cloud & Infrastructure:
     - name: AWS
       url: https://aws.amazon.com/
@@ -80,6 +75,8 @@ skills:
     - name: Reliability & Cost Observability
     - name: promptfoo
       url: https://www.promptfoo.dev/
+    - name: OpenSpec
+      url: https://github.com/Fission-AI/OpenSpec
   AI Development Tools:
     - name: Kiro
       altName: Amazon Q Developer
