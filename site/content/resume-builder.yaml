@@ -3,20 +3,20 @@ meta:
   order: 2
 jobTitles:
   - Full Stack Cloud Architect
-  - Agentic AI / DevOps Specialist
+  - AI Systems Engineer
 tagline: >
-  Hands-on engineer specializing in Full-Stack Product Development, Agentic AI,
-  and Modern Web Architecture. Passionate about shipping high-quality code, building
-  intuitive user experiences, and solving complex technical challenges across the entire stack.
+  Hands-on builder focused on full-stack product development, agent workflows,
+  and modern cloud architecture from prototype through production.
 mission: Delivering elegant, high-performance digital products through Agentic AI, scalable systems, and a culture of quality and consistency.
 email: brian@briananderson.xyz
 location: Denver, CO
 summary: >
-  Career spanning from native mobile and web development to shipping production
-  applications for Fortune 500 brands, including high-concurrency e-commerce
-  platforms, mobile banking apps, and cloud-native backend services. Now
-  deepening expertise in Agentic AI by independently building an agent platform
-  with plugin architecture, MCP orchestration, and AI observability.
+  Shipped production software across mobile, web, and cloud for 10+ years: iOS apps,
+  high-concurrency e-commerce backends, and cloud-native platforms for Fortune 500 brands.
+  The through-line has always been automation: making build, test, and deploy reliable enough
+  to move fast without breaking things. Now applying that same delivery discipline to agentic
+  AI, where the real engineering work isn't the model but the tool orchestration, plugin
+  architecture, evaluation loops, and observability that make agents actually useful in production.
 skills:
   Frontend & Mobile:
     - name: React
@@ -62,7 +62,7 @@ skills:
       url: https://kafka.apache.org/
     - name: Pub/Sub
       url: https://cloud.google.com/pubsub
-  Agentic AI:
+  AI Systems & Agent Workflows:
     - name: Amazon Bedrock
       url: https://docs.aws.amazon.com/bedrock/
     - name: Model Context Protocol (MCP)
@@ -71,6 +71,9 @@ skills:
       url: https://strandsagents.com/
     - name: VoltAgent SDK
       url: https://voltagent.dev/
+    - name: Tool / MCP Schema Design
+    - name: Prompt Evaluation
+    - name: OpenTelemetry Tracing
     - name: promptfoo
       url: https://www.promptfoo.dev/
   AI Development Tools:
@@ -87,9 +90,10 @@ experience:
     description: Building Agentic AI platforms, developer tooling, and customer-facing prototypes.
     highlights:
       - "Industrial Data Platform (ProveIT): Built a full-stack prototype for manufacturing environments that ingested MQTT data streams via a Unified Namespace (UNS) architecture, categorized and standardized stream contents into a time-series database, and integrated an Agentic AI layer using AgentCore and Bedrock for anomaly detection. Delivered persona-specific dashboards (OEE, equipment state) and natural-language querying of production line status."
-      - text: "Agentic AI Platform (Stallion): Built a full-stack AI agent platform from scratch to explore the full lifecycle of AI agent development. React/TypeScript UI, Hono API server, and Tauri desktop wrapper, with a manifest-driven plugin system for extensible agent delivery and MCP tool orchestration with automatic server lifecycle management. Instrumented with OpenTelemetry and Prometheus/Grafana dashboards for observability into agent behavior, cost, and reliability."
-        link: https://github.com/briananderson1222/work-agent
-      - "Agentic Developer Tooling (Kiro): Ranked top 75 globally out of 275k+ CLI users. Developed a suite of AI agents for Kiro to standardize developer and solutions architect workflows — including structured ideation-to-verification development loops, automated note-taking with Obsidian integration, and AWS documentation skills. Reduced personal administrative overhead by ~4 hours/week. Used promptfoo to evaluate and harden agent system prompts and skills before release, catching contradictions and ensuring reliable behavior for internal adopters."
+      - text: "Agentic AI Platform (Stallion): Built a full-stack AI agent platform from scratch with a React/TypeScript UI, Hono API layer, Tauri desktop wrapper, manifest-driven plugins, and MCP tool orchestration. Added OpenTelemetry and Prometheus/Grafana instrumentation so agent behavior, cost, and reliability could be observed instead of guessed."
+        link: /projects/stallion-agent-platform/
+      - text: "Agentic Developer Tooling (Kiro): Among the top 75 most active users out of 275k+ internal Kiro CLI users. Built agent workflows that standardized ideation, implementation, and verification loops, reduced personal admin overhead by ~4 hours/week, and used promptfoo evals to harden prompts before release."
+        link: /projects/kiro-agent-workflows/
       - "Enterprise Architecture (SAP Integration): Guided a global manufacturer through architecting AWS infrastructure for a Document Management System integrated with SAP ERP, implementing infrastructure as code, private VPC with VPC endpoints, and S3 gateway patterns for scalability, resiliency, and cost efficiency."
       - "Customer Solution Prototyping (Amazon Connect): Built a working prototype for a global manufacturer demonstrating Amazon Connect's extensibility, including a secure SMS image-upload integration and multi-threaded conversation support to address visual troubleshooting and extended support hour requirements."
     start_date: September 2024
