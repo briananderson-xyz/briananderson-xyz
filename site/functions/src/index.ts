@@ -20,7 +20,7 @@ const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
 // Tool call iteration limits
 const MAX_CHAT_TOOL_ITERATIONS = 5;
-const MAX_FIT_FINDER_TOOL_ITERATIONS = 10;
+const MAX_FIT_FINDER_TOOL_ITERATIONS = 12;
 
 // Content index cache with versioning
 let contentIndexCache: ContentIndex | null = null;
@@ -792,8 +792,17 @@ FIT LEVELS:
 					};
 				});
 
-				// Send function results back to model
-				result = await chat.sendMessage({ message: functionResponses });
+				// When iterations are almost exhausted, nudge the model to submit
+				if (maxIterations <= 2) {
+					result = await chat.sendMessage({
+						message: [
+							...functionResponses,
+							{ text: 'You have gathered enough evidence. You MUST call submit_analysis() now as your only response.' }
+						]
+					});
+				} else {
+					result = await chat.sendMessage({ message: functionResponses });
+				}
 			}
 
 			// Fallback: if model returned text instead of calling submit_analysis
