@@ -98,9 +98,9 @@ test.describe('Project Detail - Visual Archive', () => {
     await page.goto('/projects/fill-in-my-blank/');
     await page.waitForLoadState('networkidle');
     await expect(page.getByText('./visual-archive')).toBeVisible();
-    // FIMB has 5 images in visualArchive
+    // FIMB has 8 images in visualArchive (3 designer-era + 5 original)
     const galleryButtons = page.locator('section.not-prose button');
-    await expect(galleryButtons).toHaveCount(5);
+    await expect(galleryButtons).toHaveCount(8);
   });
 });
 
