@@ -2,23 +2,21 @@ name: Brian Anderson
 meta:
   order: 1
 jobTitles:
+  - Staff Platform Architect for AI Systems
   - Site Reliability Architect
-  - DevOps Platform Engineer
 tagline: >
-  Specializing in Cloud Native Transformation, Platform Engineering, and Production Reliability.
-  Expert in designing 'Paved Road' automation, high-availability architectures, and observability
-  systems that ensure resilient production environments at scale, from traditional microservices
-  to AI agent workloads.
+  Platform and reliability architect focused on cloud-native delivery, paved-road automation,
+  and observability for both traditional services and AI agent workloads.
 mission: Driving operational excellence and engineering velocity through platform automation, reliability engineering, and Agentic AI.
 email: brian@briananderson.xyz
 location: Denver, CO
 summary: >
-  Career spanning from hands-on engineering to designing and operating production
-  systems for Fortune 500 companies, including zero-downtime migrations, CI/CD
-  standardization, and observability implementation. Expert in Kubernetes
-  orchestration and high availability for mission-critical financial and
-  e-commerce systems. Now extending those disciplines to AI agent workloads,
-  through hands-on instrumentation and structured evaluation.
+  Staff-level platform engineer and architect with deep experience building reliable
+  delivery systems for Fortune 500 environments, including zero-downtime migrations,
+  enterprise CI/CD standards, and production observability. Experienced in Kubernetes,
+  release engineering, and high-availability design for financial and e-commerce systems.
+  Now applying the same operational rigor to AI systems through tracing, evaluation, and
+  agent reliability instrumentation.
 skills:
   Cloud & Infrastructure:
     - name: AWS
@@ -56,13 +54,16 @@ skills:
       url: https://kafka.apache.org/
     - name: Pub/Sub
       url: https://cloud.google.com/pubsub
-  Agentic AI:
+  AI Systems & Agent Reliability:
     - name: Amazon Bedrock
       url: https://docs.aws.amazon.com/bedrock/
     - name: Agentcore
       url: https://aws.amazon.com/bedrock/agentcore/
     - name: Model Context Protocol (MCP)
       url: https://modelcontextprotocol.io/
+    - name: Prompt Evaluation
+    - name: OpenTelemetry Tracing
+    - name: Reliability & Cost Observability
     - name: Kiro
       url: https://kiro.dev/
     - name: Claude Code
@@ -90,9 +91,10 @@ experience:
       - "Industrial IoT & Observability (ProveIT): Built a prototype for manufacturing environments that ingested MQTT data streams via a Unified Namespace (UNS) architecture, categorized and standardized stream contents into a time-series database, and integrated an Agentic AI layer using AgentCore and Bedrock for anomaly detection. Delivered persona-specific dashboards (OEE, equipment state) and natural-language querying of production line status."
       - "Customer Support Automation (Amazon Connect): Identified an operational gap for a global manufacturer and built a working prototype demonstrating multi-threaded conversation support and extended customer support hours. Personally engineered a secure SMS image-upload integration to showcase the platform's extensibility for visual troubleshooting workflows."
       - "Enterprise Infrastructure & Migration (SAP Integration): Guided a global manufacturer through architecting secure AWS infrastructure for a Document Management System integrated with SAP ERP. Established best practices for infrastructure as code, private VPC architecture with VPC endpoints, and S3 gateway patterns for scalability, resiliency, and cost efficiency at scale. Led architectural discovery to establish migration roadmaps for broader legacy-to-cloud transitions."
-      - text: "AI Agent Observability (Stallion): Built a local-first AI agent platform to explore the full lifecycle of AI agent development. Instrumented with OpenTelemetry and Prometheus/Grafana dashboards for observability into agent behavior, cost, and reliability. Extensible via a plugin system and Agent Communication Protocol (ACP), enabling domain-specific agent workflows to integrate without coupling to the vendor-neutral core."
-        link: https://github.com/briananderson1222/work-agent
-      - "Agentic Developer Tooling (Kiro): Ranked top 75 globally out of 275k+ CLI users. Developed a suite of AI agents for Kiro to standardize developer and solutions architect workflows — including structured ideation-to-verification development loops, automated note-taking with Obsidian integration, and AWS documentation skills. Reduced personal administrative overhead by ~4 hours/week. Used promptfoo to evaluate and harden agent system prompts and skills before release, catching contradictions and ensuring reliable behavior for internal adopters."
+      - text: "AI Agent Observability (Stallion): Built a local-first AI agent platform and instrumented it with OpenTelemetry plus Prometheus/Grafana to trace agent behavior, surface cost and reliability signals, and make tool-driven workflows debuggable."
+        link: /projects/stallion-agent-platform/
+      - text: "Agentic Developer Tooling (Kiro): Ranked top 75 globally out of 275k+ CLI users. Built agent workflows for Kiro that standardized ideation-to-verification loops and used promptfoo-based evals to harden prompts and improve reliability before release."
+        link: /projects/kiro-agent-workflows/
     start_date: September 2024
   - role: Technical Director
     company: Valtech | Kin + Carta
