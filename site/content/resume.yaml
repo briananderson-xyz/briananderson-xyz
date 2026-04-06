@@ -11,9 +11,11 @@ summary: >
   delivery teams, migrating production Kubernetes workloads without downtime, and building cloud
   operating models that teams could depend on. That foundation shapes how I think about AI: not as
   a new discipline to learn, but as the most capable automation primitive I've worked with, one that
-  demands the same engineering discipline as any production system. Currently building agentic
-  platforms and AI-powered prototypes for enterprise customers at AWS, with a focus on tool
-  orchestration, evaluation, and reliability from day one.
+  demands the same engineering discipline as any production system. Riding the wave of Agentic AI
+  by heavily experimenting with agentic platform development, pushing the limits of what's
+  possible with AI-powered prototypes for enterprise customers at AWS, while also building the
+  full skill set required to create personal AI tools and apply AI engineering discipline across
+  enterprise work.
 skills:
   Cloud & Infrastructure:
     - name: AWS
@@ -31,6 +33,8 @@ skills:
       url: https://github.com/actions
     - name: GitLab CI
       url: https://docs.gitlab.com/ci/
+    - name: Jenkins
+      url: https://www.jenkins.io/
     - name: Helm
       url: https://helm.sh/
     - name: Spinnaker
@@ -69,14 +73,25 @@ skills:
     - name: VoltAgent SDK
       url: https://voltagent.dev/
   AI Evaluation & Tooling:
-    - name: Prompt Evaluation
-    - name: Tool / MCP Schema Design
+    - name: MCP Server Development
     - name: OpenTelemetry Tracing
-    - name: Reliability & Cost Observability
     - name: promptfoo
       url: https://www.promptfoo.dev/
     - name: OpenSpec
       url: https://github.com/Fission-AI/OpenSpec
+    - name: Prometheus
+      url: https://prometheus.io/
+    - name: Grafana
+      url: https://grafana.com/
+  Observability & Monitoring:
+    - name: Instana
+      url: https://www.ibm.com/products/instana
+    - name: Datadog
+      url: https://www.datadoghq.com/
+    - name: Dynatrace
+      url: https://www.dynatrace.com/
+    - name: Elasticsearch
+      url: https://www.elastic.co/elasticsearch
   AI Development Tools:
     - name: Kiro
       altName: Amazon Q Developer
