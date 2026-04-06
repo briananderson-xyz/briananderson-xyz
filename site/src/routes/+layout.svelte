@@ -16,11 +16,35 @@
   import { beforeNavigate, afterNavigate } from "$app/navigation";
   import posthog from "posthog-js";
   import { PUBLIC_POSTHOG_KEY, PUBLIC_POSTHOG_HOST } from "$env/static/public";
+  import ExternalLinkModal from "$lib/components/ExternalLinkModal.svelte";
 
   let quickActionsVisible = $state(false);
   let shortcutsHelpVisible = $state(false);
   let chatbotVisible = $state(false);
   let fitFinderVisible = $state(false);
+  let externalLinkUrl = $state("");
+
+  function handleDocumentClick(e: MouseEvent) {
+    const anchor = (e.target as HTMLElement).closest("a");
+    if (!anchor) return;
+    const href = anchor.getAttribute("href");
+    if (!href || !href.startsWith("http")) return;
+    try {
+      const url = new URL(href);
+      if (url.hostname === "briananderson.xyz" || url.hostname.endsWith(".briananderson.xyz")) return;
+    } catch {
+      return;
+    }
+    e.preventDefault();
+    externalLinkUrl = href;
+  }
+
+  function confirmExternalLink() {
+    if (!externalLinkUrl) return;
+    trackEvent("external_link_clicked", { url: externalLinkUrl, host: new URL(externalLinkUrl).hostname });
+    window.open(externalLinkUrl, "_blank", "noopener,noreferrer");
+    externalLinkUrl = "";
+  }
   let { children, data } = $props();
 
   const shortcuts: KeyboardShortcut[] = [
@@ -238,3 +262,11 @@
 />
 
 <ScrollToTop />
+
+<svelte:document onclick={handleDocumentClick} />
+
+<ExternalLinkModal
+  url={externalLinkUrl}
+  onConfirm={confirmExternalLink}
+  onCancel={() => (externalLinkUrl = "")}
+/>

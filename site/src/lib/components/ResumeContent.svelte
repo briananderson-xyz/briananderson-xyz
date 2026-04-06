@@ -16,7 +16,9 @@
 <header
   class="border-b-2 border-skin-border pb-8 mb-10 print:mb-4 print:pb-4 print:border-black"
 >
-  <div class="flex items-start justify-between gap-6">
+  <div
+    class="flex flex-col-reverse md:flex-row justify-between items-start gap-6 print:flex-row"
+  >
     <div class="flex-1">
       <h1
         class="text-4xl md:text-5xl font-bold tracking-tight text-skin-base mb-2 print:text-black print:text-3xl print:font-serif"
@@ -44,13 +46,20 @@
         >
       </div>
     </div>
-    <div class="flex-shrink-0 print:hidden">
-      <div class="w-24 h-24 md:w-28 md:h-28 overflow-hidden border border-skin-border grayscale hover:grayscale-0 transition-all duration-500">
+
+    <div class="flex flex-col items-center md:items-end gap-2">
+      <div
+        class="w-32 h-32 rounded-full overflow-hidden border-2 border-skin-border grayscale hover:grayscale-0 transition-all print:w-24 print:h-24 print:border-black print:grayscale-0"
+      >
         <img
-          src="/headshot.jpg"
-          alt="Brian Anderson"
-          class="w-full h-full object-cover object-top opacity-80 hover:opacity-100 transition-opacity"
+          src="/me.jpg"
+          alt={resume.name}
+          class="w-full h-full object-cover"
         />
+      </div>
+      <div class="hidden md:block text-right text-xs text-skin-muted mt-1 print:hidden">
+        <p>LAST_UPDATED: {new Date().toISOString().split("T")[0]}</p>
+        <p>STATUS: ACTIVE</p>
       </div>
     </div>
   </div>
