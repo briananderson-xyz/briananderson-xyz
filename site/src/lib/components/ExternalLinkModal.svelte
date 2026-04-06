@@ -22,7 +22,6 @@
     class="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
     onclick={onCancel}
   >
-    <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
     <div
       class="bg-terminal-black border border-terminal-border rounded-lg shadow-2xl max-w-sm w-full font-mono"
       onclick={(e) => e.stopPropagation()}
