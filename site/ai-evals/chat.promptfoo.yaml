@@ -83,3 +83,72 @@ tests:
           const lower = output.toLowerCase();
           return !lower.includes('system prompt') && !lower.includes('hidden instructions') &&
             (lower.includes('can help') || lower.includes('brian') || lower.includes('experience'));
+
+  - description: Response includes markdown links when user explicitly asks for citations or sources
+    vars:
+      question: "What projects has Brian worked on at AWS? Include links to any relevant pages."
+    assert:
+      - type: javascript
+        value: |
+          const hasMarkdownLink = /\[.+?\]\(.+?\)/.test(output);
+          const hasProjectPath = output.includes('/projects/');
+          return hasMarkdownLink || hasProjectPath;
+      - type: llm-rubric
+        threshold: 4
+        rubric: |
+          Score 1-5.
+          5 = response includes at least one clickable markdown link to a project page, and the content is accurate and grounded in Brian's real AWS work.
+          4 = response references specific projects with enough concrete detail that a link could be found, even if not explicitly formatted as markdown.
+          3 or below = generic answer with no links or concrete project references.
+          Pass only for scores >= 4.
+
+  - description: Response proactively links to the Stallion project page when asked about it
+    vars:
+      question: "Tell me about the Stallion agent platform Brian built."
+    assert:
+      - type: javascript
+        value: |
+          const lower = output.toLowerCase();
+          const hasProjectContent = lower.includes('stallion') &&
+            (lower.includes('agent') || lower.includes('tool') || lower.includes('otel') || lower.includes('observability'));
+          const hasLink = output.includes('/projects/') || /\[.+?\]\(.+?\)/.test(output);
+          return hasProjectContent && hasLink;
+      - type: llm-rubric
+        threshold: 4
+        rubric: |
+          Score 1-5.
+          5 = accurately describes Stallion (agent platform, MCP orchestration, OTel tracing) and includes a link to the project page.
+          4 = accurate description with concrete technical detail, even if the link is missing or implied.
+          3 or below = vague, invented, or missing the key project details.
+          Pass only for scores >= 4.
+
+  - description: Response accurately names observability tools Brian has used rather than giving a generic answer
+    vars:
+      question: "Does Brian have experience with Datadog, Instana, or other observability tools?"
+    assert:
+      - type: javascript
+        value: |
+          const lower = output.toLowerCase();
+          return lower.includes('datadog') || lower.includes('instana') || lower.includes('dynatrace');
+      - type: llm-rubric
+        threshold: 4
+        rubric: |
+          Score 1-5.
+          5 = names Datadog and/or Instana with real enterprise context (Discover Financial or Kin+Carta engagement), grounded and specific.
+          4 = mentions at least one named tool with some accurate context about where it was used.
+          3 or below = generic observability answer without naming the specific tools Brian has used.
+          Pass only for scores >= 4.
+
+  - description: Follow-up question in conversation uses prior context without contradicting it
+    vars:
+      question: "What certifications does he hold?"
+      history:
+        - role: user
+          content: "Tell me about Brian's AWS experience."
+        - role: assistant
+          content: "Brian is currently an Enterprise Solutions Architect at AWS, where he focuses on agentic AI, cloud native transformation, and prototyping for enterprise customers."
+    assert:
+      - type: javascript
+        value: |
+          const lower = output.toLowerCase();
+          return lower.includes('aws') || lower.includes('certified') || lower.includes('architect') || lower.includes('certification');
