@@ -194,11 +194,11 @@
       >
       <a
         class="hover:text-skin-accent transition-colors {activeRoute.startsWith(
-          '/following',
+          '/interests',
         )
           ? 'text-skin-accent'
           : 'text-skin-muted'}"
-        href="/following/">./following</a
+        href="/interests/">./interests</a
       >
       <a
         class="hover:text-skin-accent transition-colors text-skin-muted"
@@ -249,11 +249,11 @@
           href={addVariant("/blog/", variant)}>./blog</a
         >
         <a
-          class="hover:text-skin-accent {activeRoute.startsWith('/following')
+          class="hover:text-skin-accent {activeRoute.startsWith('/interests')
             ? 'text-skin-accent'
             : 'text-skin-muted'}"
           onclick={() => (open = false)}
-          href="/following/">./following</a
+          href="/interests/">./interests</a
         >
         <a
           class="text-skin-muted hover:text-skin-accent"
