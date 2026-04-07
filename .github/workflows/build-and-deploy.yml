@@ -334,11 +334,11 @@ jobs:
         run: |
           echo "Warming up dev Cloud Run services..."
           for i in 1 2 3 4 5; do
-            curl -sf -o /dev/null https://api-dev.briananderson.xyz/chat && echo "chat: OK" && break || echo "chat: attempt $i failed, retrying..."
+            STATUS=$(curl -sf -o /dev/null -w "%{http_code}" https://api-dev.briananderson.xyz/chat -X POST -H "Content-Type: application/json" -d '{"message":"ping"}') && echo "chat: $STATUS" && break || echo "chat: attempt $i failed, retrying..."
             sleep 5
           done
           for i in 1 2 3 4 5; do
-            curl -sf -o /dev/null https://api-dev.briananderson.xyz/fit-finder && echo "fit-finder: OK" && break || echo "fit-finder: attempt $i failed, retrying..."
+            STATUS=$(curl -sf -o /dev/null -w "%{http_code}" https://api-dev.briananderson.xyz/fit-finder -X POST -H "Content-Type: application/json" -d '{"jobDescription":"ping"}') && echo "fit-finder: $STATUS" && break || echo "fit-finder: attempt $i failed, retrying..."
             sleep 5
           done
           sleep 3
@@ -483,11 +483,11 @@ jobs:
         run: |
           echo "Warming up prod Cloud Run services..."
           for i in 1 2 3 4 5; do
-            curl -sf -o /dev/null https://api.briananderson.xyz/chat && echo "chat: OK" && break || echo "chat: attempt $i failed, retrying..."
+            STATUS=$(curl -sf -o /dev/null -w "%{http_code}" https://api.briananderson.xyz/chat -X POST -H "Content-Type: application/json" -d '{"message":"ping"}') && echo "chat: $STATUS" && break || echo "chat: attempt $i failed, retrying..."
             sleep 5
           done
           for i in 1 2 3 4 5; do
-            curl -sf -o /dev/null https://api.briananderson.xyz/fit-finder && echo "fit-finder: OK" && break || echo "fit-finder: attempt $i failed, retrying..."
+            STATUS=$(curl -sf -o /dev/null -w "%{http_code}" https://api.briananderson.xyz/fit-finder -X POST -H "Content-Type: application/json" -d '{"jobDescription":"ping"}') && echo "fit-finder: $STATUS" && break || echo "fit-finder: attempt $i failed, retrying..."
             sleep 5
           done
           sleep 3

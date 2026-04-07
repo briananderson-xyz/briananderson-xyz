@@ -434,14 +434,33 @@ function stabilizeFitAnalysis(
  * Fetch content index using versioned approach to avoid stale cache
  */
 async function fetchContentIndex(): Promise<ContentIndex | null> {
+	if (contentIndexCache && contentIndexVersion) {
+		return contentIndexCache;
+	}
+
+	for (let attempt = 1; attempt <= 3; attempt++) {
+		try {
+			const result = await fetchContentIndexInner();
+			if (result) return result;
+			if (attempt < 3) {
+				console.warn(`Content index fetch attempt ${attempt} failed, retrying in 2s...`);
+				await new Promise(r => setTimeout(r, 2000));
+			}
+		} catch (error) {
+			console.error(`Content index fetch attempt ${attempt} error:`, error);
+			if (attempt < 3) await new Promise(r => setTimeout(r, 2000));
+		}
+	}
+	return null;
+}
+
+async function fetchContentIndexInner(): Promise<ContentIndex | null> {
 	try {
-		// Fetch pointer file (short cache TTL)
 		const pointerResponse = await fetch(`${SITE_URL}/content-index-latest.json`);
 		if (!pointerResponse.ok) {
 			if (!IS_PRODUCTION) {
 				console.warn('Content index pointer not available:', pointerResponse.status);
 			}
-			// Fallback to non-versioned
 			const fallbackResponse = await fetch(`${SITE_URL}/content-index.json`);
 			if (!fallbackResponse.ok) return null;
 			return await fallbackResponse.json() as ContentIndex;
@@ -450,7 +469,6 @@ async function fetchContentIndex(): Promise<ContentIndex | null> {
 		const pointer = await pointerResponse.json() as ContentIndexPointer;
 		const { filename, buildDate, hash } = pointer;
 
-		// Check if we have this version cached
 		if (contentIndexCache && contentIndexVersion === hash) {
 			if (!IS_PRODUCTION) {
 				console.log('Using cached content index:', hash);
@@ -458,7 +476,6 @@ async function fetchContentIndex(): Promise<ContentIndex | null> {
 			return contentIndexCache;
 		}
 
-		// Fetch the specific versioned file (long cache TTL, immutable)
 		const indexResponse = await fetch(`${SITE_URL}/${filename}`);
 		if (!indexResponse.ok) {
 			if (!IS_PRODUCTION) {
@@ -470,7 +487,6 @@ async function fetchContentIndex(): Promise<ContentIndex | null> {
 		contentIndexCache = await indexResponse.json() as ContentIndex;
 		contentIndexVersion = hash;
 
-		// Log freshness (only in development)
 		if (!IS_PRODUCTION) {
 			const buildTime = new Date(buildDate);
 			const ageMinutes = (Date.now() - buildTime.getTime()) / 60000;
