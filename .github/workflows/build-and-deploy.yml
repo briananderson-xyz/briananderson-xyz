@@ -141,6 +141,7 @@ jobs:
           PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
           IMAGE: ${{ needs.build-functions.outputs.image }}
         run: |
+          IMAGE="${IMAGE:-${REGION}-docker.pkg.dev/${PROJECT_ID}/site-functions/api:${GITHUB_SHA:0:8}}"
           gcloud run deploy chat-dev \
             --image "$IMAGE" \
             --region "$REGION" \
@@ -159,6 +160,7 @@ jobs:
           PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
           IMAGE: ${{ needs.build-functions.outputs.image }}
         run: |
+          IMAGE="${IMAGE:-${REGION}-docker.pkg.dev/${PROJECT_ID}/site-functions/api:${GITHUB_SHA:0:8}}"
           gcloud run deploy fitfinder-dev \
             --image "$IMAGE" \
             --region "$REGION" \
@@ -173,8 +175,12 @@ jobs:
             --memory 512Mi
       - name: Tag image as dev-stable
         env:
+          REGION: ${{ secrets.GCP_REGION }}
+          PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
           IMAGE: ${{ needs.build-functions.outputs.image }}
-        run: gcloud artifacts docker tags add "$IMAGE" "$(echo "$IMAGE" | sed 's/:[^:]*$/:dev-stable/')"
+        run: |
+          IMAGE="${IMAGE:-${REGION}-docker.pkg.dev/${PROJECT_ID}/site-functions/api:${GITHUB_SHA:0:8}}"
+          gcloud artifacts docker tags add "$IMAGE" "$(echo "$IMAGE" | sed 's/:[^:]*$/:dev-stable/')"
 
   deploy-functions-prod:
     runs-on: ubuntu-latest
@@ -193,6 +199,7 @@ jobs:
           PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
           IMAGE: ${{ needs.build-functions.outputs.image }}
         run: |
+          IMAGE="${IMAGE:-${REGION}-docker.pkg.dev/${PROJECT_ID}/site-functions/api:${GITHUB_SHA:0:8}}"
           gcloud run deploy chat \
             --image "$IMAGE" \
             --region "$REGION" \
@@ -211,6 +218,7 @@ jobs:
           PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
           IMAGE: ${{ needs.build-functions.outputs.image }}
         run: |
+          IMAGE="${IMAGE:-${REGION}-docker.pkg.dev/${PROJECT_ID}/site-functions/api:${GITHUB_SHA:0:8}}"
           gcloud run deploy fitfinder \
             --image "$IMAGE" \
             --region "$REGION" \
@@ -225,8 +233,12 @@ jobs:
             --memory 512Mi
       - name: Tag image as prod-stable
         env:
+          REGION: ${{ secrets.GCP_REGION }}
+          PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
           IMAGE: ${{ needs.build-functions.outputs.image }}
-        run: gcloud artifacts docker tags add "$IMAGE" "$(echo "$IMAGE" | sed 's/:[^:]*$/:prod-stable/')"
+        run: |
+          IMAGE="${IMAGE:-${REGION}-docker.pkg.dev/${PROJECT_ID}/site-functions/api:${GITHUB_SHA:0:8}}"
+          gcloud artifacts docker tags add "$IMAGE" "$(echo "$IMAGE" | sed 's/:[^:]*$/:prod-stable/')"
       - name: Output Cloud Run URLs
         env:
           REGION: ${{ secrets.GCP_REGION }}
