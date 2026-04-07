@@ -1,0 +1,13 @@
+{
+  "functions": [
+    {
+      "source": "site/functions",
+      "codebase": "default",
+      "ignore": ["node_modules", ".git"]
+    }
+  ],
+  "emulators": {
+    "functions": { "port": 5001 },
+    "ui": { "enabled": false }
+  }
+}

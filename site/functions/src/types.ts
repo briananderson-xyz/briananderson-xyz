@@ -90,7 +90,6 @@ export interface SkillResult {
   category: string;
   projects: string[];
   blog: string[];
-  hasEvidence: boolean;
 }
 
 export interface ProjectResult {

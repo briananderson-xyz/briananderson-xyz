@@ -50,8 +50,7 @@ export class ContentTools {
 				name: skill.name,
 				category: skill.category,
 				projects: skill.projects,
-				blog: skill.blog,
-				hasEvidence: skill.projects.length > 0 || skill.blog.length > 0
+				blog: skill.blog
 			}));
 	}
 

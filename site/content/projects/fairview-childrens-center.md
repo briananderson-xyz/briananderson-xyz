@@ -1,6 +1,6 @@
 ---
 title: "Fairview Children's Center"
-date: 2025-02-04
+date: 2026-02-04
 summary: "Complete WordPress overhaul for a children's center, transforming their digital presence to better reach prospective parents."
 tags: ["WordPress", "CustomTheme", "PHP", "JavaScript", "Modernization", "Consulting", "Builder"]
 keywords: ["fairview", "childcare", "website-redesign", "ux"]
@@ -35,7 +35,7 @@ The existing site had the basics: information about programs, contact details, h
 I've always been interested in working on a WordPress theme but hadn't spent much time in that ecosystem before. Given my history with front-end development, I embraced the challenge. I love learning new tech.
 
 ### Timeline
-**January 2025 - February 2025**
+**January 2026 - February 2026**
 
 ## What I Built
 
