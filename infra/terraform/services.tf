@@ -8,6 +8,9 @@ locals {
     "iam.googleapis.com",
     "iamcredentials.googleapis.com",
     "sts.googleapis.com",
+    # Cloud Run functions deployment
+    "secretmanager.googleapis.com",
+    "cloudbuild.googleapis.com",
   ]
 }
 

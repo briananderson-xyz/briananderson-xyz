@@ -62,17 +62,17 @@
           "14 mission-critical apps migrated with zero downtime",
           "90% deployment lead-time reduction",
           "8-9 production deployments per day",
-          "AI tracing with OpenTelemetry + Prometheus/Grafana"
+          "Agent runs traced end-to-end: OTel + Grafana"
         ]
       : variant === "builder"
         ? [
             "Top 75 of 275k+ Kiro CLI users",
             "4 hours/week saved with AI workflows",
-            "Full-stack agent platform with MCP orchestration",
-            "Production systems across web, mobile, and cloud"
+            "Agent platform: MCP orchestration + OTel tracing",
+            "10+ years shipping: iOS, Android, web, and cloud"
           ]
         : [
-            "5,000+ applications in platform scope",
+            "CI/CD platform: 5,000+ enterprise apps",
             "$30M estimated savings",
             "90% deployment lead-time reduction",
             "Top 75 of 275k+ Kiro CLI users"

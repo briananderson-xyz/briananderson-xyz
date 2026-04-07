@@ -1,6 +1,7 @@
 ---
 title: "Global E-commerce Ordering Platform"
-date: 2024-01-10
+date: 2017-01-01
+period: "2017 – 2020"
 summary: "Modernizing the core ordering engine for a $1B+ food distributor."
 tags: ["Architecture", "Ecommerce", "Microservices", "GKE", "Leader"]
 keywords: ["gfs", "gordon-food-service", "ordering-platform", "modernization"]

@@ -84,9 +84,166 @@ jobs:
             echo "robots.txt not found!"
           fi
 
-  deploy-dev:
+  build-functions:
     runs-on: ubuntu-latest
     needs: validate
+    if: github.event.inputs.rollback != 'true'
+    outputs:
+      image: ${{ steps.build.outputs.image }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+          cache-dependency-path: site/pnpm-lock.yaml
+      - name: Install functions deps
+        working-directory: site/functions
+        run: pnpm i --frozen-lockfile || pnpm i
+      - name: Build functions
+        working-directory: site/functions
+        run: pnpm run build
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
+          service_account: ${{ secrets.GCP_WIF_SA_EMAIL }}
+      - uses: google-github-actions/setup-gcloud@v2
+      - name: Docker auth
+        run: gcloud auth configure-docker ${{ secrets.GCP_REGION }}-docker.pkg.dev
+      - name: Build and push container
+        id: build
+        working-directory: site/functions
+        env:
+          REGION: ${{ secrets.GCP_REGION }}
+          PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+        run: |
+          IMAGE="${REGION}-docker.pkg.dev/${PROJECT_ID}/site-functions/api:${GITHUB_SHA:0:8}"
+          docker build -t "$IMAGE" .
+          docker push "$IMAGE"
+          echo "image=$IMAGE" >> $GITHUB_OUTPUT
+
+  deploy-functions-dev:
+    runs-on: ubuntu-latest
+    needs: build-functions
+    environment: dev
+    steps:
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
+          service_account: ${{ secrets.GCP_WIF_SA_EMAIL }}
+      - uses: google-github-actions/setup-gcloud@v2
+      - name: Deploy chat-dev
+        env:
+          REGION: ${{ secrets.GCP_REGION }}
+          PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+          IMAGE: ${{ needs.build-functions.outputs.image }}
+        run: |
+          gcloud run deploy chat-dev \
+            --image "$IMAGE" \
+            --region "$REGION" \
+            --platform managed \
+            --allow-unauthenticated \
+            --set-env-vars "NODE_ENV=production" \
+            --set-env-vars "FUNCTION_TARGET=chat" \
+            --set-env-vars "SITE_URL=https://dev.briananderson.xyz" \
+            --set-secrets "GEMINI_API_KEY=gemini-api-key:latest" \
+            --service-account "cloud-run-runtime@${PROJECT_ID}.iam.gserviceaccount.com" \
+            --max-instances 5 \
+            --memory 512Mi
+      - name: Deploy fitfinder-dev
+        env:
+          REGION: ${{ secrets.GCP_REGION }}
+          PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+          IMAGE: ${{ needs.build-functions.outputs.image }}
+        run: |
+          gcloud run deploy fitfinder-dev \
+            --image "$IMAGE" \
+            --region "$REGION" \
+            --platform managed \
+            --allow-unauthenticated \
+            --set-env-vars "NODE_ENV=production" \
+            --set-env-vars "FUNCTION_TARGET=fitfinder" \
+            --set-env-vars "SITE_URL=https://dev.briananderson.xyz" \
+            --set-secrets "GEMINI_API_KEY=gemini-api-key:latest" \
+            --service-account "cloud-run-runtime@${PROJECT_ID}.iam.gserviceaccount.com" \
+            --max-instances 5 \
+            --memory 512Mi
+      - name: Tag image as dev-stable
+        env:
+          IMAGE: ${{ needs.build-functions.outputs.image }}
+        run: gcloud artifacts docker tags add "$IMAGE" "$(echo "$IMAGE" | sed 's/:[^:]*$/:dev-stable/')"
+
+  deploy-functions-prod:
+    runs-on: ubuntu-latest
+    needs: [build-functions, deploy-functions-dev]
+    environment: prod
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.deploy_prod == 'true'
+    steps:
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
+          service_account: ${{ secrets.GCP_WIF_SA_EMAIL }}
+      - uses: google-github-actions/setup-gcloud@v2
+      - name: Deploy chat (prod)
+        env:
+          REGION: ${{ secrets.GCP_REGION }}
+          PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+          IMAGE: ${{ needs.build-functions.outputs.image }}
+        run: |
+          gcloud run deploy chat \
+            --image "$IMAGE" \
+            --region "$REGION" \
+            --platform managed \
+            --allow-unauthenticated \
+            --set-env-vars "NODE_ENV=production" \
+            --set-env-vars "FUNCTION_TARGET=chat" \
+            --set-env-vars "SITE_URL=https://briananderson.xyz" \
+            --set-secrets "GEMINI_API_KEY=gemini-api-key:latest" \
+            --service-account "cloud-run-runtime@${PROJECT_ID}.iam.gserviceaccount.com" \
+            --max-instances 10 \
+            --memory 512Mi
+      - name: Deploy fitfinder (prod)
+        env:
+          REGION: ${{ secrets.GCP_REGION }}
+          PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+          IMAGE: ${{ needs.build-functions.outputs.image }}
+        run: |
+          gcloud run deploy fitfinder \
+            --image "$IMAGE" \
+            --region "$REGION" \
+            --platform managed \
+            --allow-unauthenticated \
+            --set-env-vars "NODE_ENV=production" \
+            --set-env-vars "FUNCTION_TARGET=fitfinder" \
+            --set-env-vars "SITE_URL=https://briananderson.xyz" \
+            --set-secrets "GEMINI_API_KEY=gemini-api-key:latest" \
+            --service-account "cloud-run-runtime@${PROJECT_ID}.iam.gserviceaccount.com" \
+            --max-instances 10 \
+            --memory 512Mi
+      - name: Tag image as prod-stable
+        env:
+          IMAGE: ${{ needs.build-functions.outputs.image }}
+        run: gcloud artifacts docker tags add "$IMAGE" "$(echo "$IMAGE" | sed 's/:[^:]*$/:prod-stable/')"
+      - name: Output Cloud Run URLs
+        env:
+          REGION: ${{ secrets.GCP_REGION }}
+        run: |
+          echo "=== Cloud Run service URLs ==="
+          CHAT_URL=$(gcloud run services describe chat --region $REGION --format 'value(status.url)')
+          FIT_URL=$(gcloud run services describe fitfinder --region $REGION --format 'value(status.url)')
+          echo "chat: $CHAT_URL"
+          echo "fit-finder: $FIT_URL"
+          echo ""
+          echo "Update these URLs in briananderson-xyz-dns/records.tf:"
+          echo "  chat_function_url = \"$CHAT_URL\""
+          echo "  fit_finder_function_url = \"$FIT_URL\""
+
+  deploy-dev:
+    runs-on: ubuntu-latest
+    needs: [validate, deploy-functions-dev]
     environment: dev
     if: github.event.inputs.rollback != 'true'
     steps:
@@ -170,19 +327,26 @@ jobs:
         id: smoke_api
         working-directory: site
         env:
-          SITE_URL: https://api.briananderson.xyz
+          SITE_URL: https://api-dev.briananderson.xyz
           SMOKE_TEST: 'true'
         continue-on-error: true
         run: pnpm run test:api
+      - name: Run AI behavior evals
+        id: ai_evals
+        working-directory: site
+        env:
+          AI_EVAL_BASE_URL: https://api-dev.briananderson.xyz
+        continue-on-error: true
+        run: pnpm run test:ai:evals
       - name: Upload dev build artifact (Verified)
-        if: steps.smoke.outcome == 'success' && steps.smoke_api.outcome == 'success'
+        if: steps.smoke.outcome == 'success' && steps.smoke_api.outcome == 'success' && steps.ai_evals.outcome == 'success'
         uses: actions/upload-artifact@v4
         with:
           name: build-artifact-dev
           path: site/build/
           retention-days: 14
       - name: Rollback on failure
-        if: (steps.smoke.outcome == 'failure' || steps.smoke_api.outcome == 'failure') && steps.last_successful.outputs.run_id != 'none'
+        if: (steps.smoke.outcome == 'failure' || steps.smoke_api.outcome == 'failure' || steps.ai_evals.outcome == 'failure') && steps.last_successful.outputs.run_id != 'none'
         env:
           LAST_RUN_ID: ${{ steps.last_successful.outputs.run_id }}
           GH_TOKEN: ${{ github.token }}
@@ -207,12 +371,12 @@ jobs:
           echo "Rollback complete."
           exit 1
       - name: Fail if smoke tests failed
-        if: steps.smoke.outcome == 'failure' || steps.smoke_api.outcome == 'failure'
+        if: steps.smoke.outcome == 'failure' || steps.smoke_api.outcome == 'failure' || steps.ai_evals.outcome == 'failure'
         run: exit 1
 
   deploy-prod:
     runs-on: ubuntu-latest
-    needs: deploy-dev
+    needs: [validate, deploy-functions-prod]
     environment: prod
     if: github.event_name == 'workflow_dispatch' && github.event.inputs.deploy_prod == 'true'
     steps:
@@ -351,6 +515,42 @@ jobs:
     if: github.event.inputs.rollback == 'true'
     environment: ${{ github.event.inputs.target_env }}
     steps:
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
+          service_account: ${{ secrets.GCP_WIF_SA_EMAIL }}
+      - uses: google-github-actions/setup-gcloud@v2
+      - name: Rollback Cloud Run services
+        env:
+          REGION: ${{ secrets.GCP_REGION }}
+          PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+          TARGET_ENV: ${{ github.event.inputs.target_env }}
+        run: |
+          STABLE_TAG="dev-stable"
+          CHAT_SERVICE="chat-dev"
+          FIT_SERVICE="fitfinder-dev"
+          if [ "$TARGET_ENV" == "prod" ]; then
+            STABLE_TAG="prod-stable"
+            CHAT_SERVICE="chat"
+            FIT_SERVICE="fitfinder"
+          fi
+          STABLE_IMAGE="${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/site-functions/api:${STABLE_TAG}"
+          echo "Rolling back $CHAT_SERVICE and $FIT_SERVICE to $STABLE_TAG image..."
+          gcloud run deploy $CHAT_SERVICE \
+            --image "$STABLE_IMAGE" \
+            --region "$REGION" \
+            --platform managed \
+            --allow-unauthenticated \
+            --no-traffic
+          gcloud run services update-traffic $CHAT_SERVICE --region "$REGION" --to-latest
+          gcloud run deploy $FIT_SERVICE \
+            --image "$STABLE_IMAGE" \
+            --region "$REGION" \
+            --platform managed \
+            --allow-unauthenticated \
+            --no-traffic
+          gcloud run services update-traffic $FIT_SERVICE --region "$REGION" --to-latest
+          echo "Cloud Run rollback complete."
       - uses: actions/checkout@v4
       - name: Get last successful deployment
         id: last_successful

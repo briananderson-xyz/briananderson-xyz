@@ -1,9 +1,10 @@
 ---
 title: "Trident Pipeline & Golden Paths"
-date: 2023-11-20
+date: 2021-01-01
+period: "2021 – 2024"
 summary: "Establishing enterprise platform engineering and CI/CD at financial services scale."
 tags: ["DevOps", "PlatformEngineering", "CICD", "Kubernetes", "Governance", "Leader"]
-keywords: ["discover", "trident", "golden-paths", "financial-services"]
+keywords: ["discover", "trident", "golden-paths", "financial-services", "datadog", "instana", "jenkins"]
 showTableOfContents: true
 links:
   - label: "Valtech Case Study"
