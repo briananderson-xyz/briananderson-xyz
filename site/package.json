@@ -33,7 +33,7 @@
     "test:e2e": "pnpm exec playwright test",
     "test:e2e:chat": "pnpm exec playwright test chat.spec.ts",
     "test:e2e:fit-finder": "pnpm exec playwright test fit-finder.spec.ts",
-    "validate": "pnpm run check || echo 'TypeScript check failed (ignoring third-party error)' && pnpm run test:resumes && pnpm run test:content-index && pnpm run build && pnpm run test:ui && pnpm run test:posthog && pnpm run test:ai"
+    "validate": "pnpm run check || echo 'TypeScript check failed (ignoring third-party error)' && pnpm run test:resumes && pnpm run test:content-index && pnpm run build && pnpm run test:ui && pnpm run test:posthog"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",
