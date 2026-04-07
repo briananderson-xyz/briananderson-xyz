@@ -328,6 +328,18 @@ jobs:
 
           # Upload everything else (standard cache)
           gcloud storage rsync site/build/ gs://dev.briananderson.xyz/ --recursive --delete-unmatched-destination-objects --cache-control="public, max-age=3600, must-revalidate"
+      - name: Warm up dev API services
+        run: |
+          echo "Warming up dev Cloud Run services..."
+          for i in 1 2 3 4 5; do
+            curl -sf -o /dev/null https://api-dev.briananderson.xyz/chat && echo "chat: OK" && break || echo "chat: attempt $i failed, retrying..."
+            sleep 5
+          done
+          for i in 1 2 3 4 5; do
+            curl -sf -o /dev/null https://api-dev.briananderson.xyz/fit-finder && echo "fit-finder: OK" && break || echo "fit-finder: attempt $i failed, retrying..."
+            sleep 5
+          done
+          sleep 3
       - name: Run E2E tests
         id: smoke
         working-directory: site
@@ -465,6 +477,18 @@ jobs:
 
           # Upload everything else (standard cache)
           gcloud storage rsync site/build/ gs://briananderson.xyz/ --recursive --delete-unmatched-destination-objects --cache-control="public, max-age=3600, must-revalidate"
+      - name: Warm up prod API services
+        run: |
+          echo "Warming up prod Cloud Run services..."
+          for i in 1 2 3 4 5; do
+            curl -sf -o /dev/null https://api.briananderson.xyz/chat && echo "chat: OK" && break || echo "chat: attempt $i failed, retrying..."
+            sleep 5
+          done
+          for i in 1 2 3 4 5; do
+            curl -sf -o /dev/null https://api.briananderson.xyz/fit-finder && echo "fit-finder: OK" && break || echo "fit-finder: attempt $i failed, retrying..."
+            sleep 5
+          done
+          sleep 3
       - name: Run smoke tests
         id: smoke
         working-directory: site
