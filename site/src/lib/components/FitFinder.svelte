@@ -3,7 +3,14 @@
 	import type { FitAnalysis } from '$lib/types';
 	import { trackEvent } from '$lib/utils/analytics';
 
-	const API_BASE = dev ? '/api' : 'https://api.briananderson.xyz';
+	function getApiBase(): string {
+		if (dev) return '/api';
+		if (typeof window !== 'undefined' && window.location.hostname === 'dev.briananderson.xyz') {
+			return 'https://api-dev.briananderson.xyz';
+		}
+		return 'https://api.briananderson.xyz';
+	}
+	const API_BASE = getApiBase();
 
 	interface Props {
 		visible: boolean;
