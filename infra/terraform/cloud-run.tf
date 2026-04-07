@@ -8,11 +8,15 @@ resource "google_artifact_registry_repository" "functions" {
   repository_id = "site-functions"
   format        = "DOCKER"
   description   = "Container images for briananderson.xyz AI functions"
+
+  depends_on = [google_project_service.required]
 }
 
 # Secret Manager secret for Gemini API key
 resource "google_secret_manager_secret" "gemini_api_key" {
   secret_id = "gemini-api-key"
+
+  depends_on = [google_project_service.required]
 
   replication {
     auto {}
@@ -37,6 +41,13 @@ resource "google_secret_manager_secret_iam_member" "cloud_run_secret_accessor" {
 resource "google_project_iam_member" "ci_artifactregistry_writer" {
   project = var.project_id
   role    = "roles/artifactregistry.writer"
+  member  = "serviceAccount:${google_service_account.github_ci.email}"
+}
+
+# IAM: CI service account can view secrets (needed for terraform plan)
+resource "google_project_iam_member" "ci_secretmanager_viewer" {
+  project = var.project_id
+  role    = "roles/secretmanager.viewer"
   member  = "serviceAccount:${google_service_account.github_ci.email}"
 }
 
