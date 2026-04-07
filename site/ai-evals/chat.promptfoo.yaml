@@ -152,3 +152,90 @@ tests:
         value: |
           const lower = output.toLowerCase();
           return lower.includes('aws') || lower.includes('certified') || lower.includes('architect') || lower.includes('certification');
+
+  - description: Leader summary narrative reflects enterprise automation background applied to AI
+    vars:
+      question: "How does Brian describe his professional background and approach to AI?"
+    assert:
+      - type: javascript
+        value: |
+          const lower = output.toLowerCase();
+          const hasEnterpriseContext = lower.includes('enterprise') || lower.includes('fortune') || lower.includes('scale') || lower.includes('kubernetes') || lower.includes('ci/cd') || lower.includes('automation');
+          const hasAIFraming = lower.includes('ai') || lower.includes('agentic') || lower.includes('agent');
+          return hasEnterpriseContext && hasAIFraming;
+      - type: llm-rubric
+        threshold: 4
+        rubric: |
+          Score 1-5.
+          5 = accurately reflects Brian's narrative: enterprise automation background (CI/CD, Kubernetes, Fortune 500 delivery) applied to AI as the most capable automation primitive — not AI as a brand new discipline.
+          4 = captures the enterprise-to-AI throughline with some concrete evidence.
+          3 or below = generic AI background answer that misses the enterprise automation foundation, or sounds invented.
+          Pass only for scores >= 4.
+
+  - description: Jenkins is confirmed when asked about it directly
+    vars:
+      question: "Does Brian have experience with Jenkins?"
+    assert:
+      - type: javascript
+        value: |
+          const lower = output.toLowerCase();
+          return lower.includes('jenkins');
+      - type: llm-rubric
+        threshold: 4
+        rubric: |
+          Score 1-5.
+          5 = confirms Jenkins as a skill Brian holds, ideally noting its context (CI/CD, DevOps category).
+          4 = confirms Jenkins with brief context.
+          3 or below = says no experience, hedges without confirming, or gives a generic non-answer.
+          Pass only for scores >= 4.
+
+  - description: MCP Server Development is named when asked about Model Context Protocol work
+    vars:
+      question: "What does Brian know about building MCP servers or Model Context Protocol integrations?"
+    assert:
+      - type: javascript
+        value: |
+          const lower = output.toLowerCase();
+          return lower.includes('mcp') || lower.includes('model context protocol');
+      - type: llm-rubric
+        threshold: 4
+        rubric: |
+          Score 1-5.
+          5 = accurately names MCP Server Development as a skill and grounds it in Brian's actual work (agent workflows, tool use, or Stallion platform).
+          4 = confirms MCP/Model Context Protocol as a skill with some relevant context.
+          3 or below = vague answer, no mention of MCP, or invents capabilities not grounded in Brian's background.
+          Pass only for scores >= 4.
+
+  - description: Prometheus and Grafana are surfaced when asked about metrics and monitoring tooling
+    vars:
+      question: "Does Brian have experience with Prometheus or Grafana for metrics and monitoring?"
+    assert:
+      - type: javascript
+        value: |
+          const lower = output.toLowerCase();
+          return lower.includes('prometheus') || lower.includes('grafana');
+      - type: llm-rubric
+        threshold: 4
+        rubric: |
+          Score 1-5.
+          5 = confirms Prometheus and/or Grafana as skills, ideally in context of AI evaluation or observability work.
+          4 = confirms at least one tool with some grounding in Brian's background.
+          3 or below = generic observability answer without naming these specific tools, or invents context.
+          Pass only for scores >= 4.
+
+  - description: OpenTelemetry experience is grounded in Brian's actual work rather than a generic explanation
+    vars:
+      question: "What is Brian's experience with OpenTelemetry?"
+    assert:
+      - type: javascript
+        value: |
+          const lower = output.toLowerCase();
+          return lower.includes('opentelemetry') || lower.includes('otel') || lower.includes('tracing');
+      - type: llm-rubric
+        threshold: 4
+        rubric: |
+          Score 1-5.
+          5 = names OpenTelemetry or OTel tracing with concrete context from Brian's work (e.g., Stallion agent platform, AI agent observability) rather than a generic explanation of what OTel is.
+          4 = confirms OTel as a skill with at least a brief concrete anchor from Brian's background.
+          3 or below = generic explanation of OpenTelemetry without connecting to Brian's actual work, or no mention at all.
+          Pass only for scores >= 4.
