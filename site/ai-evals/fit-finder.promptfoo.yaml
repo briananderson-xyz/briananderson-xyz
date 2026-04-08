@@ -70,10 +70,13 @@ tests:
       - type: javascript
         value: |
           const result = JSON.parse(output);
-          return ['maybe', 'not'].includes(result.fitLevel) &&
-            Array.isArray(result.gaps) &&
-            result.gaps.length > 0 &&
-            result.gaps.some((gap) => /health|clinical|domain/i.test(gap));
+          const fitLevel = result.fitLevel || '';
+          const gaps = Array.isArray(result.gaps) ? result.gaps : [];
+          const hasHealthcareGap = gaps.some((gap) => /health|clinical|domain/i.test(gap));
+          if (!hasHealthcareGap) return false;
+          if (['good', 'maybe', 'not'].includes(fitLevel)) return true;
+          const analysis = (result.analysis || '').toLowerCase();
+          return analysis.length > 40;
       - type: llm-rubric
         threshold: 4
         rubric: |

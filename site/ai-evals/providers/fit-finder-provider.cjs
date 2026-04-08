@@ -3,7 +3,7 @@ class FitFinderProvider {
     this.providerId = options.id || "fit-finder-api";
     this.config = options.config || {};
     this.baseUrl = process.env.AI_EVAL_BASE_URL || this.config.baseUrl || "https://api.briananderson.xyz";
-    this.maxRetries = Number(process.env.AI_EVAL_MAX_RETRIES || this.config.maxRetries || 2);
+    this.maxRetries = Number(process.env.AI_EVAL_MAX_RETRIES || this.config.maxRetries || 4);
     this.timeoutMs = Number(process.env.AI_EVAL_TIMEOUT_MS || this.config.timeoutMs || 25000);
   }
 
