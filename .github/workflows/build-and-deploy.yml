@@ -174,7 +174,6 @@ jobs:
             --max-instances 5 \
             --memory 512Mi
       - name: Tag image as dev-stable
-        continue-on-error: true
         env:
           REGION: ${{ secrets.GCP_REGION }}
           PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
@@ -233,7 +232,6 @@ jobs:
             --max-instances 10 \
             --memory 512Mi
       - name: Tag image as prod-stable
-        continue-on-error: true
         env:
           REGION: ${{ secrets.GCP_REGION }}
           PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
