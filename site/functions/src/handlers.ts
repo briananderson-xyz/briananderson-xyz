@@ -844,7 +844,8 @@ FIT LEVELS:
 		}
 
 		if (!analysis) {
-			throw new Error('Model did not produce a fit analysis');
+			console.warn('Model did not produce fit analysis, using fallback');
+			analysis = buildFallbackFitAnalysis(contentTools, jobDescription, variant);
 		}
 
 			const fallbackAnalysis = buildFallbackFitAnalysis(contentTools, jobDescription, variant);

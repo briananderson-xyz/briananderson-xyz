@@ -186,7 +186,7 @@ jobs:
           done
           FIT_OK=false
           for i in 1 2 3 4 5; do
-            STATUS=$(curl -sf -o /dev/null -w "%{http_code}" https://api-dev.briananderson.xyz/fit-finder -X POST -H "Content-Type: application/json" -d '{"jobDescription":"ping"}') && echo "fit-finder: $STATUS" && FIT_OK=true && break || echo "fit-finder: attempt $i failed, retrying..."
+            STATUS=$(curl -sf -o /dev/null -w "%{http_code}" https://api-dev.briananderson.xyz/fit-finder -X POST -H "Content-Type: application/json" -d '{"jobDescription":"Senior TypeScript developer with React and Node experience"}') && echo "fit-finder: $STATUS" && FIT_OK=true && break || echo "fit-finder: attempt $i failed, retrying..."
             sleep 5
           done
           if [ "$CHAT_OK" != "true" ] || [ "$FIT_OK" != "true" ]; then
@@ -266,7 +266,7 @@ jobs:
           done
           FIT_OK=false
           for i in 1 2 3 4 5; do
-            STATUS=$(curl -sf -o /dev/null -w "%{http_code}" https://api.briananderson.xyz/fit-finder -X POST -H "Content-Type: application/json" -d '{"jobDescription":"ping"}') && echo "fit-finder: $STATUS" && FIT_OK=true && break || echo "fit-finder: attempt $i failed, retrying..."
+            STATUS=$(curl -sf -o /dev/null -w "%{http_code}" https://api.briananderson.xyz/fit-finder -X POST -H "Content-Type: application/json" -d '{"jobDescription":"Senior TypeScript developer with React and Node experience"}') && echo "fit-finder: $STATUS" && FIT_OK=true && break || echo "fit-finder: attempt $i failed, retrying..."
             sleep 5
           done
           if [ "$CHAT_OK" != "true" ] || [ "$FIT_OK" != "true" ]; then
@@ -371,7 +371,7 @@ jobs:
             sleep 5
           done
           for i in 1 2 3 4 5; do
-            STATUS=$(curl -sf -o /dev/null -w "%{http_code}" https://api-dev.briananderson.xyz/fit-finder -X POST -H "Content-Type: application/json" -d '{"jobDescription":"ping"}') && echo "fit-finder: $STATUS" && break || echo "fit-finder: attempt $i failed, retrying..."
+            STATUS=$(curl -sf -o /dev/null -w "%{http_code}" https://api-dev.briananderson.xyz/fit-finder -X POST -H "Content-Type: application/json" -d '{"jobDescription":"Senior TypeScript developer with React and Node experience"}') && echo "fit-finder: $STATUS" && break || echo "fit-finder: attempt $i failed, retrying..."
             sleep 5
           done
           sleep 3
@@ -529,7 +529,7 @@ jobs:
             sleep 5
           done
           for i in 1 2 3 4 5; do
-            STATUS=$(curl -sf -o /dev/null -w "%{http_code}" https://api.briananderson.xyz/fit-finder -X POST -H "Content-Type: application/json" -d '{"jobDescription":"ping"}') && echo "fit-finder: $STATUS" && break || echo "fit-finder: attempt $i failed, retrying..."
+            STATUS=$(curl -sf -o /dev/null -w "%{http_code}" https://api.briananderson.xyz/fit-finder -X POST -H "Content-Type: application/json" -d '{"jobDescription":"Senior TypeScript developer with React and Node experience"}') && echo "fit-finder: $STATUS" && break || echo "fit-finder: attempt $i failed, retrying..."
             sleep 5
           done
           sleep 3
