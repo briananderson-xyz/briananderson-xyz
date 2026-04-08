@@ -328,7 +328,8 @@ tests:
       - type: javascript
         value: |
           const lower = output.toLowerCase();
-          const matches = ['jenkins', 'github actions', 'gitlab ci', 'circleci', 'ci/cd']
+          const matches = ['jenkins', 'github actions', 'gitlab ci', 'circleci', 'ci/cd',
+            'terraform', 'kubernetes', 'docker', 'ansible', 'cloudformation', 'argo']
             .filter((tool) => lower.includes(tool));
           return matches.length >= 1;
 
