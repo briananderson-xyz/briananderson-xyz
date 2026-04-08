@@ -110,6 +110,15 @@ export interface ExperienceResult {
   highlights: string[];
 }
 
+export interface BlogResult {
+  slug: string;
+  title: string;
+  url: string;
+  summary: string;
+  tags: string[];
+  date: string;
+}
+
 export interface ResumeSummary {
   name: string;
   title: string;
