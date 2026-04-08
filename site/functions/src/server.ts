@@ -12,36 +12,41 @@ import express from 'express';
 import { handleChat } from './handlers.js';
 import { handleFitFinder } from './handlers.js';
 
+const asyncHandler = (fn: express.RequestHandler) => (req: express.Request, res: express.Response, next: express.NextFunction) => {
+	Promise.resolve(fn(req, res, next)).catch(next);
+};
+
 const app = express();
 app.use(express.json());
 
-// Health check
 app.get('/', (_req, res) => {
 	res.status(200).json({ status: 'ok', service: 'briananderson-xyz-api' });
 });
 
-// The Cloudflare Worker routes to the service root, so POST / is the main handler.
-// /chat and /fit-finder paths are also supported for direct access.
-app.post('/', (req, res) => {
+app.post('/', asyncHandler((req, res) => {
 	const fn = process.env.FUNCTION_TARGET || 'chat';
 	if (fn === 'fitfinder') {
 		return handleFitFinder(req, res);
 	}
 	return handleChat(req, res);
-});
-app.options('/', (req, res) => {
+}));
+app.options('/', asyncHandler((req, res) => {
 	const fn = process.env.FUNCTION_TARGET || 'chat';
 	if (fn === 'fitfinder') {
 		return handleFitFinder(req, res);
 	}
 	return handleChat(req, res);
-});
+}));
 
-// Also support explicit paths for direct access / testing
-app.post('/chat', (req, res) => handleChat(req, res));
-app.options('/chat', (req, res) => handleChat(req, res));
-app.post('/fit-finder', (req, res) => handleFitFinder(req, res));
-app.options('/fit-finder', (req, res) => handleFitFinder(req, res));
+app.post('/chat', asyncHandler((req, res) => handleChat(req, res)));
+app.options('/chat', asyncHandler((req, res) => handleChat(req, res)));
+app.post('/fit-finder', asyncHandler((req, res) => handleFitFinder(req, res)));
+app.options('/fit-finder', asyncHandler((req, res) => handleFitFinder(req, res)));
+
+app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+	console.error('Unhandled error:', err);
+	res.status(500).json({ error: 'Internal server error' });
+});
 
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
