@@ -27,6 +27,18 @@ function success(message) {
   testCount++;
 }
 
+async function smokeFetch(url, options, retries = SMOKE_TEST ? 3 : 0) {
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    const response = await fetch(url, options);
+    if (response.ok || response.status < 500) return response;
+    if (attempt < retries) {
+      console.log(`   Retrying (attempt ${attempt + 2}/${retries + 1}) after ${response.status}...`);
+      await new Promise(r => setTimeout(r, 2000));
+    }
+  }
+  return fetch(url, options);
+}
+
 async function validateChatEndpoint() {
   console.log('\n🔍 Testing Chat Endpoint...\n');
 
@@ -138,7 +150,7 @@ Required:
 - Team leadership experience
 - DevOps and CI/CD background`;
 
-    const response1 = await fetch(endpoint, {
+    const response1 = await smokeFetch(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -241,7 +253,7 @@ Required:
 - 3+ years ICU experience
 - ACLS and BLS certification`;
 
-    const response2 = await fetch(endpoint, {
+    const response2 = await smokeFetch(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -260,7 +272,7 @@ Required:
 
     // Test 3: Empty job description
     console.log('\nTest 3: Empty job description validation...');
-    const response3 = await fetch(endpoint, {
+    const response3 = await smokeFetch(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -305,12 +317,8 @@ async function validateAPIEndpoints() {
     }
 
     if (errorCount > 0) {
-      if (SMOKE_TEST) {
-        console.log(`\n⚠️  ${errorCount} error(s) encountered in smoke test mode — treating as non-blocking`);
-      } else {
-        console.log('\n❌ Fix errors before deploying to production');
-        process.exit(1);
-      }
+      console.log('\n❌ Fix errors before deploying to production');
+      process.exit(1);
     }
   }
   console.log('='.repeat(60) + '\n');
