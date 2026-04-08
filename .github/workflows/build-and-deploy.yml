@@ -122,8 +122,8 @@ jobs:
         run: |
           IMAGE="${REGION}-docker.pkg.dev/${PROJECT_ID}/site-functions/api:${GITHUB_SHA:0:8}"
           docker build -t "$IMAGE" .
-          docker push "$IMAGE"
-          DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' "$IMAGE" | sed 's/.*@//')
+          PUSH_OUTPUT=$(docker push "$IMAGE" 2>&1)
+          DIGEST=$(echo "$PUSH_OUTPUT" | grep -oP 'sha256:[a-f0-9]+' | tail -1)
           echo "image=$IMAGE" >> $GITHUB_OUTPUT
           echo "digest=$DIGEST" >> $GITHUB_OUTPUT
 
@@ -362,9 +362,9 @@ jobs:
         env:
           REGION: ${{ secrets.GCP_REGION }}
           PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-          DIGEST: ${{ needs.build-functions.outputs.digest }}
+          IMAGE: ${{ needs.build-functions.outputs.image }}
         run: |
-          IMAGE="${REGION}-docker.pkg.dev/${PROJECT_ID}/site-functions/api@${DIGEST}"
+          IMAGE="${IMAGE:-${REGION}-docker.pkg.dev/${PROJECT_ID}/site-functions/api:${GITHUB_SHA:0:8}}"
           gcloud artifacts docker tags add "$IMAGE" "${REGION}-docker.pkg.dev/${PROJECT_ID}/site-functions/api:dev-stable"
       - name: Rollback on failure
         if: (steps.smoke.outcome == 'failure' || steps.smoke_api.outcome == 'failure' || steps.ai_evals.outcome == 'failure') && steps.last_successful.outputs.run_id != 'none'
@@ -513,9 +513,9 @@ jobs:
         env:
           REGION: ${{ secrets.GCP_REGION }}
           PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-          DIGEST: ${{ needs.build-functions.outputs.digest }}
+          IMAGE: ${{ needs.build-functions.outputs.image }}
         run: |
-          IMAGE="${REGION}-docker.pkg.dev/${PROJECT_ID}/site-functions/api@${DIGEST}"
+          IMAGE="${IMAGE:-${REGION}-docker.pkg.dev/${PROJECT_ID}/site-functions/api:${GITHUB_SHA:0:8}}"
           gcloud artifacts docker tags add "$IMAGE" "${REGION}-docker.pkg.dev/${PROJECT_ID}/site-functions/api:prod-stable"
       - name: Rollback on failure
         if: (steps.smoke.outcome == 'failure' || steps.smoke_api.outcome == 'failure') && steps.last_successful.outputs.run_id != 'none'
