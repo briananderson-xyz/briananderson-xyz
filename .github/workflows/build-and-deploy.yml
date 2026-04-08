@@ -175,10 +175,40 @@ jobs:
             --service-account "cloud-run-runtime@${PROJECT_ID}.iam.gserviceaccount.com" \
             --max-instances 5 \
             --memory 512Mi
+      - name: Smoke test dev Cloud Run services
+        id: smoke
+        run: |
+          echo "Warming up dev Cloud Run services..."
+          CHAT_OK=false
+          for i in 1 2 3 4 5; do
+            STATUS=$(curl -sf -o /dev/null -w "%{http_code}" https://api-dev.briananderson.xyz/chat -X POST -H "Content-Type: application/json" -d '{"message":"ping"}') && echo "chat: $STATUS" && CHAT_OK=true && break || echo "chat: attempt $i failed, retrying..."
+            sleep 5
+          done
+          FIT_OK=false
+          for i in 1 2 3 4 5; do
+            STATUS=$(curl -sf -o /dev/null -w "%{http_code}" https://api-dev.briananderson.xyz/fit-finder -X POST -H "Content-Type: application/json" -d '{"jobDescription":"ping"}') && echo "fit-finder: $STATUS" && FIT_OK=true && break || echo "fit-finder: attempt $i failed, retrying..."
+            sleep 5
+          done
+          if [ "$CHAT_OK" != "true" ] || [ "$FIT_OK" != "true" ]; then
+            echo "smoke_failed=true" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+      - name: Rollback dev Cloud Run on failure
+        if: failure() && steps.smoke.outcome == 'failure'
+        env:
+          REGION: ${{ secrets.GCP_REGION }}
+          PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+        run: |
+          STABLE_IMAGE="${REGION}-docker.pkg.dev/${PROJECT_ID}/site-functions/api:dev-stable"
+          echo "Rolling back dev Cloud Run to dev-stable..."
+          gcloud run deploy chat-dev --image "$STABLE_IMAGE" --region "$REGION" --platform managed --allow-unauthenticated || true
+          gcloud run deploy fitfinder-dev --image "$STABLE_IMAGE" --region "$REGION" --platform managed --allow-unauthenticated || true
+          echo "Cloud Run rollback complete."
+          exit 1
 
   deploy-functions-prod:
     runs-on: ubuntu-latest
-    needs: [build-functions, deploy-functions-dev]
+    needs: [build-functions, deploy-dev]
     environment: prod
     if: github.event_name == 'workflow_dispatch' && github.event.inputs.deploy_prod == 'true'
     steps:
@@ -225,19 +255,36 @@ jobs:
             --service-account "cloud-run-runtime@${PROJECT_ID}.iam.gserviceaccount.com" \
             --max-instances 10 \
             --memory 512Mi
-      - name: Output Cloud Run URLs
+      - name: Smoke test prod Cloud Run services
+        id: smoke
+        run: |
+          echo "Warming up prod Cloud Run services..."
+          CHAT_OK=false
+          for i in 1 2 3 4 5; do
+            STATUS=$(curl -sf -o /dev/null -w "%{http_code}" https://api.briananderson.xyz/chat -X POST -H "Content-Type: application/json" -d '{"message":"ping"}') && echo "chat: $STATUS" && CHAT_OK=true && break || echo "chat: attempt $i failed, retrying..."
+            sleep 5
+          done
+          FIT_OK=false
+          for i in 1 2 3 4 5; do
+            STATUS=$(curl -sf -o /dev/null -w "%{http_code}" https://api.briananderson.xyz/fit-finder -X POST -H "Content-Type: application/json" -d '{"jobDescription":"ping"}') && echo "fit-finder: $STATUS" && FIT_OK=true && break || echo "fit-finder: attempt $i failed, retrying..."
+            sleep 5
+          done
+          if [ "$CHAT_OK" != "true" ] || [ "$FIT_OK" != "true" ]; then
+            echo "smoke_failed=true" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+      - name: Rollback prod Cloud Run on failure
+        if: failure() && steps.smoke.outcome == 'failure'
         env:
           REGION: ${{ secrets.GCP_REGION }}
+          PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
         run: |
-          echo "=== Cloud Run service URLs ==="
-          CHAT_URL=$(gcloud run services describe chat --region $REGION --format 'value(status.url)')
-          FIT_URL=$(gcloud run services describe fitfinder --region $REGION --format 'value(status.url)')
-          echo "chat: $CHAT_URL"
-          echo "fit-finder: $FIT_URL"
-          echo ""
-          echo "Update these URLs in briananderson-xyz-dns/records.tf:"
-          echo "  chat_function_url = \"$CHAT_URL\""
-          echo "  fit_finder_function_url = \"$FIT_URL\""
+          STABLE_IMAGE="${REGION}-docker.pkg.dev/${PROJECT_ID}/site-functions/api:prod-stable"
+          echo "Rolling back prod Cloud Run to prod-stable..."
+          gcloud run deploy chat --image "$STABLE_IMAGE" --region "$REGION" --platform managed --allow-unauthenticated || true
+          gcloud run deploy fitfinder --image "$STABLE_IMAGE" --region "$REGION" --platform managed --allow-unauthenticated || true
+          echo "Cloud Run rollback complete."
+          exit 1
 
   deploy-dev:
     runs-on: ubuntu-latest
