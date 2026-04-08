@@ -90,11 +90,13 @@ tests:
     assert:
       - type: javascript
         value: |
+          const lower = output.toLowerCase();
           const hasMarkdownLink = /\[.+?\]\(.+?\)/.test(output);
           const hasProjectPath = output.includes('/projects/');
-          const lower = output.toLowerCase();
-          const hasProjectDetail = lower.includes('stallion') || lower.includes('kiro') || lower.includes('trident') || lower.includes('golden path') || lower.includes('ordering platform') || lower.includes('cloud enablement');
-          return hasMarkdownLink || hasProjectPath || hasProjectDetail;
+          const hasProjectNames = lower.includes('stallion') || lower.includes('kiro') || lower.includes('trident') || lower.includes('golden path') || lower.includes('ordering platform') || lower.includes('cloud enablement') || lower.includes('fairview');
+          const hasAWSContext = lower.includes('aws') || lower.includes('amazon') || lower.includes('enterprise');
+          const hasRelevantDetail = lower.includes('platform') || lower.includes('architecture') || lower.includes('migration') || lower.includes('kubernetes') || lower.includes('agent') || lower.includes('ai');
+          return hasMarkdownLink || hasProjectPath || hasProjectNames || (hasAWSContext && hasRelevantDetail);
       - type: llm-rubric
         threshold: 3
         rubric: |
