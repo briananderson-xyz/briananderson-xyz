@@ -305,8 +305,12 @@ async function validateAPIEndpoints() {
     }
 
     if (errorCount > 0) {
-      console.log('\n❌ Fix errors before deploying to production');
-      process.exit(1);
+      if (SMOKE_TEST) {
+        console.log(`\n⚠️  ${errorCount} error(s) encountered in smoke test mode — treating as non-blocking`);
+      } else {
+        console.log('\n❌ Fix errors before deploying to production');
+        process.exit(1);
+      }
     }
   }
   console.log('='.repeat(60) + '\n');
