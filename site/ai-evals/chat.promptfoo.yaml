@@ -239,3 +239,86 @@ tests:
           4 = confirms OTel as a skill with at least a brief concrete anchor from Brian's background.
           3 or below = generic explanation of OpenTelemetry without connecting to Brian's actual work, or no mention at all.
           Pass only for scores >= 4.
+
+  - description: Projects query returns concrete project names (search_projects)
+    vars:
+      question: "List 3 specific projects Brian has worked on."
+    assert:
+      - type: javascript
+        value: |
+          const lower = output.toLowerCase();
+          const projectMatches = ['stallion', 'kiro', 'trident', 'gfs', 'fill in my blank']
+            .filter((needle) => lower.includes(needle));
+          return projectMatches.length >= 2;
+      - type: llm-rubric
+        threshold: 4
+        rubric: |
+          Score 1-5.
+          5 = includes multiple real project names from Brian's portfolio with grounded context and no invented projects.
+          4 = names at least two real projects with mostly accurate context.
+          3 or below = generic answer with no concrete project names, or fabricated projects.
+          Pass only for scores >= 4.
+
+  - description: Skills query returns concrete named skills for AI/platform work (search_skills)
+    vars:
+      question: "What specific skills does Brian have for AI agent workflows and platform engineering?"
+    assert:
+      - type: javascript
+        value: |
+          const lower = output.toLowerCase();
+          const matches = ['kubernetes', 'aws', 'opentelemetry', 'mcp', 'ci/cd', 'agent']
+            .filter((skill) => lower.includes(skill));
+          return matches.length >= 2;
+
+  - description: Project detail question returns Stallion-specific technical detail (get_project)
+    vars:
+      question: "What was the architecture and purpose of Brian's Stallion project?"
+    assert:
+      - type: javascript
+        value: |
+          const lower = output.toLowerCase();
+          return lower.includes('stallion') &&
+            (lower.includes('agent') || lower.includes('mcp')) &&
+            (lower.includes('observability') || lower.includes('otel') || lower.includes('tracing'));
+
+  - description: Blog question references Brian's published writing (search_blog)
+    vars:
+      question: "Has Brian written any blog posts about this site or his work?"
+    assert:
+      - type: javascript
+        value: |
+          const lower = output.toLowerCase();
+          return lower.includes('blog') &&
+            (lower.includes('building this site') || lower.includes('/blog/'));
+
+  - description: Experience query returns role/company context (search_experience)
+    vars:
+      question: "Where has Brian worked, and what role does he have at AWS?"
+    assert:
+      - type: javascript
+        value: |
+          const lower = output.toLowerCase();
+          return lower.includes('amazon web services') &&
+            (lower.includes('enterprise solutions architect') || lower.includes('architect'));
+
+  - description: Skill category question surfaces category-specific tools (get_skills_by_category)
+    vars:
+      question: "What DevOps and CI/CD tools does Brian list as skills?"
+    assert:
+      - type: javascript
+        value: |
+          const lower = output.toLowerCase();
+          const matches = ['jenkins', 'github actions', 'gitlab ci', 'circleci', 'ci/cd']
+            .filter((tool) => lower.includes(tool));
+          return matches.length >= 1;
+
+  - description: Resume summary question returns top-level profile details (get_resume_summary)
+    vars:
+      question: "Give me a quick summary of Brian's profile including location and certifications."
+    assert:
+      - type: javascript
+        value: |
+          const lower = output.toLowerCase();
+          const mentionsLocation = lower.includes('chicago') || lower.includes('illinois');
+          const mentionsCert = lower.includes('certif');
+          return mentionsLocation && mentionsCert;

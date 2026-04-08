@@ -13,6 +13,7 @@ import type {
 	ProjectEntry,
 	ProjectResult,
 	ExperienceResult,
+	BlogResult,
 	ResumeSummary,
 	ToolExecutionArgs
 } from './types.js';
@@ -83,6 +84,29 @@ export class ContentTools {
 				summary: project.summary,
 				tags: project.tags,
 				date: project.date
+			}));
+	}
+
+	/**
+	 * Search blog posts by keywords or tags
+	 */
+	searchBlog(keywords: string[]): BlogResult[] {
+		if (!this.index?.blog) return [];
+
+		const keywordsLower = keywords.map(k => k.toLowerCase());
+
+		return this.index.blog
+			.filter((post) => {
+				const searchText = `${post.title} ${post.summary} ${post.tags.join(' ')} ${post.keywords.join(' ')}`.toLowerCase();
+				return keywordsLower.some(keyword => searchText.includes(keyword));
+			})
+			.map((post) => ({
+				slug: post.slug,
+				title: post.title,
+				url: post.url,
+				summary: post.summary,
+				tags: post.tags,
+				date: post.date
 			}));
 	}
 
@@ -189,6 +213,21 @@ export const toolDeclarations: { functionDeclarations: FunctionDeclaration[] } =
 						type: Type.ARRAY,
 						items: { type: Type.STRING },
 						description: 'Keywords to search for (e.g., ["cloud", "kubernetes", "migration"])'
+					}
+				},
+				required: ['keywords']
+			}
+		},
+		{
+			name: 'search_blog',
+			description: 'Search blog posts by keywords, tags, or topics. Returns relevant posts with summaries.',
+			parameters: {
+				type: Type.OBJECT,
+				properties: {
+					keywords: {
+						type: Type.ARRAY,
+						items: { type: Type.STRING },
+						description: 'Keywords to search for (e.g., ["ai", "platform", "architecture"])'
 					}
 				},
 				required: ['keywords']
@@ -305,7 +344,7 @@ export function executeToolCall(
 	tools: ContentTools,
 	functionName: string,
 	args: ToolExecutionArgs
-): SkillResult[] | ProjectEntry | ProjectResult[] | ExperienceResult[] | Pick<SkillResult, 'name' | 'projects' | 'blog'>[] | ResumeSummary | ToolExecutionArgs | null {
+): SkillResult[] | ProjectEntry | ProjectResult[] | BlogResult[] | ExperienceResult[] | Pick<SkillResult, 'name' | 'projects' | 'blog'>[] | ResumeSummary | ToolExecutionArgs | null {
 	if (isSubmitAnalysisCall(functionName)) {
 		return args;
 	}
@@ -317,6 +356,8 @@ export function executeToolCall(
 			return tools.getProject(args.slug || '');
 		case 'search_projects':
 			return tools.searchProjects(args.keywords || []);
+		case 'search_blog':
+			return tools.searchBlog(args.keywords || []);
 		case 'search_experience':
 			return tools.searchExperience(args.keywords || []);
 		case 'get_skills_by_category':

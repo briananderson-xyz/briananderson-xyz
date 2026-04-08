@@ -76,6 +76,7 @@ function buildChatEvidenceContext(message: string, contentTools: ContentTools): 
 	const experience = contentTools.searchExperience(keywords).slice(0, 3);
 	const skills = contentTools.searchSkills(keywords).slice(0, 5);
 	const projects = contentTools.searchProjects(keywords).slice(0, 2);
+	const blog = contentTools.searchBlog(keywords).slice(0, 2);
 	const certificates = (resume?.certificates || []).filter((cert) =>
 		keywords.some((keyword) => cert.toLowerCase().includes(keyword))
 	);
@@ -89,6 +90,9 @@ function buildChatEvidenceContext(message: string, contentTools: ContentTools): 
 			: null,
 		projects.length > 0
 			? `Relevant projects:\n${projects.map((project) => `- ${project.title}: ${project.summary}`).join('\n')}`
+			: null,
+		blog.length > 0
+			? `Relevant blog posts:\n${blog.map((post) => `- ${post.title}: ${post.summary}`).join('\n')}`
 			: null,
 		certificates.length > 0
 			? `Relevant certifications:\n${certificates.map((cert) => `- ${cert}`).join('\n')}`
@@ -703,7 +707,7 @@ export async function handleFitFinder(req: any, res: any): Promise<void> {
 
 		const initialPrompt = `You are analyzing a job description to determine if Brian Anderson is a good fit.
 
-You have access to tools that let you search Brian's skills, projects, and experience. Use these tools to gather evidence before making your assessment.
+You have access to tools that let you search Brian's skills, projects, blog posts, and experience. Use these tools to gather evidence before making your assessment.
 
 Job Description:
 ${jobDescription}
@@ -711,9 +715,10 @@ ${jobDescription}
 WORKFLOW:
 1. Use search_skills() to find relevant technical and soft skills
 2. Use search_projects() and get_project() to find relevant project work
-3. Use search_experience() to find relevant roles and companies
-4. Use get_resume_summary() for overview information
-5. Call submit_analysis() with your structured assessment as your FINAL action
+3. Use search_blog() to find relevant writing and thought leadership evidence
+4. Use search_experience() to find relevant roles and companies
+5. Use get_resume_summary() for overview information
+6. Call submit_analysis() with your structured assessment as your FINAL action
 
 CRITICAL RULES:
 1. ONLY cite skills, experience, and projects you found via tool calls
