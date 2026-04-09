@@ -7,7 +7,7 @@ mission: Driving measurable business automation and customer outcomes through Ag
 email: brian@briananderson.xyz
 location: Denver, CO
 summary: >
-  With sixteen years of experience, including twelve in leadership, I operate at the intersection
+  With sixteen years of experience, including twelve in leadership roles, I operate at the intersection
   of architecture, platform strategy, and enterprise transformation. I design the operating models
   and technical foundations that enable large organizations to deliver software reliably at scale,
   covering CI/CD platforms, cloud architectures, and zero-downtime migration strategies across
@@ -63,29 +63,7 @@ skills:
       url: https://kafka.apache.org/
     - name: Pub/Sub
       url: https://cloud.google.com/products/pubsub/
-  AI Systems & Agent Workflows:
-    - name: Amazon Bedrock
-      url: https://docs.aws.amazon.com/bedrock/
-    - name: Model Context Protocol (MCP)
-      url: https://modelcontextprotocol.io/
-    - name: Agentcore
-      url: https://aws.amazon.com/bedrock/agentcore/
-    - name: Strands SDK
-      url: https://strandsagents.com/
-    - name: VoltAgent SDK
-      url: https://voltagent.dev/
-  AI Evaluation & Tooling:
-    - name: MCP Server Development
-    - name: OpenTelemetry Tracing
-    - name: promptfoo
-      url: https://www.promptfoo.dev/
-    - name: OpenSpec
-      url: https://github.com/Fission-AI/OpenSpec
-    - name: Prometheus
-      url: https://prometheus.io/
-    - name: Grafana
-      url: https://grafana.com/
-  Observability & Monitoring:
+   Observability & Monitoring:
     - name: Instana
       url: https://www.ibm.com/products/instana
     - name: Datadog
@@ -94,7 +72,26 @@ skills:
       url: https://www.dynatrace.com/
     - name: Elasticsearch
       url: https://www.elastic.co/elasticsearch
-  AI Development Tools:
+    - name: OpenTelemetry
+      url: https://opentelemetry.io/
+    - name: Prometheus
+      url: https://prometheus.io/
+    - name: Grafana
+      url: https://grafana.com/
+  AI Systems and Concepts:
+    - name: Amazon Bedrock
+      url: https://docs.aws.amazon.com/bedrock/
+    - name: Agentcore
+      url: https://aws.amazon.com/bedrock/agentcore/
+    - name: Ollama
+      url: https://ollama.com/
+    - name: Model Context Protocol (MCP)
+      url: https://modelcontextprotocol.io/
+    - name: Context Engineering
+      url: https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents
+    - name: Multi-Agent Orchestration
+      url: https://aws.amazon.com/solutions/guidance/multi-agent-orchestration-on-aws/
+  AI Development Tools & Frameworks:
     - name: Kiro
       altName: Amazon Q Developer
       url: https://kiro.dev/
@@ -102,6 +99,14 @@ skills:
       url: https://www.anthropic.com/
     - name: Codex
       url: https://openai.com/codex/
+    - name: OpenSpec
+      url: https://github.com/Fission-AI/OpenSpec
+    - name: Strands SDK
+      url: https://strandsagents.com/
+    - name: VoltAgent SDK
+      url: https://voltagent.dev/
+    - name: promptfoo
+      url: https://www.promptfoo.dev/
 experience:
   - role: Enterprise Solutions Architect
     company: Amazon Web Services
@@ -113,7 +118,7 @@ experience:
       - "Enterprise Modernization (SAP Integration): Guided a global manufacturer through architecting secure, scalable AWS infrastructure for a Document Management System integrated with SAP ERP. Established best practices for infrastructure as code, private VPC architecture with VPC endpoints, and S3 gateway patterns for high scalability, resiliency, and cost efficiency. Leveraging trust built through earlier prototypes, secured executive buy-in for a comprehensive multi-year cloud migration roadmap."
       - text: "Agentic AI Platform (Stallion): Built a local-first AI agent platform to explore the full lifecycle of agent delivery, including tool orchestration, plugin-based extensibility, and observability for cost, reliability, and agent behavior. Instrumented the platform with OpenTelemetry and Prometheus/Grafana dashboards to make agent runs debuggable and production-ready."
         link: /projects/stallion-agent-platform/
-      - text: "Agentic Developer Tooling (Kiro): Among the top 75 most active users out of 275k+ internal Kiro CLI users. Built AI workflows for Kiro that standardized ideation, implementation, and verification loops for developer and solutions architecture work. Reduced personal admin overhead by ~4 hours/week and used promptfoo-based evals to catch prompt contradictions before release."
+      - text: "Agentic Developer Tooling (Kiro): Among the top 70 most active users out of 280k+ internal Kiro CLI users. Built AI workflows for Kiro that standardized ideation, implementation, and verification loops for developer and solutions architecture work. Reduced personal admin overhead by ~4 hours/week and used promptfoo-based evals to catch prompt contradictions before release."
         link: /projects/kiro-agent-workflows/
     start_date: September 2024
   - role: Technical Director

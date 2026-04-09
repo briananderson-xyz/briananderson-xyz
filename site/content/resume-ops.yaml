@@ -93,7 +93,7 @@ experience:
       - "Enterprise Infrastructure & Migration (SAP Integration): Guided a global manufacturer through architecting secure AWS infrastructure for a Document Management System integrated with SAP ERP. Established best practices for infrastructure as code, private VPC architecture with VPC endpoints, and S3 gateway patterns for scalability, resiliency, and cost efficiency at scale. Led architectural discovery to establish migration roadmaps for broader legacy-to-cloud transitions."
       - text: "AI Agent Observability (Stallion): Built a local-first AI agent platform and instrumented it with OpenTelemetry plus Prometheus/Grafana to trace agent behavior, surface cost and reliability signals, and make tool-driven workflows debuggable."
         link: /projects/stallion-agent-platform/
-      - text: "Agentic Developer Tooling (Kiro): Among the top 75 most active users out of 275k+ internal Kiro CLI users. Built agent workflows for Kiro that standardized ideation-to-verification loops and used promptfoo-based evals to harden prompts and improve reliability before release."
+      - text: "Agentic Developer Tooling (Kiro): Among the top 70 most active users out of 280k+ internal Kiro CLI users. Built agent workflows for Kiro that standardized ideation-to-verification loops and used promptfoo-based evals to harden prompts and improve reliability before release."
         link: /projects/kiro-agent-workflows/
     start_date: September 2024
   - role: Technical Director
