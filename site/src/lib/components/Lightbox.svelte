@@ -9,7 +9,7 @@
   }
 
   let { images, currentIndex = 0, onClose }: Props = $props();
-  let index = $state(currentIndex);
+  let index = $derived(currentIndex);
   let touchStartX = $state(0);
   let touchEndX = $state(0);
 
@@ -101,7 +101,7 @@
     </button>
   {/if}
 
-  <div 
+  <div
     class="flex-1 flex items-center justify-center max-w-7xl w-full"
     ontouchstart={handleTouchStart}
     ontouchmove={handleTouchMove}
@@ -120,19 +120,17 @@
         <span class="text-skin-base">[IMAGE]</span>
         {index + 1} / {images.length}
       </div>
-      
+
       <div class="flex gap-2 overflow-x-auto pb-2 px-4 max-w-full">
         {#each images as image, i}
           <button
             onclick={() => goToImage(i)}
-            class="flex-shrink-0 w-20 h-20 rounded border-2 transition-all {i === index ? 'border-skin-accent' : 'border-skin-border hover:border-skin-accent/50'}"
+            class="flex-shrink-0 w-20 h-20 rounded border-2 transition-all {i === index
+              ? 'border-skin-accent'
+              : 'border-skin-border hover:border-skin-accent/50'}"
             aria-label="Go to image {i + 1}"
           >
-            <img
-              src={image}
-              alt="Thumbnail {i + 1}"
-              class="w-full h-full object-cover rounded"
-            />
+            <img src={image} alt="Thumbnail {i + 1}" class="w-full h-full object-cover rounded" />
           </button>
         {/each}
       </div>
