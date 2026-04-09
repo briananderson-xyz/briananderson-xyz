@@ -1,12 +1,10 @@
 /**
  * Express server for Cloud Run deployment.
- * Production entry point — Dockerfile runs this instead of index.ts.
+ * Entry point for both production (Dockerfile) and local dev (pnpm dev).
  *
  * Each Cloud Run service is dedicated to one function (chat or fit-finder).
  * The Cloudflare Worker routes /chat → chat service, /fit-finder → fitfinder service.
  * So each service handles POST at root (/).
- *
- * Local dev uses Firebase emulators via index.ts.
  */
 import express from 'express';
 import { handleChat } from './handlers.js';

@@ -3,17 +3,16 @@
   "type": "module",
   "scripts": {
     "build": "tsc",
-    "start:cloud-run": "node lib/server.js"
+    "dev": "node --env-file-if-exists=.env.local lib/server.js",
+    "dev:fitfinder": "FUNCTION_TARGET=fitfinder node --env-file-if-exists=.env.local lib/server.js"
   },
   "engines": {
     "node": "22"
   },
-  "main": "lib/index.js",
+  "main": "lib/server.js",
   "dependencies": {
     "@google/genai": "^1.0.0",
-    "express": "^4.21.0",
-    "firebase-admin": "^13.6.1",
-    "firebase-functions": "^6.3.0"
+    "express": "^4.21.0"
   },
   "devDependencies": {
     "@types/express": "^5.0.0",

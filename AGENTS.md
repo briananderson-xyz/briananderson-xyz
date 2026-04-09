@@ -26,14 +26,14 @@
 ## Project Overview
 
 **Stack:** SvelteKit 2 + Svelte 5 + TypeScript + Tailwind CSS 3 + mdsvex
-**Output:** Static site via `@sveltejs/adapter-static` → Firebase Hosting
+**Output:** Static site via `@sveltejs/adapter-static` → GCS Hosting (Cloudflare CDN)
 **Package manager:** pnpm (run commands from `site/`)
 
 | Directory | Purpose |
 |-----------|---------|
 | `site/src/` | Application code (components, routes, utils) |
 | `site/content/` | Markdown content (blog, projects) + YAML (resume variants) |
-| `site/functions/` | Firebase Functions (separate project, excluded from lint) |
+| `site/functions/` | Cloud Run API (Express server, excluded from lint) |
 | `site/scripts/` | Standalone Node validation scripts (excluded from lint) |
 | `site/static/` | Static assets served as-is |
 
@@ -92,10 +92,10 @@ This is a **statically generated site**. All pages are prerendered at build time
 - Every `+page.server.ts` should export `export const prerender = true`
 - Server-side logic (load functions) runs at **build time**, not at request time
 - Do not introduce SSR-only patterns (cookies, request headers, dynamic server responses) in page routes
-- API routes under `src/routes/api/` exist for **dev mode only** — they proxy to the local Firebase emulator
+- API routes under `src/routes/api/` exist for **dev mode only** — they proxy to the local Cloud Run server
 - In production, client components call `https://api.briananderson.xyz` directly (Cloudflare Worker → Cloud Run)
 - `import.meta.glob` with `eager: true` is the standard pattern for loading content at build time
-- If a feature requires runtime server logic, it belongs in Firebase Functions (`site/functions/`), not in SvelteKit routes
+- If a feature requires runtime server logic, it belongs in Cloud Run (`site/functions/`), not in SvelteKit routes
 
 ### SEO & Structured Data
 
@@ -175,26 +175,26 @@ AI can call these tools to gather information intelligently:
 **Two terminals required:**
 
 ```bash
-# Terminal 1 - Firebase Functions
+# Terminal 1 - Cloud Run (Express)
 cd site/functions
-pnpm run serve              # Port 5001
+pnpm run dev                  # Port 8080 (loads .env.local)
 
 # Terminal 2 - SvelteKit
 cd site
 pnpm run build-content-index
-pnpm run dev                # Port 5173
+pnpm run dev                  # Port 5173
 ```
 
 **Environment:** Create `site/functions/.env.local` with `GEMINI_API_KEY=your-key-here`
 
-**Dev mode detection:** Client components use `/api/chat` and `/api/fit-finder` in dev (SvelteKit proxy → emulator), `https://api.briananderson.xyz/chat` and `/fit-finder` in production (Cloudflare Worker → Cloud Run)
+**Dev mode detection:** Client components use `/api/chat` and `/api/fit-finder` in dev (SvelteKit proxy → local Express), `https://api.briananderson.xyz/chat` and `/fit-finder` in production (Cloudflare Worker → Cloud Run)
 
 ### Deployment
 
 ```bash
 cd site
 pnpm run build              # Builds content index + site
-firebase deploy             # Deploys functions + hosting together
+# CI deploys via gcloud (Cloud Run) + gsutil (GCS hosting)
 ```
 
 Cache headers are set in `.github/workflows/build-and-deploy.yml` to ensure proper versioning strategy.
