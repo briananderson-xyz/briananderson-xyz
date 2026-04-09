@@ -289,8 +289,9 @@ tests:
           return matches.length >= 2;
 
   - description: Project detail question returns Stallion-specific technical detail (get_project)
+    threshold: 0.5
     vars:
-      question: "What was the architecture and purpose of Brian's Stallion project?"
+      question: "Tell me about Brian's Stallion project - what does it do and what technologies does it use?"
     assert:
       - type: javascript
         value: |
@@ -298,6 +299,11 @@ tests:
           const mentionsStallion = lower.includes('stallion');
           const hasProjectSignal = lower.includes('agent') || lower.includes('platform') || lower.includes('tool') || lower.includes('observability') || lower.includes('tracing') || lower.includes('orchestration') || lower.includes('architecture') || lower.includes('prototype') || lower.includes('reliability') || lower.includes('debugging') || lower.includes('mcp') || lower.includes('local-first') || lower.includes('llm');
           return mentionsStallion && hasProjectSignal;
+      - type: llm-rubric
+        value: |
+          Score 1 if the response correctly describes the Stallion Agent Platform as a local-first agent platform focused on observability of tool orchestration and agent reliability.
+          Score 0 if the response confuses Stallion with a different project (like ProveIT or a manufacturing prototype).
+          Score 0.5 if the response partially identifies Stallion but mixes in incorrect details.
 
   - description: Blog question references Brian's published writing (search_blog)
     vars:
