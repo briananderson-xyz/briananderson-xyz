@@ -63,7 +63,7 @@ skills:
       url: https://kafka.apache.org/
     - name: Pub/Sub
       url: https://cloud.google.com/products/pubsub/
-   Observability & Monitoring:
+  Observability & Monitoring:
     - name: Instana
       url: https://www.ibm.com/products/instana
     - name: Datadog
