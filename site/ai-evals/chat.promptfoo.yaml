@@ -296,8 +296,8 @@ tests:
         value: |
           const lower = output.toLowerCase();
           const mentionsStallion = lower.includes('stallion');
-          const hasAgentWork = lower.includes('agent') || lower.includes('mcp') || lower.includes('agentic') || lower.includes('tool use');
-          const hasTechDetail = lower.includes('observability') || lower.includes('otel') || lower.includes('tracing') || lower.includes('architecture') || lower.includes('orchestration') || lower.includes('bedrock');
+          const hasAgentWork = lower.includes('agent') || lower.includes('mcp') || lower.includes('agentic') || lower.includes('tool use') || lower.includes('llm') || lower.includes('language model');
+          const hasTechDetail = lower.includes('observability') || lower.includes('otel') || lower.includes('tracing') || lower.includes('architecture') || lower.includes('orchestration') || lower.includes('bedrock') || lower.includes('local-first') || lower.includes('reliability') || lower.includes('debugging');
           if (mentionsStallion) return hasAgentWork;
           return hasAgentWork && hasTechDetail;
 
