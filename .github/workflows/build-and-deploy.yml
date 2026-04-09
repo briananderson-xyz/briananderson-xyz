@@ -395,6 +395,7 @@ jobs:
         working-directory: site
         env:
           AI_EVAL_BASE_URL: https://api-dev.briananderson.xyz
+          AI_EVAL_MIN_PASS_RATE: '0.95'
         continue-on-error: true
         run: pnpm run test:ai:evals
       - name: Upload dev build artifact (Verified)

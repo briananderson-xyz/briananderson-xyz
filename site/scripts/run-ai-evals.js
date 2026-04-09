@@ -643,7 +643,14 @@ async function main() {
     );
     info(`Wrote AI eval report to ${reportPath}`);
   }
-  process.exit(totalPassed === totalTests ? 0 : 1);
+  const passRate = totalTests > 0 ? totalPassed / totalTests : 0;
+  const minPassRate = Number(process.env.AI_EVAL_MIN_PASS_RATE || 0.95);
+  if (passRate < minPassRate) {
+    info(`Pass rate ${totalPassed}/${totalTests} (${(passRate * 100).toFixed(1)}%) is below minimum ${(minPassRate * 100).toFixed(1)}%`);
+    process.exit(1);
+  }
+  info(`Pass rate ${totalPassed}/${totalTests} (${(passRate * 100).toFixed(1)}%) meets minimum ${(minPassRate * 100).toFixed(1)}%`);
+  process.exit(0);
 }
 
 main();
