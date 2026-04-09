@@ -89,10 +89,10 @@ function buildChatEvidenceContext(message: string, contentTools: ContentTools): 
 			? `Relevant skills:\n${skills.map((skill) => `- ${skill.name} (${skill.category})`).join('\n')}`
 			: null,
 		projects.length > 0
-			? `Relevant projects:\n${projects.map((project) => `- ${project.title}: ${project.summary}`).join('\n')}`
+			? `Relevant projects:\n${projects.map((project) => `- ${project.title}: ${project.summary}${project.url ? ` (${project.url})` : ''}`).join('\n')}`
 			: null,
 		blog.length > 0
-			? `Relevant blog posts:\n${blog.map((post) => `- ${post.title}: ${post.summary}`).join('\n')}`
+			? `Relevant blog posts:\n${blog.map((post) => `- ${post.title}: ${post.summary}${post.url ? ` (${post.url})` : ''}`).join('\n')}`
 			: null,
 		certificates.length > 0
 			? `Relevant certifications:\n${certificates.map((cert) => `- ${cert}`).join('\n')}`
