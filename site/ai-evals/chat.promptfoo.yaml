@@ -296,10 +296,8 @@ tests:
         value: |
           const lower = output.toLowerCase();
           const mentionsStallion = lower.includes('stallion');
-          const hasAgentWork = lower.includes('agent') || lower.includes('mcp') || lower.includes('agentic') || lower.includes('tool use') || lower.includes('llm') || lower.includes('language model');
-          const hasTechDetail = lower.includes('observability') || lower.includes('otel') || lower.includes('tracing') || lower.includes('architecture') || lower.includes('orchestration') || lower.includes('bedrock') || lower.includes('local-first') || lower.includes('reliability') || lower.includes('debugging');
-          if (mentionsStallion) return hasAgentWork;
-          return hasAgentWork && hasTechDetail;
+          const hasProjectSignal = lower.includes('agent') || lower.includes('platform') || lower.includes('tool') || lower.includes('observability') || lower.includes('tracing') || lower.includes('orchestration') || lower.includes('architecture') || lower.includes('prototype') || lower.includes('reliability') || lower.includes('debugging') || lower.includes('mcp') || lower.includes('local-first') || lower.includes('llm');
+          return mentionsStallion && hasProjectSignal;
 
   - description: Blog question references Brian's published writing (search_blog)
     vars:
