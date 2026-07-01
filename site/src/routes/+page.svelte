@@ -18,7 +18,7 @@
 </script>
 
 <SEO
-  title="Brian Anderson"
+  title="Brian Anderson — AI Systems Architect & Enterprise Solutions Architect"
   description="Enterprise architect and hands-on builder focused on AI platforms, cloud modernization, and developer productivity."
   canonical={getCanonicalUrl("/")}
 />

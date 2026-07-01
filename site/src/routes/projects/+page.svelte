@@ -1,7 +1,7 @@
 <script lang="ts">
   import { page } from "$app/stores";
   import { browser } from "$app/environment";
-  import { addVariant } from "$lib/utils/variantLink";
+  import { addVariant, getCanonicalUrl } from "$lib/utils/variantLink";
   import SEO from "$lib/components/SEO.svelte";
 
   function getVariant(url: URL): string | null {
@@ -15,7 +15,7 @@
 <SEO
   title="Projects | Brian Anderson"
   description="A collection of deployed systems, experiments, and open source projects."
-  canonical="https://briananderson.xyz/projects"
+  canonical={getCanonicalUrl("/projects/")}
 />
 
 <section class="mx-auto max-w-6xl px-4 py-16">

@@ -16,6 +16,7 @@
     "@context": "https://schema.org",
     "@type": "Person",
     "name": resume.name,
+    "jobTitle": formatJobTitles(resume.jobTitles),
     "description": resume.tagline,
     "url": "https://briananderson.xyz",
     "sameAs": [

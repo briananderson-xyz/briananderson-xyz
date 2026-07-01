@@ -1,0 +1,17 @@
+/* TEAM */
+	Developer: Brian Anderson
+	Role: Technical Director & Enterprise Solutions Architect
+	Contact: brian [at] briananderson.xyz
+	Site: https://briananderson.xyz
+	From: United States
+
+/* THANKS */
+	Everyone who reviewed the site along the way.
+
+/* SITE */
+	Last update: 2026/07/01
+	Language: English
+	Doctype: HTML5
+	Standards: HTML5, ARIA, Schema.org JSON-LD
+	Components: SvelteKit 2, Svelte 5, Tailwind CSS
+	Software: mdsvex, Google Cloud Run, Google Cloud Storage, Cloudflare

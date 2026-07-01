@@ -28,7 +28,7 @@ I wanted repeatable AI workflows that improved engineering output instead of cre
 - Reduced my own administrative overhead by roughly **4 hours per week**.
 - Created a more reliable personal workflow for using AI as a systems-thinking partner rather than an autocomplete layer.
 
-## Why Employers Should Care
+## Why It Matters
 
 This work demonstrates a practical point: productive AI use is not about collecting prompts. It is about designing workflows, constraints, evaluation loops, and operating habits that make the output more useful and less noisy.
 

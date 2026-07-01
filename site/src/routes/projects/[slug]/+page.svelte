@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { page } from "$app/state";
   import SEO from "$lib/components/SEO.svelte";
   import ImageGallery from "$lib/components/ImageGallery.svelte";
   import VisualArchive from "$lib/components/VisualArchive.svelte";
@@ -10,7 +11,56 @@
   }
 
   let { data }: Props = $props();
+
+  const siteUrl = "https://briananderson.xyz";
+
+  // CreativeWork + BreadcrumbList JSON-LD, sourced from content frontmatter
+  // (data.metadata) via the existing projects loader. Built as a `<script>`
+  // string (not a Svelte block) to avoid ESLint/Svelte parser confusion,
+  // matching the pattern in Homepage.svelte / ResumePage.svelte.
+  let jsonLdTag = $derived.by(() => {
+    if (!data?.html || !data?.metadata) return "";
+
+    const canonicalUrl = `${siteUrl}/projects/${page.params.slug}/`;
+    const keywordsList = [
+      ...(data.metadata.tags || []),
+      ...(data.metadata.keywords || [])
+    ];
+
+    const creativeWorkJsonLd = {
+      "@context": "https://schema.org",
+      "@type": "CreativeWork",
+      name: data.metadata.title,
+      headline: data.metadata.title,
+      description: data.metadata.summary || data.metadata.title,
+      datePublished: data.metadata.date,
+      author: {
+        "@type": "Person",
+        name: "Brian Anderson",
+        url: siteUrl
+      },
+      url: canonicalUrl,
+      mainEntityOfPage: canonicalUrl,
+      ...(keywordsList.length ? { keywords: keywordsList.join(", ") } : {})
+    };
+
+    const breadcrumbJsonLd = {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Home", item: `${siteUrl}/` },
+        { "@type": "ListItem", position: 2, name: "Projects", item: `${siteUrl}/projects/` },
+        { "@type": "ListItem", position: 3, name: data.metadata.title, item: canonicalUrl }
+      ]
+    };
+
+    return `<${"script"} type="application/ld+json">${JSON.stringify([creativeWorkJsonLd, breadcrumbJsonLd], null, 2)}</${"script"}>`;
+  });
 </script>
+
+<svelte:head>
+  {@html jsonLdTag}
+</svelte:head>
 
 {#if data?.html}
   <SEO

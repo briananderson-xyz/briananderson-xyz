@@ -18,6 +18,28 @@
   import { PUBLIC_POSTHOG_KEY, PUBLIC_POSTHOG_HOST } from "$env/static/public";
   import ExternalLinkModal from "$lib/components/ExternalLinkModal.svelte";
 
+  const siteUrl = "https://briananderson.xyz";
+  // Site-wide WebSite JSON-LD (no SearchAction: no site search endpoint exists).
+  // Built as a `<script>` string (not a Svelte block) to avoid ESLint/Svelte
+  // parser confusion, matching the pattern in Homepage.svelte / ResumePage.svelte.
+  const websiteJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "Brian Anderson",
+    url: siteUrl,
+    author: {
+      "@type": "Person",
+      name: "Brian Anderson",
+      url: siteUrl
+    },
+    publisher: {
+      "@type": "Person",
+      name: "Brian Anderson",
+      url: siteUrl
+    }
+  };
+  const websiteJsonLdTag = `<${"script"} type="application/ld+json">${JSON.stringify(websiteJsonLd, null, 2)}</${"script"}>`;
+
   let quickActionsVisible = $state(false);
   let shortcutsHelpVisible = $state(false);
   let chatbotVisible = $state(false);
@@ -184,6 +206,7 @@
 <svelte:head>
   <link rel="llms" href="/llms.txt" />
   <link rel="alternate" type="application/json" href="/resume.json" />
+  {@html websiteJsonLdTag}
 </svelte:head>
 
 <div
