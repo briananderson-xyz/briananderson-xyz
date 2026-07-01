@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { ChatMessage } from '$lib/types';
-	import { marked } from 'marked';
+	import { sanitizeMarkdown } from '$lib/utils/sanitize';
 
 	interface Props {
 		message: ChatMessage;
@@ -8,15 +8,10 @@
 
 	let { message }: Props = $props();
 
-	// Configure marked for safe rendering
-	marked.setOptions({
-		breaks: true,
-		gfm: true
-	});
-
+	// Render assistant markdown through DOMPurify-sanitized HTML
 	const renderedContent = $derived(
 		message.role === 'assistant'
-			? marked.parse(message.content)
+			? sanitizeMarkdown(message.content)
 			: message.content
 	);
 

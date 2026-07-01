@@ -25,7 +25,8 @@ const config = {
     // Crawl all pages, but ignore 404s for the Decap CMS admin which is served from static/admin/
     prerender: {
       entries: ['*'],
-      handleMissingId: 'warn'
+      handleMissingId: 'warn',
+      origin: 'https://briananderson.xyz'
     },
     alias: {
       $lib: 'src/lib'

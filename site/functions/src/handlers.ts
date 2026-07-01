@@ -18,6 +18,15 @@ import type {
 	ChatRequest,
 	FitFinderRequest
 } from './types.js';
+import {
+	corsHeadersFor,
+	isAllowedCtaLink,
+	validateHistory,
+	MAX_MESSAGE_BYTES,
+	MAX_JOBDESC_BYTES,
+	isValidVariant,
+	type Variant
+} from './security.js';
 
 const IS_PRODUCTION = process.env.NODE_ENV === 'production';
 const SITE_URL =
@@ -428,7 +437,8 @@ function stabilizeFitAnalysis(
 			candidate.cta &&
 			typeof candidate.cta === 'object' &&
 			typeof (candidate.cta as { text?: string }).text === 'string' &&
-			typeof (candidate.cta as { link?: string }).link === 'string'
+			typeof (candidate.cta as { link?: string }).link === 'string' &&
+			isAllowedCtaLink((candidate.cta as { link: string }).link)
 				? candidate.cta
 				: fallback.cta
 	};
@@ -514,13 +524,6 @@ async function fetchContentIndexInner(): Promise<ContentIndex | null> {
 	}
 }
 
-// CORS headers
-const corsHeaders = {
-	'Access-Control-Allow-Origin': '*',
-	'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-	'Access-Control-Allow-Headers': 'Content-Type',
-};
-
 /**
  * Chat handler — can be called from Firebase Functions or Express/Cloud Run
  */
@@ -528,7 +531,7 @@ const corsHeaders = {
 export async function handleChat(req: any, res: any): Promise<void> {
 	// Handle preflight
 	if (req.method === 'OPTIONS') {
-		res.set(corsHeaders);
+		res.set(corsHeadersFor(req));
 		res.status(204).send('');
 		return;
 	}
@@ -539,22 +542,52 @@ export async function handleChat(req: any, res: any): Promise<void> {
 	}
 
 	try {
-		const { message, history = [] }: ChatRequest = req.body;
+		const { message, history = [], variant: rawVariant }: ChatRequest = req.body;
+
+		// SEC-2: variant is only a TypeScript-compile-time constraint; validate
+		// it at runtime too, before it can reach any downstream prompt use.
+		if (rawVariant !== undefined && !isValidVariant(rawVariant)) {
+			res.status(400).json({ error: 'Invalid variant' });
+			return;
+		}
 
 		if (!message || typeof message !== 'string') {
 			res.status(400).json({ error: 'Message is required' });
 			return;
 		}
 
+		if (Buffer.byteLength(message, 'utf8') > MAX_MESSAGE_BYTES) {
+			res.status(400).json({ error: 'Message exceeds maximum allowed size' });
+			return;
+		}
+
+		const historyCheck = validateHistory(history);
+		if (!historyCheck.ok) {
+			res.status(400).json({ error: historyCheck.error || 'Invalid history' });
+			return;
+		}
+
 		// Check guardrails
 		const guardrailCheck = checkGuardrails(message);
 		if (!guardrailCheck.allowed) {
-			res.set(corsHeaders);
+			res.set(corsHeadersFor(req));
 			res.status(200).json({
 				response: getRefusalMessage(guardrailCheck.reason || 'unknown'),
 				blocked: true
 			});
 			return;
+		}
+
+		for (const entry of history) {
+			const historyGuardrailCheck = checkGuardrails(entry.content);
+			if (!historyGuardrailCheck.allowed) {
+				res.set(corsHeadersFor(req));
+				res.status(200).json({
+					response: getRefusalMessage(historyGuardrailCheck.reason || 'unknown'),
+					blocked: true
+				});
+				return;
+			}
 		}
 
 		// Require Gemini API key
@@ -573,7 +606,12 @@ export async function handleChat(req: any, res: any): Promise<void> {
 
 		const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
 
-		// Convert history to Gemini format
+		// Convert history to Gemini format. SEC-3 (accepted residual, this wave):
+		// history is entirely client-supplied with no server-side session
+		// binding, so a `role: 'model'` entry only proves shape/size validity
+		// (validateHistory) and passing guardrails, not that the assistant
+		// actually said it; session binding + combined-text semantic guardrails
+		// are out of scope for this wave.
 		const chatHistory = history.map((msg) => ({
 			role: msg.role === 'user' ? ('user' as const) : ('model' as const),
 			parts: [{ text: msg.content }],
@@ -601,7 +639,7 @@ export async function handleChat(req: any, res: any): Promise<void> {
 
 		const deterministicResponse = buildDeterministicChatResponse(message, contentTools);
 		if (deterministicResponse) {
-			res.set(corsHeaders);
+			res.set(corsHeadersFor(req));
 			res.status(200).json({
 				response: deterministicResponse
 			});
@@ -639,7 +677,7 @@ export async function handleChat(req: any, res: any): Promise<void> {
 
 		const response = normalizeChatResponse(message, result.text || '', contentTools);
 
-		res.set(corsHeaders);
+		res.set(corsHeadersFor(req));
 		res.status(200).json({
 			response
 		});
@@ -657,7 +695,7 @@ export async function handleChat(req: any, res: any): Promise<void> {
 export async function handleFitFinder(req: any, res: any): Promise<void> {
 	// Handle preflight
 	if (req.method === 'OPTIONS') {
-		res.set(corsHeaders);
+		res.set(corsHeadersFor(req));
 		res.status(204).send('');
 		return;
 	}
@@ -668,10 +706,33 @@ export async function handleFitFinder(req: any, res: any): Promise<void> {
 	}
 
 	try {
-		const { jobDescription, variant = 'leader' }: FitFinderRequest = req.body;
+		const { jobDescription, variant: rawVariant }: FitFinderRequest = req.body;
+
+		// SEC-2: variant is interpolated directly into the fit-finder prompt
+		// below — validate against the real enum at runtime rather than
+		// trusting the (compile-time-only) FitFinderRequest type. Reject an
+		// explicitly-supplied invalid value instead of silently coercing it.
+		if (rawVariant !== undefined && !isValidVariant(rawVariant)) {
+			res.status(400).json({ error: 'Invalid variant' });
+			return;
+		}
+		const variant: Variant = isValidVariant(rawVariant) ? rawVariant : 'leader';
 
 		if (!jobDescription || typeof jobDescription !== 'string') {
 			res.status(400).json({ error: 'Job description is required' });
+			return;
+		}
+
+		if (Buffer.byteLength(jobDescription, 'utf8') > MAX_JOBDESC_BYTES) {
+			res.status(400).json({ error: 'Job description exceeds maximum allowed size' });
+			return;
+		}
+
+		const jobDescriptionGuardrailCheck = checkGuardrails(jobDescription);
+		if (!jobDescriptionGuardrailCheck.allowed) {
+			res.status(400).json({
+				error: getRefusalMessage(jobDescriptionGuardrailCheck.reason || 'unknown')
+			});
 			return;
 		}
 
@@ -851,7 +912,7 @@ FIT LEVELS:
 			analysis = stabilizeFitAnalysis(analysis, fallbackAnalysis);
 			analysis = normalizeFitAnalysis(jobDescription, analysis);
 
-			res.set(corsHeaders);
+			res.set(corsHeadersFor(req));
 			res.status(200).json({
 				analysis
 			});
@@ -862,4 +923,19 @@ FIT LEVELS:
 	}
 }
 
-export { corsHeaders };
+// Backward-compatible re-exports for any importer/tests that previously
+// pulled these symbols from handlers.ts (they now live in security.ts).
+export {
+	ALLOWED_ORIGINS,
+	PRIMARY_ORIGIN,
+	corsHeaders,
+	corsHeadersFor,
+	isAllowedCtaLink,
+	validateHistory,
+	MAX_MESSAGE_BYTES,
+	MAX_JOBDESC_BYTES,
+	MAX_HISTORY,
+	MAX_HISTORY_CONTENT_BYTES,
+	ALLOWED_VARIANTS,
+	isValidVariant
+} from './security.js';
