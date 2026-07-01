@@ -33,7 +33,7 @@ I came into this engagement as a **Technical Principal**, leading the product ar
 - **Speed to value:** Feature requests went from months-long backlogs to **production in under 24 hours**.
 - **Reliability:** **Zero customer-facing downtime** through the entire migration and beyond.
 - **Scale:** The platform supported 100,000+ B2B customers with a mobile-first ordering experience, driving record digital sales during global supply chain disruptions.
-- **Canada expansion:** The platform's adoption metrics directly supported GFS's growth, going from a **25% to 96% adoption increase** in Canada.
+- **Canada expansion:** The platform's adoption metrics directly supported GFS's growth, with digital adoption in Canada climbing from **25% to 96%**.
 
 ## Recognition
 

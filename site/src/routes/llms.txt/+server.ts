@@ -39,15 +39,70 @@ Personal portfolio and professional site for Brian Anderson - Technical Director
  ### Resume Data
  - **Resume Page:** ${PUBLIC_SITE_URL}/resume/ - Human-readable resume with JSON-LD schema markup
  - **JSON Resume:** ${PUBLIC_SITE_URL}/resume.json - JSONResume 1.0.0 schema for programmatic parsing
+ - **Markdown Resume:** ${PUBLIC_SITE_URL}/resume.md - Plain-text/Markdown resume for LLM ingestion
  - **Resume Variants:**
-   - Leader: ${PUBLIC_SITE_URL}/resume/ - Focus on leadership and architecture
-   - Ops: ${PUBLIC_SITE_URL}/ops/resume/ - Focus on DevOps/SRE
-   - Builder: ${PUBLIC_SITE_URL}/builder/resume/ - Focus on hands-on technical work
+   - Leader: ${PUBLIC_SITE_URL}/resume/ - Focus on leadership and architecture (JSON: ${PUBLIC_SITE_URL}/resume.json)
+   - Ops: ${PUBLIC_SITE_URL}/ops/resume/ - Focus on DevOps/SRE (JSON: ${PUBLIC_SITE_URL}/ops/resume.json)
+   - Builder: ${PUBLIC_SITE_URL}/builder/resume/ - Focus on hands-on technical work (JSON: ${PUBLIC_SITE_URL}/builder/resume.json)
 
 ### Content
 - **Blog:** ${PUBLIC_SITE_URL}/blog/ - Technical articles and tutorials
+- **Blog Markdown Mirrors:** ${PUBLIC_SITE_URL}/blog/{slug}.md - Raw Markdown source of each post
 - **Projects:** ${PUBLIC_SITE_URL}/projects/ - Portfolio of software development work
+- **Project Markdown Mirrors:** ${PUBLIC_SITE_URL}/projects/{slug}.md - Raw Markdown source of each project
+- **Interests:** ${PUBLIC_SITE_URL}/interests/ - Personal interests, values, and hobbies
 - **RSS Feed:** ${PUBLIC_SITE_URL}/rss.xml - Blog posts in RSS format
+- **Content Index:** ${PUBLIC_SITE_URL}/content-index.json - Structured JSON index of skills, experience, projects, and blog posts for agent tooling
+- **Whole-Site Text Archive:** ${PUBLIC_SITE_URL}/llms-full.txt - Single document with the site overview, full resume, and every blog/project body concatenated
+
+## Agent API
+
+Live, CORS-enabled Cloud Run endpoints for programmatic interaction. Also reachable through the site's same-origin proxy routes (\`${PUBLIC_SITE_URL}/api/chat\`, \`${PUBLIC_SITE_URL}/api/fit-finder\`), which forward the request body as-is.
+
+### POST https://api.briananderson.xyz/chat
+Conversational Q&A grounded in Brian's resume/project/blog content.
+
+Request:
+\`\`\`json
+{
+  "message": "string (required)",
+  "history": [{ "role": "user | model | assistant", "content": "string" }],
+  "variant": "leader | ops | builder"
+}
+\`\`\`
+
+Response:
+\`\`\`json
+{ "response": "string" }
+\`\`\`
+
+### POST https://api.briananderson.xyz/fit-finder
+Analyzes a pasted job description against Brian's background and returns a fit assessment.
+
+Request:
+\`\`\`json
+{
+  "jobDescription": "string (required)",
+  "variant": "leader | ops | builder"
+}
+\`\`\`
+
+Response:
+\`\`\`json
+{
+  "analysis": {
+    "fitScore": "number (0-100)",
+    "fitLevel": "good | maybe | not",
+    "confidence": "low | medium | high",
+    "matchingSkills": [{ "name": "string", "context": "string" }],
+    "matchingExperience": [{ "role": "string", "company": "string", "dateRange": "string", "relevance": "string" }],
+    "gaps": ["string"],
+    "analysis": "string",
+    "resumeVariantRecommendation": "leader | ops | builder",
+    "cta": { "text": "string", "link": "string" }
+  }
+}
+\`\`\`
 
 ## About Brian
 

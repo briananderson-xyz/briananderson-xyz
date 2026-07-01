@@ -82,9 +82,9 @@ app.options('/chat', asyncHandler((req, res) => handleChat(req, res)));
 app.post('/fit-finder', apiLimiter, asyncHandler((req, res) => handleFitFinder(req, res)));
 app.options('/fit-finder', asyncHandler((req, res) => handleFitFinder(req, res)));
 
-app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+app.use((err: Error & { status?: number; statusCode?: number }, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
 	console.error('Unhandled error:', err);
-	res.status(500).json({ error: 'Internal server error' });
+	res.status(err.status ?? err.statusCode ?? 500).json({ error: 'Internal server error' });
 });
 
 const PORT = process.env.PORT || 8080;

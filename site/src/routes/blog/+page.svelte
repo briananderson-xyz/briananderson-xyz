@@ -2,7 +2,7 @@
   import { page } from "$app/stores";
   import SEO from "$lib/components/SEO.svelte";
   import type { ContentItem } from "$lib/types";
-  import { addVariant, getVariant } from "$lib/utils/variantLink";
+  import { addVariant, getVariant, getCanonicalUrl } from "$lib/utils/variantLink";
   import { onMount } from "svelte";
 
   export let data: { posts: ContentItem[] };
@@ -17,7 +17,7 @@
 <SEO
   title="Blog | Brian Anderson"
   description="dumping_core_memory.log - Thoughts, tutorials, and technical articles."
-  canonical="https://briananderson.xyz/blog"
+  canonical={getCanonicalUrl("/blog/")}
 />
 
 <section class="mx-auto max-w-6xl px-4 py-16">
