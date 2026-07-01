@@ -10,11 +10,6 @@
   "engines": {
     "node": "22"
   },
-  "pnpm": {
-    "ignoredBuiltDependencies": [
-      "protobufjs"
-    ]
-  },
   "main": "lib/server.js",
   "dependencies": {
     "@google/genai": "^1.0.0",
