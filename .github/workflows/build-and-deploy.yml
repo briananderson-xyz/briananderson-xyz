@@ -106,6 +106,9 @@ jobs:
       - name: Build functions
         working-directory: site/functions
         run: pnpm run build
+      - name: Test functions
+        working-directory: site/functions
+        run: pnpm test
       - uses: google-github-actions/auth@v2
         with:
           workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
@@ -395,6 +398,7 @@ jobs:
         working-directory: site
         env:
           AI_EVAL_BASE_URL: https://api-dev.briananderson.xyz
+          AI_EVAL_MIN_PASS_RATE: "0.95"
         continue-on-error: true
         run: pnpm run test:ai:evals
       - name: Upload dev build artifact (Verified)
@@ -420,7 +424,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           echo "❌ Smoke tests failed, rolling back dev to run $LAST_RUN_ID..."
-          gh run download $LAST_RUN_ID -n build-artifact-dev
+          rm -rf site/build && gh run download $LAST_RUN_ID -n build-artifact-dev --dir site/build/
 
           # Upload with proper cache headers
           gcloud storage rsync site/build/_app gs://dev.briananderson.xyz/_app --recursive --cache-control="public, max-age=31536000, immutable"
@@ -571,7 +575,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           echo "❌ Smoke tests failed, rolling back prod to run $LAST_RUN_ID..."
-          gh run download $LAST_RUN_ID -n build-artifact-prod
+          rm -rf site/build && gh run download $LAST_RUN_ID -n build-artifact-prod --dir site/build/
 
           # Upload with proper cache headers
           gcloud storage rsync site/build/_app gs://briananderson.xyz/_app --recursive --cache-control="public, max-age=31536000, immutable"

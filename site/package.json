@@ -68,6 +68,7 @@
     "clsx": "^2.1.1",
     "dayjs": "^1.11.13",
     "gray-matter": "^4.0.3",
+    "isomorphic-dompurify": "^3.18.0",
     "lucide-svelte": "^0.462.0",
     "marked": "^17.0.1",
     "posthog-js": "^1.319.0",

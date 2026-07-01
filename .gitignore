@@ -35,3 +35,6 @@ site/static/content-index*.json
 # Windows artifacts
 nul
 site/package-lock.json
+
+# Flow Agents runtime workflow artifacts (local scratch)
+.kontourai/

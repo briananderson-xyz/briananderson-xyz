@@ -76,7 +76,7 @@ export interface ContentIndexPointer {
 
 export interface ChatRequest {
   message: string;
-  history?: Array<{ role: string; content: string }>;
+  history?: Array<{ role: 'user' | 'model' | 'assistant'; content: string }>;
   variant?: 'leader' | 'ops' | 'builder';
 }
 

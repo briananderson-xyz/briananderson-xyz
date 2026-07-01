@@ -4,7 +4,8 @@
   "scripts": {
     "build": "tsc",
     "dev": "node --env-file-if-exists=.env.local lib/server.js",
-    "dev:fitfinder": "FUNCTION_TARGET=fitfinder node --env-file-if-exists=.env.local lib/server.js"
+    "dev:fitfinder": "FUNCTION_TARGET=fitfinder node --env-file-if-exists=.env.local lib/server.js",
+    "test": "pnpm run build && node --test lib/**/*.test.js"
   },
   "engines": {
     "node": "22"
@@ -12,7 +13,8 @@
   "main": "lib/server.js",
   "dependencies": {
     "@google/genai": "^1.0.0",
-    "express": "^4.21.0"
+    "express": "^4.21.0",
+    "express-rate-limit": "^8.5.2"
   },
   "devDependencies": {
     "@types/express": "^5.0.0",
