@@ -51,7 +51,7 @@ jobs:
 
       - name: Install dependencies
         working-directory: site
-        run: pnpm i --frozen-lockfile || pnpm i
+        run: pnpm i --frozen-lockfile
 
       - name: Resolve AI eval target
         id: target
