@@ -1,5 +1,6 @@
 <script lang="ts">
   import SEO from "$lib/components/SEO.svelte";
+  import { getCanonicalUrl } from "$lib/utils/variantLink";
 
   interface Creator {
     name: string;
@@ -87,7 +88,7 @@
   <SEO
     title="Interests | Brian Anderson"
     description="Who I follow, my setup, and what I'm into outside of work."
-    canonical="https://briananderson.xyz/interests"
+    canonical={getCanonicalUrl("/interests/")}
   />
 
   <section class="mx-auto max-w-4xl px-4 py-16">

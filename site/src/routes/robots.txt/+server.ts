@@ -6,9 +6,11 @@ export const GET = async () => {
   const robots = `# AI Content Signals Compliant
 # See https://contentsignals.org/ for more information
 
-# Allow all general crawlers
+# Allow all general crawlers; block API/admin routes
 User-agent: *
 Allow: /
+Disallow: /api/
+Disallow: /admin/
 
 # OpenAI GPTBot - AI crawling allowed
 User-agent: GPTBot
@@ -33,11 +35,6 @@ Allow: /
 # Cohere AI
 User-agent: CohereBot
 Allow: /
-
-# Other AI crawlers
-User-agent: *
-Disallow: /api/
-Disallow: /admin/
 
 Sitemap: ${PUBLIC_SITE_URL}/sitemap.xml`;
   

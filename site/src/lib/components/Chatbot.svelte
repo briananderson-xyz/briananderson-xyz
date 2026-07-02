@@ -91,7 +91,14 @@
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
 					message: content,
-					history: messages.slice(-5) // Last 5 messages for context
+					// CR-2: only 'user'/'assistant' turns are genuine conversational
+					// history; 'system' entries (local error/notice UI state, e.g.
+					// below) are never sent — the server's validateHistory rejects
+					// role 'system', so leaving one in would 400 every send until
+					// it aged out of the last-5 window.
+					history: messages
+						.filter((m) => m.role === 'user' || m.role === 'assistant')
+						.slice(-5) // Last 5 messages for context
 				})
 			});
 

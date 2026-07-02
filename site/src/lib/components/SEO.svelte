@@ -19,12 +19,14 @@
         canonical ||
         ($page.url ? `${$page.url.origin}${$page.url.pathname}` : undefined);
 
-    // Construct absolute image URL if provided
+    // Construct absolute image URL if provided; fall back to the default
+    // social image (headshot) so every page emits og:image / twitter:image.
+    const defaultImage = "/headshot.jpg";
     $: finalImage = image
         ? image.startsWith("http")
             ? image
             : `${$page.url.origin}${image}`
-        : undefined;
+        : `${$page.url.origin}${defaultImage}`;
 
     // Combine tags and keywords for meta keywords
     $: metaKeywords = [...(tags || []), ...(keywords || [])].join(", ");

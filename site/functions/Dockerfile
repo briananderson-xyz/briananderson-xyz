@@ -2,8 +2,10 @@ FROM node:22-slim
 
 WORKDIR /app
 
-# Install pnpm
-RUN npm install -g pnpm
+# Install pnpm — pinned to v9 to match CI (pnpm/action-setup version: 9).
+# Unpinned `npm install -g pnpm` pulls the latest major (v10), which under
+# CI=true fatally errors on unapproved dependency build scripts (protobufjs).
+RUN npm install -g pnpm@9
 
 # Copy package files and install dependencies
 COPY package.json pnpm-lock.yaml ./
