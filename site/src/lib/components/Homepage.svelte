@@ -67,8 +67,8 @@
         ]
       : variant === "builder"
         ? [
-            "Top 70 of 280k+ Kiro CLI users",
-            "4 hours/week saved with AI workflows",
+            "Top 0.03% of 280k+ Amazon Kiro CLI users",
+            "Reusable Kiro agent workflows, gated by promptfoo evals",
             "Agent platform: MCP orchestration + prompt evals + OTel tracing",
             "16+ years shipping mobile, web, and cloud apps"
           ]
@@ -76,7 +76,7 @@
             "CI/CD standardization across 5,000+ enterprise apps",
             "New features and responses to customer feedback shipped in 8-9 production deployments per day",
             "90% deployment lead-time reduction & $30M estimated savings",
-            "Top 70 of 280k+ Kiro CLI users"
+            "Top 0.03% of 280k+ Amazon Kiro CLI users"
           ];
 
   let openCategories: Record<string, boolean> = {};
