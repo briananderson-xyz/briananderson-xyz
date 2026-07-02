@@ -43,7 +43,7 @@ jobs:
           cache-dependency-path: site/pnpm-lock.yaml
       - name: Install deps
         working-directory: site
-        run: pnpm i --frozen-lockfile || pnpm i
+        run: pnpm i --frozen-lockfile
       - name: Create .env file (Prod for validation)
         working-directory: site
         run: |
@@ -102,7 +102,7 @@ jobs:
           cache-dependency-path: site/pnpm-lock.yaml
       - name: Install functions deps
         working-directory: site/functions
-        run: pnpm i --frozen-lockfile || pnpm i
+        run: pnpm i --frozen-lockfile
       - name: Build functions
         working-directory: site/functions
         run: pnpm run build
@@ -308,7 +308,7 @@ jobs:
           cache-dependency-path: site/pnpm-lock.yaml
       - name: Install deps
         working-directory: site
-        run: pnpm i --frozen-lockfile || pnpm i
+        run: pnpm i --frozen-lockfile
       - name: Install Playwright browsers
         working-directory: site
         run: pnpm exec playwright install chromium
@@ -463,7 +463,7 @@ jobs:
           cache-dependency-path: site/pnpm-lock.yaml
       - name: Install deps
         working-directory: site
-        run: pnpm i --frozen-lockfile || pnpm i
+        run: pnpm i --frozen-lockfile
       - name: Install Playwright browsers
         working-directory: site
         run: pnpm exec playwright install chromium
