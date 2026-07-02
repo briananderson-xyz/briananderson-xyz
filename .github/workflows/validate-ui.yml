@@ -34,7 +34,7 @@ jobs:
 
       - name: Install dependencies
         working-directory: site
-        run: pnpm i --frozen-lockfile || pnpm i
+        run: pnpm i --frozen-lockfile
 
       - name: Install Playwright browsers
         working-directory: site
@@ -53,7 +53,7 @@ jobs:
 
       - name: Run TypeScript check
         working-directory: site
-        run: pnpm run check || echo "TypeScript check failed (ignoring third-party posthog-node express type error)"
+        run: pnpm run check
 
       - name: Build site
         working-directory: site
