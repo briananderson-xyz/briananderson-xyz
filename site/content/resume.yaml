@@ -149,7 +149,7 @@ experience:
     location: Denver, CO
     description: Architected high-concurrency ordering platforms and geospatial data solutions for agriculture.
     highlights:
-      - text: "Google Cloud Ecommerce Architecture (Gordon Food Service): Architected a high-concurrency platform using Angular and Java Spring Boot on GKE, leveraging Firestore, Pub/Sub, and Memorystore. Scaled the organization to 60+ developers across 5 teams, achieving 8–9 production deployments per day."
+      - text: "Google Cloud Ecommerce Architecture (Gordon Food Service): Architected a high-concurrency platform using Angular and Java Spring Boot on GKE, leveraging Firestore, Pub/Sub, and Memorystore. Scaled the organization to 60+ developers across 5 teams, achieving 8-9 production deployments per day."
         link: /projects/gfs-ordering-platform/
       - "Mobile Architecture: Served as Solution Architect and Android Lead for a geospatial field-mapping solution for a large agriculture company. Engineered the architecture to visualize satellite/drone data and integrated a proprietary Nitrogen simulation analysis tool. Built a dual-platform CD pipeline using Fastlane, Docker, and AWS Device Farm to ensure feature parity."
       - "Innovation Leadership: Engineered an internal DevOps framework for standardized distribution of Android, iOS, and Cordova Hybrid applications. Reduced release overhead from 4 weeks to 1 week for 6 production-supported applications via Fabric Beta."
@@ -160,7 +160,7 @@ experience:
     location: Chicago, IL
     description: Led technical sales and architecture for enterprise mobile and modernization roadmaps.
     highlights:
-      - "Enterprise Mobile Strategy: Served as Solution Architect and Tech Lead for native iOS and Android applications for a Global Fast Food enterprise, overseeing complex integration with ServiceNow platform."
+      - "Enterprise Mobile Strategy: Served as Solution Architect and Tech Lead for native iOS and Android applications for a Global Fast Food enterprise, overseeing integration with the ServiceNow platform."
       - "Modernization Roadmaps: Led technical sales engagements for large-scale fleet management clients, performing architectural audits and providing strategic roadmaps to modernize legacy platforms and UI/UX."
       - "Innovation & R&D Leadership: Spearheaded R&D projects involving Raspberry Pi (Flask), Oculus Rift (Unity 3D), and Amazon Echo to demonstrate experiential commerce at industry conference (Solstice FWD)."
       - "Location-Based Services: Architected a high-traffic healthcare conference application utilizing iBeacons (BLE) for proximity-based notifications and Parse for real-time messaging."
