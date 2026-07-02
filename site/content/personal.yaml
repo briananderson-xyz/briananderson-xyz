@@ -2,34 +2,33 @@ name: Brian Anderson
 location: Denver, CO
 
 interests:
-  - name: Automation & Tooling
-    description: Building tools that automate away repetitive tasks
-    passion: I love discovering workflows that can be automated and creating solutions that free people to focus on creative work
+  - name: Building & Shipping
+    description: Turning ideas into working products, usually on nights and weekends
+    passion: I'd rather ship a rough thing that's real than polish a plan that isn't. Most of what I learn comes from getting something in front of people and watching what breaks.
 
-  - name: Building & Creating
-    description: Always working on side projects, from electronics to software
-    passion: There's something magical about taking an idea from concept to reality
+  - name: Agentic AI, done well
+    description: Building AI systems that show their work, and helping teams adopt AI the right way
+    passion: AI drops probabilistic behavior into deterministic systems, which is powerful and easy to get wrong. I spend my time on the guardrails (evals, verification, provenance) that make agent work something you can actually check, and on the best practices and efficiency that help teams turn AI into real leverage instead of noise.
 
-  - name: Mentoring & Teaching
-    description: Sharing knowledge through blog posts, mentoring junior developers
-    passion: Watching someone have that "aha" moment when a concept clicks
-
-  - name: Continuous Learning
-    description: Exploring new technologies, staying current with industry trends
-    passion: Technology moves fast, and I love staying on the cutting edge
+  - name: Automation & Developer Tooling
+    description: Removing the repetitive parts of building software so the creative parts get more room
+    passion: If I do something twice, I start wondering how to make it run itself. The best tools disappear and just leave you faster.
 
 values:
-  - "Quality over speed - do it right the first time"
-  - "Collaboration over competition - we rise by lifting others"
-  - "Practical innovation - solve real problems, not hypothetical ones"
-  - "Transparency - honest communication builds trust"
+  - "Show the work: evidence over assertion, in code and in life"
+  - "Ship it, then harden: real feedback beats a perfect plan"
+  - "Lift others: the best engineers make the people around them better"
+  - "Be honest, especially when it costs something"
 
 hobbies:
-  - name: Electronics & Hardware
-    details: Tinkering with Arduino, building custom IoT devices, home automation projects
+  - name: Family
+    details: Dad first. Everything else is secondary.
 
-  - name: Open Source
-    details: Contributing to projects I use, maintaining my own tools, supporting the community
+  - name: Disc golf
+    details: My reset button. Outdoors, competitive enough to matter, social enough to be fun.
 
-  - name: Cooking
-    details: Weekend meal prep experiments, trying new recipes, perfecting coffee brewing
+  - name: Live music
+    details: Concerts whenever I can. Denver is a good town for it.
+
+  - name: Travel, food & friends
+    details: What recharges me when I'm not in front of a screen.

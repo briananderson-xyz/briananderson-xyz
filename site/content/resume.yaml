@@ -3,21 +3,21 @@ jobTitles:
   - AI Systems Architect
   - Enterprise Solutions Architect
 tagline: Enterprise architect focused on AI platform strategy, cloud modernization, and developer productivity at Fortune 500 scale.
-mission: Driving measurable business automation and customer outcomes through Agentic AI and Cloud Native strategies.
+mission: A builder who happens to work at enterprise scale. By day I shape AI and cloud strategy at AWS; nights and weekends I ship my own products and agent tooling. I care most about the guardrails that make AI something you can actually trust, and the practices that help teams build with it efficiently.
 email: brian@briananderson.xyz
 location: Denver, CO
 summary: >
-  With sixteen years of experience, including twelve in leadership roles, I operate at the intersection
-  of architecture, platform strategy, and enterprise transformation. I design the operating models
-  and technical foundations that enable large organizations to deliver software reliably at scale,
-  covering CI/CD platforms, cloud architectures, and zero-downtime migration strategies across
-  Fortune 500 environments. My work focuses on standardizing delivery, reducing systemic risk, and
-  creating leverage through platform thinking, with deep expertise in microservices and
-  observability-driven systems. I view AI as the next evolution of automation, one that introduces
-  probabilistic behavior into deterministic systems and therefore requires even stronger
-  architectural guardrails. At AWS, I partner with enterprise leaders to define AI strategy,
-  validate high-impact use cases through rapid prototyping, and establish the engineering and
-  operational foundations required to scale these systems into production.
+  I'm a builder at heart who works at enterprise scale. Over sixteen years, twelve of them in
+  leadership, I've designed the CI/CD platforms, cloud architectures, and zero-downtime migrations
+  that let Fortune 500 organizations ship software reliably. My work centers on standardizing
+  delivery, reducing systemic risk, and creating leverage through platform thinking, with deep
+  expertise in microservices and observability-driven systems. I view AI as the next evolution of
+  automation: it introduces probabilistic behavior into deterministic systems and therefore needs
+  even stronger architectural guardrails, along with the practices that let teams adopt it
+  efficiently. That same instinct runs through my nights and weekends, where I ship my own products
+  and agent tooling. At AWS, I partner with enterprise leaders to define AI strategy, validate
+  high-impact use cases through rapid prototyping, and build the engineering and operational
+  foundations required to scale these systems into production.
 skills:
   Cloud & Infrastructure:
     - name: AWS
