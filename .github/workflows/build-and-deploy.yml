@@ -32,11 +32,11 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v6
         with:
           version: 9
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: 20
           cache: 'pnpm'
@@ -91,11 +91,11 @@ jobs:
     outputs:
       image: ${{ steps.build.outputs.image }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v6
         with:
           version: 9
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: 20
           cache: 'pnpm'
@@ -109,11 +109,11 @@ jobs:
       - name: Test functions
         working-directory: site/functions
         run: pnpm test
-      - uses: google-github-actions/auth@v2
+      - uses: google-github-actions/auth@v3
         with:
           workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
           service_account: ${{ secrets.GCP_WIF_SA_EMAIL }}
-      - uses: google-github-actions/setup-gcloud@v2
+      - uses: google-github-actions/setup-gcloud@v3
       - name: Docker auth
         run: gcloud auth configure-docker ${{ secrets.GCP_REGION }}-docker.pkg.dev
       - name: Build and push container
@@ -135,11 +135,11 @@ jobs:
     needs: build-functions
     environment: dev
     steps:
-      - uses: google-github-actions/auth@v2
+      - uses: google-github-actions/auth@v3
         with:
           workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
           service_account: ${{ secrets.GCP_WIF_SA_EMAIL }}
-      - uses: google-github-actions/setup-gcloud@v2
+      - uses: google-github-actions/setup-gcloud@v3
       - name: Deploy chat-dev
         env:
           REGION: ${{ secrets.GCP_REGION }}
@@ -215,11 +215,11 @@ jobs:
     environment: prod
     if: github.event_name == 'workflow_dispatch' && github.event.inputs.deploy_prod == 'true'
     steps:
-      - uses: google-github-actions/auth@v2
+      - uses: google-github-actions/auth@v3
         with:
           workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
           service_account: ${{ secrets.GCP_WIF_SA_EMAIL }}
-      - uses: google-github-actions/setup-gcloud@v2
+      - uses: google-github-actions/setup-gcloud@v3
       - name: Deploy chat (prod)
         env:
           REGION: ${{ secrets.GCP_REGION }}
@@ -297,11 +297,11 @@ jobs:
       image_digest: ${{ needs.build-functions.outputs.digest }}
     if: github.event.inputs.rollback != 'true'
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v6
         with:
           version: 9
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: 20
           cache: 'pnpm'
@@ -322,11 +322,11 @@ jobs:
       - name: Build for Dev
         working-directory: site
         run: pnpm run build
-      - uses: google-github-actions/auth@v2
+      - uses: google-github-actions/auth@v3
         with:
           workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
           service_account: ${{ secrets.GCP_WIF_SA_EMAIL }}
-      - uses: google-github-actions/setup-gcloud@v2
+      - uses: google-github-actions/setup-gcloud@v3
       - name: Get last successful dev deployment
         id: last_successful
         run: |
@@ -403,7 +403,7 @@ jobs:
         run: pnpm run test:ai:evals
       - name: Upload dev build artifact (Verified)
         if: steps.smoke.outcome == 'success' && steps.smoke_api.outcome == 'success' && steps.ai_evals.outcome == 'success'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: build-artifact-dev
           path: site/build/
@@ -452,11 +452,11 @@ jobs:
     environment: prod
     if: github.event_name == 'workflow_dispatch' && github.event.inputs.deploy_prod == 'true'
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v6
         with:
           version: 9
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: 20
           cache: 'pnpm'
@@ -480,11 +480,11 @@ jobs:
           rm -rf .svelte-kit .vite
           touch src/routes/+layout.svelte
           pnpm run build
-      - uses: google-github-actions/auth@v2
+      - uses: google-github-actions/auth@v3
         with:
           workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
           service_account: ${{ secrets.GCP_WIF_SA_EMAIL }}
-      - uses: google-github-actions/setup-gcloud@v2
+      - uses: google-github-actions/setup-gcloud@v3
       - name: Get last successful prod deployment
         id: last_successful
         run: |
@@ -554,7 +554,7 @@ jobs:
         run: pnpm run test:api
       - name: Upload prod build artifact (Verified)
         if: steps.smoke.outcome == 'success' && steps.smoke_api.outcome == 'success'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: build-artifact-prod
           path: site/build/
@@ -608,11 +608,11 @@ jobs:
     if: github.event.inputs.rollback == 'true'
     environment: ${{ github.event.inputs.target_env }}
     steps:
-      - uses: google-github-actions/auth@v2
+      - uses: google-github-actions/auth@v3
         with:
           workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
           service_account: ${{ secrets.GCP_WIF_SA_EMAIL }}
-      - uses: google-github-actions/setup-gcloud@v2
+      - uses: google-github-actions/setup-gcloud@v3
       - name: Rollback Cloud Run services
         env:
           REGION: ${{ secrets.GCP_REGION }}
@@ -644,7 +644,7 @@ jobs:
             --no-traffic
           gcloud run services update-traffic $FIT_SERVICE --region "$REGION" --to-latest
           echo "Cloud Run rollback complete."
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Get last successful deployment
         id: last_successful
         run: |
@@ -681,11 +681,11 @@ jobs:
         run: |
           echo "Files in site/build/:"
           find site/build -type f | wc -l
-      - uses: google-github-actions/auth@v2
+      - uses: google-github-actions/auth@v3
         with:
           workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
           service_account: ${{ secrets.GCP_WIF_SA_EMAIL }}
-      - uses: google-github-actions/setup-gcloud@v2
+      - uses: google-github-actions/setup-gcloud@v3
       - name: Rollback to ${{ github.event.inputs.target_env }}
         run: |
           BUCKET="dev.briananderson.xyz"
