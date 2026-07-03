@@ -36,6 +36,7 @@
     </div>
 
     {#each posts as post, i}
+      {@const slug = post.route.split("/").pop()}
       <div use:reveal={{ delay: i * 50 }}>
       <a
         href={addVariant(post.route, variant)}
@@ -56,6 +57,7 @@
           {/if}
           <h2
             class="text-base text-skin-base group-hover:text-skin-accent font-bold transition-colors mb-1"
+            style:view-transition-name={"bt-" + slug}
           >
             {post.metadata.title}
           </h2>

@@ -32,6 +32,7 @@
 
   <div class="grid md:grid-cols-2 gap-6">
     {#each projects as p, i}
+      {@const slug = p.route.split("/").pop()}
       <div use:reveal={{ delay: i * 60 }}>
       <a
         href={addVariant(p.route, getVariant($page.url))}
@@ -51,6 +52,7 @@
           <div class="flex justify-between items-start mb-2">
             <h2
               class="font-bold text-lg font-mono text-skin-base group-hover:text-skin-accent transition-colors"
+              style:view-transition-name={"pt-" + slug}
             >
               {p.metadata.title}
             </h2>
