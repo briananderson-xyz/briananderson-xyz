@@ -526,6 +526,47 @@ async function fetchContentIndexInner(): Promise<ContentIndex | null> {
 }
 
 /**
+ * Generate up to 3 short, contextual follow-up questions a visitor might ask
+ * next, based on the exchange that just happened. Best-effort: any failure
+ * (parse error, model error) resolves to an empty list so it never blocks or
+ * breaks the chat response.
+ */
+async function generateChatSuggestions(
+	ai: GoogleGenAI,
+	userMessage: string,
+	assistantResponse: string
+): Promise<string[]> {
+	try {
+		const result = await ai.models.generateContent({
+			model: 'gemini-2.5-flash',
+			config: {
+				maxOutputTokens: 200,
+				temperature: 0.4,
+				responseMimeType: 'application/json'
+			},
+			contents: `A visitor is chatting with an AI assistant about Brian Anderson, an engineering leader and hands-on builder, on his personal site.
+
+Their message: "${userMessage}"
+The assistant's answer: "${assistantResponse}"
+
+Suggest exactly 3 natural follow-up questions the visitor is likely to ask next to learn more about Brian. Each must be phrased in the visitor's own voice, under 8 words, and grounded in what was just discussed. Return ONLY a JSON array of 3 strings, e.g. ["...","...","..."].`
+		});
+
+		const parsed = JSON.parse(result.text || '[]');
+		if (!Array.isArray(parsed)) return [];
+		return parsed
+			.filter((s): s is string => typeof s === 'string' && s.trim().length > 0)
+			.map((s) => s.trim())
+			.slice(0, 3);
+	} catch (error) {
+		if (!IS_PRODUCTION) {
+			console.error('Chat suggestion generation failed:', error);
+		}
+		return [];
+	}
+}
+
+/**
  * Chat handler — can be called from Firebase Functions or Express/Cloud Run
  */
 export async function handleChat(req: Request, res: Response): Promise<void> {
@@ -677,9 +718,12 @@ export async function handleChat(req: Request, res: Response): Promise<void> {
 
 		const response = normalizeChatResponse(message, result.text || '', contentTools);
 
+		const suggestions = await generateChatSuggestions(ai, message, response);
+
 		res.set(corsHeadersFor(req));
 		res.status(200).json({
-			response
+			response,
+			suggestions
 		});
 
 	} catch (error) {

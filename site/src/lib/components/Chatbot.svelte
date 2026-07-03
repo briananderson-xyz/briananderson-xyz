@@ -6,6 +6,7 @@
 	import ChatInput from './ChatInput.svelte';
 	import Modal from './Modal.svelte';
 	import { getApiBase } from '$lib/utils/apiBase';
+	import { fly } from 'svelte/transition';
 
 	const API_BASE = getApiBase();
 
@@ -20,6 +21,18 @@
 	let isLoading = $state(false);
 	let chatContainer = $state<HTMLDivElement | null>(null);
 	let focusTrigger = $state(0);
+	// Contextual follow-up chips returned by the API for the latest answer. Kept
+	// as structured data (never rendered into the message text), so they only ever
+	// appear as buttons, not as a flash of text in the reply.
+	let suggestions = $state<string[]>([]);
+
+	// Starter prompts shown when the chat is empty, to signal what visitors can ask.
+	const STARTER_QUESTIONS = [
+		"What's Brian's experience with AI?",
+		'Tell me about CampFit',
+		"What's his leadership background?",
+		"Is he a fit for a role I'm hiring for?"
+	];
 
 	// Load chat history from sessionStorage
 	onMount(() => {
@@ -76,6 +89,7 @@
 			timestamp: Date.now()
 		};
 		messages = [...messages, userMessage];
+		suggestions = [];
 
 		isLoading = true;
 
@@ -111,6 +125,7 @@
 				timestamp: Date.now()
 			};
 			messages = [...messages, assistantMessage];
+			suggestions = Array.isArray(data.suggestions) ? data.suggestions.slice(0, 3) : [];
 
 			// Trigger refocus after response
 			focusTrigger++;
@@ -133,6 +148,7 @@
 
 	function clearHistory() {
 		messages = [];
+		suggestions = [];
 		if (browser) {
 			sessionStorage.removeItem('chat_history');
 		}
@@ -164,6 +180,16 @@
 			<div class="text-center text-terminal-text/70 py-12">
 				<p class="text-lg mb-4">👋 Hi! I'm Brian's AI assistant.</p>
 				<p class="text-sm">Ask me about Brian's experience, skills, projects, or paste a job description for a fit analysis.</p>
+				<div class="mt-6 flex flex-wrap justify-center gap-2">
+					{#each STARTER_QUESTIONS as q (q)}
+						<button
+							onclick={() => handleSendMessage(q)}
+							class="text-xs text-terminal-green/90 border border-terminal-green/40 rounded-full px-3 py-1.5 hover:bg-terminal-green/10 active:bg-terminal-green/20 transition-colors"
+						>
+							{q}
+						</button>
+					{/each}
+				</div>
 			</div>
 		{/if}
 
@@ -180,6 +206,19 @@
 	</div>
 
 	<div class="border-t border-terminal-green/20 shrink-0">
+		{#if suggestions.length > 0 && !isLoading}
+			<div class="flex flex-wrap gap-2 px-4 pt-3">
+				{#each suggestions as q (q)}
+					<button
+						onclick={() => handleSendMessage(q)}
+						in:fly={{ y: 8, duration: 200 }}
+						class="text-xs text-left text-terminal-green/90 border border-terminal-green/40 rounded-full px-3 py-1.5 hover:bg-terminal-green/10 active:bg-terminal-green/20 transition-colors"
+					>
+						{q}
+					</button>
+				{/each}
+			</div>
+		{/if}
 		<ChatInput onSend={handleSendMessage} disabled={isLoading} autoFocus={visible} focusTrigger={focusTrigger} />
 	</div>
 </Modal>
