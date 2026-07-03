@@ -73,7 +73,7 @@
 		onclick={handleSend}
 		disabled={disabled || !inputValue.trim()}
 		class="bg-terminal-green/10 border border-terminal-green rounded p-2 text-terminal-green hover:bg-terminal-green/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-		style="min-width: 40px; height: 40px;"
+		style="min-width: 44px; height: 44px;"
 		data-testid="send-button"
 		aria-label="Send message"
 	>
@@ -94,7 +94,7 @@
 	</button>
 </div>
 
-<div class="px-4 pb-3 text-center">
+<div class="hidden md:block px-4 pb-3 text-center">
 	<span class="text-xs text-terminal-text/50">
 		<kbd class="px-1.5 py-0.5 bg-terminal-green/10 border border-terminal-green/30 rounded text-terminal-green font-mono text-xs">Enter</kbd> to send, <kbd class="px-1.5 py-0.5 bg-terminal-green/10 border border-terminal-green/30 rounded text-terminal-green font-mono text-xs">Shift+Enter</kbd> for new line
 	</span>

@@ -2,6 +2,7 @@
 	import { browser, dev } from '$app/environment';
 	import type { FitAnalysis } from '$lib/types';
 	import { trackEvent } from '$lib/utils/analytics';
+	import Modal from './Modal.svelte';
 
 	function getApiBase(): string {
 		if (dev) return '/api';
@@ -140,64 +141,29 @@
 		return badges[confidence as keyof typeof badges] || confidence;
 	}
 
-	function handleBackdropClick(e: MouseEvent) {
-		if (e.target === e.currentTarget) {
-			onClose();
-		}
-	}
-
-	function handleKeyDown(e: KeyboardEvent) {
-		if (e.key === 'Escape') {
-			onClose();
-		}
-	}
-
-	$effect(() => {
-		if (visible && browser) {
-			window.addEventListener('keydown', handleKeyDown);
-			return () => window.removeEventListener('keydown', handleKeyDown);
-		}
-	});
 </script>
 
-{#if visible}
-	<div
-		class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
-		data-testid="fit-finder"
-		role="dialog"
-		aria-modal="true"
-		aria-labelledby="fit-finder-title"
-		tabindex="-1"
-		onclick={handleBackdropClick}
-		onkeydown={handleKeyDown}
-	>
-		<div class="bg-terminal-black border-2 border-terminal-green shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col">
-			<div class="flex justify-between items-center px-4 py-2 bg-terminal-green/10 border-b-2 border-terminal-green font-mono text-terminal-green">
-				<span id="fit-finder-title">$ check-fit --analyze</span>
-				<div class="flex items-center gap-3">
-					{#if analysis}
-						<button
-							onclick={handleClear}
-							class="text-sm hover:text-terminal-green transition-colors"
-							title="Start over"
-						>
-							Clear
-						</button>
-					{/if}
-					<div class="flex items-center gap-1">
-						<span class="text-xs text-terminal-green/70">Esc</span>
-						<button
-							onclick={onClose}
-							class="text-2xl leading-none hover:text-terminal-green transition-colors cursor-pointer"
-							aria-label="Close fit finder"
-						>
-							×
-						</button>
-					</div>
-				</div>
-			</div>
+<Modal
+	{visible}
+	{onClose}
+	title="$ check-fit --analyze"
+	labelledby="fit-finder-title"
+	closeLabel="Close fit finder"
+	testid="fit-finder"
+>
+	{#snippet actions()}
+		{#if analysis}
+			<button
+				onclick={handleClear}
+				class="rounded px-3 py-2 text-sm hover:bg-terminal-green/10 active:bg-terminal-green/20 transition-colors"
+				title="Start over"
+			>
+				Clear
+			</button>
+		{/if}
+	{/snippet}
 
-			<div class="flex-1 overflow-y-auto p-6 space-y-6">
+	<div class="flex-1 min-h-0 overflow-y-auto p-6 space-y-6">
 				{#if !analysis}
 					<!-- Input Section -->
 					<div class="space-y-4">
@@ -405,6 +371,4 @@
 					</div>
 				{/if}
 			</div>
-		</div>
-	</div>
-{/if}
+</Modal>
