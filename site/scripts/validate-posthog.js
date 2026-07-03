@@ -87,25 +87,36 @@ async function validateClientSideIntegration() {
   let passed = 0;
   let total = 0;
 
-  // Check layout.svelte for all PostHog integration
+  // PostHog is lazy-loaded: posthog-js is dynamically imported inside
+  // posthog-lazy.ts and the layout drives it through loadPostHog()/withPostHog().
   const layoutSveltePath = path.resolve('src/routes/+layout.svelte');
-  if (fs.existsSync(layoutSveltePath)) {
-    const layoutContent = fs.readFileSync(layoutSveltePath, 'utf-8');
+  const lazyPath = path.resolve('src/lib/utils/posthog-lazy.ts');
+  const layoutContent = fs.existsSync(layoutSveltePath)
+    ? fs.readFileSync(layoutSveltePath, 'utf-8')
+    : '';
+  const lazyContent = fs.existsSync(lazyPath) ? fs.readFileSync(lazyPath, 'utf-8') : '';
 
+  if (layoutContent) {
     total++;
-    if (layoutContent.includes("import posthog from") && layoutContent.includes("posthog-js")) {
+    if (lazyContent.includes("import('posthog-js')") || lazyContent.includes('import("posthog-js")')) {
+      success('posthog-js is dynamically imported in posthog-lazy.ts (lazy-loaded)');
+      passed++;
+    } else if (layoutContent.includes('posthog-js')) {
       success('posthog-js is imported in layout.svelte');
       passed++;
     } else {
-      error('posthog-js import missing in layout.svelte');
+      error('posthog-js import missing (expected dynamic import in posthog-lazy.ts)');
     }
 
     total++;
-    if (layoutContent.includes('posthog.init(')) {
+    if (layoutContent.includes('loadPostHog(') && lazyContent.includes('posthog.init(')) {
+      success('PostHog is initialized via loadPostHog() -> posthog.init()');
+      passed++;
+    } else if (layoutContent.includes('posthog.init(')) {
       success('posthog.init() is called in layout.svelte');
       passed++;
     } else {
-      error('posthog.init() call missing in layout.svelte');
+      error('PostHog initialization missing (expected loadPostHog() + posthog.init())');
     }
 
     total++;
@@ -117,11 +128,11 @@ async function validateClientSideIntegration() {
     }
 
     total++;
-    if (layoutContent.includes('posthog.capture(')) {
-      success('posthog.capture() is called for events');
+    if (layoutContent.includes('.capture(') || layoutContent.includes('withPostHog(')) {
+      success('Events are captured via withPostHog()/capture()');
       passed++;
     } else {
-      error('posthog.capture() call missing in layout.svelte');
+      error('capture() call missing in layout.svelte');
     }
 
     total++;
