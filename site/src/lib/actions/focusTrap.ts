@@ -1,0 +1,74 @@
+interface FocusTrapOptions {
+	/** Called when Escape is pressed while focus is inside the trap. */
+	onEscape?: () => void;
+}
+
+const FOCUSABLE =
+	'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+/**
+ * Makes an element behave like an accessible modal dialog: on mount it moves
+ * focus inside (respecting an already-focused child or a [data-autofocus]
+ * target), traps Tab / Shift+Tab so focus cannot reach the page behind it, and
+ * on teardown restores focus to whatever was focused before it opened.
+ *
+ * This is the same trap the shared Modal component implements inline; extracted
+ * so bespoke dialogs (Lightbox, ExternalLinkModal) get identical behavior. The
+ * host element must be focusable (tabindex="-1") for the empty-dialog fallback.
+ *
+ * Escape is not handled here unless `onEscape` is passed, so dialogs that
+ * already close on Escape (e.g. Lightbox via svelte:window) can opt out.
+ */
+export function focusTrap(node: HTMLElement, options: FocusTrapOptions = {}) {
+	let opts = options;
+	const restoreFocus = document.activeElement as HTMLElement | null;
+
+	const raf = requestAnimationFrame(() => {
+		// Respect focus a child already claimed (e.g. an autofocus button).
+		if (node.contains(document.activeElement)) return;
+		const target =
+			node.querySelector<HTMLElement>('[data-autofocus]') ??
+			node.querySelector<HTMLElement>(FOCUSABLE) ??
+			node;
+		target?.focus();
+	});
+
+	function onKeydown(e: KeyboardEvent) {
+		if (e.key === 'Escape') {
+			opts.onEscape?.();
+			return;
+		}
+		if (e.key !== 'Tab') return;
+
+		const nodes = Array.from(node.querySelectorAll<HTMLElement>(FOCUSABLE)).filter(
+			(el) => el.offsetParent !== null
+		);
+		if (nodes.length === 0) {
+			e.preventDefault();
+			node.focus();
+			return;
+		}
+		const first = nodes[0];
+		const last = nodes[nodes.length - 1];
+		if (e.shiftKey && document.activeElement === first) {
+			e.preventDefault();
+			last.focus();
+		} else if (!e.shiftKey && document.activeElement === last) {
+			e.preventDefault();
+			first.focus();
+		}
+	}
+
+	node.addEventListener('keydown', onKeydown);
+
+	return {
+		update(newOptions: FocusTrapOptions = {}) {
+			opts = newOptions;
+		},
+		destroy() {
+			cancelAnimationFrame(raf);
+			node.removeEventListener('keydown', onKeydown);
+			restoreFocus?.focus?.();
+		}
+	};
+}
