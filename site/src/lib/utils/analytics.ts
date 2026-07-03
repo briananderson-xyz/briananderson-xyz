@@ -4,7 +4,7 @@
  */
 
 import { browser } from '$app/environment';
-import posthog from 'posthog-js';
+import { withPostHog } from './posthog-lazy';
 import { PUBLIC_POSTHOG_KEY } from '$env/static/public';
 
 /**
@@ -14,7 +14,7 @@ import { PUBLIC_POSTHOG_KEY } from '$env/static/public';
  */
 export function trackEvent(event: string, properties?: Record<string, unknown>): void {
   if (browser && PUBLIC_POSTHOG_KEY) {
-    posthog.capture(event, properties);
+    withPostHog((ph) => ph.capture(event, properties));
   }
 }
 
@@ -25,7 +25,7 @@ export function trackEvent(event: string, properties?: Record<string, unknown>):
  */
 export function identifyUser(userId: string, properties?: Record<string, unknown>): void {
   if (browser && PUBLIC_POSTHOG_KEY) {
-    posthog.identify(userId, properties);
+    withPostHog((ph) => ph.identify(userId, properties));
   }
 }
 
@@ -34,7 +34,7 @@ export function identifyUser(userId: string, properties?: Record<string, unknown
  */
 export function resetUser(): void {
   if (browser && PUBLIC_POSTHOG_KEY) {
-    posthog.reset();
+    withPostHog((ph) => ph.reset());
   }
 }
 

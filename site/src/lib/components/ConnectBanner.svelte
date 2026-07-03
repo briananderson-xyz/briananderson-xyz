@@ -2,7 +2,7 @@
   import { onMount } from "svelte";
   import { browser } from "$app/environment";
   import { page } from "$app/stores";
-  import posthog from "posthog-js";
+  import { trackEvent } from "$lib/utils/analytics";
   import { PUBLIC_POSTHOG_KEY } from "$env/static/public";
 
   interface Props {
@@ -86,7 +86,7 @@
         startTyping();
 
         if (PUBLIC_POSTHOG_KEY) {
-          posthog.capture("connect_banner_shown", {
+          trackEvent("connect_banner_shown", {
             page: $page.url.pathname,
             timeOnPage: SHOW_DELAY_MS / 1000
           });
@@ -111,7 +111,7 @@
     }
 
     if (browser && PUBLIC_POSTHOG_KEY) {
-      posthog.capture("connect_banner_dismissed", {
+      trackEvent("connect_banner_dismissed", {
         wasExpanded: expanded,
         daysUntilShowAgain: DISMISS_DURATION_DAYS
       });
@@ -127,13 +127,13 @@
     }
 
     if (browser && PUBLIC_POSTHOG_KEY) {
-      posthog.capture(expanded ? "connect_banner_expanded" : "connect_banner_collapsed");
+      trackEvent(expanded ? "connect_banner_expanded" : "connect_banner_collapsed");
     }
   }
 
   function handleFitFinderClick() {
     if (browser && PUBLIC_POSTHOG_KEY) {
-      posthog.capture("connect_banner_action", {
+      trackEvent("connect_banner_action", {
         action: "fit_finder"
       });
     }
@@ -142,7 +142,7 @@
 
   function handleChatClick() {
     if (browser && PUBLIC_POSTHOG_KEY) {
-      posthog.capture("connect_banner_action", {
+      trackEvent("connect_banner_action", {
         action: "chat"
       });
     }

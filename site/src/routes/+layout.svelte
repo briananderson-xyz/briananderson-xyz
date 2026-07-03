@@ -14,7 +14,7 @@
   import { initWebVitals } from "$lib/utils/web-vitals";
   import { browser } from "$app/environment";
   import { beforeNavigate, afterNavigate, onNavigate } from "$app/navigation";
-  import posthog from "posthog-js";
+  import { loadPostHog, withPostHog } from "$lib/utils/posthog-lazy";
   import { PUBLIC_POSTHOG_KEY, PUBLIC_POSTHOG_HOST } from "$env/static/public";
   import ExternalLinkModal from "$lib/components/ExternalLinkModal.svelte";
 
@@ -158,11 +158,10 @@
 
     onMount(() => {
       if (PUBLIC_POSTHOG_KEY) {
-        console.log(
-          "Initializing PostHog with key starting:",
-          PUBLIC_POSTHOG_KEY.substring(0, 4),
-        );
-        posthog.init(PUBLIC_POSTHOG_KEY, {
+        // Lazy-load posthog-js (a heavy dep) off the critical path. loadPostHog
+        // sets its promise synchronously, so the withPostHog() calls below (and
+        // in navigation hooks / analytics) queue until it resolves.
+        loadPostHog(PUBLIC_POSTHOG_KEY, {
           api_host: PUBLIC_POSTHOG_HOST || "https://app.posthog.com",
           capture_pageview: false,
           capture_pageleave: false,
@@ -176,11 +175,10 @@
             ph.register({
               deployment_environment: deploymentEnv,
             });
-            console.log("PostHog loaded, env:", deploymentEnv);
           },
         });
         // Force capture initial pageview on mount to be sure
-        posthog.capture("$pageview");
+        withPostHog((ph) => ph.capture("$pageview"));
 
         // Initialize Web Vitals tracking
         initWebVitals();
@@ -189,7 +187,7 @@
       }
     });
 
-    beforeNavigate(() => posthog.capture("$pageleave"));
+    beforeNavigate(() => withPostHog((ph) => ph.capture("$pageleave")));
 
     // Track subsequent navigations
     let isInitial = true;
@@ -198,7 +196,7 @@
         isInitial = false;
         return; // Handled by onMount
       }
-      posthog.capture("$pageview");
+      withPostHog((ph) => ph.capture("$pageview"));
     });
 
     // Cross-page transitions via the native View Transitions API. Progressive
