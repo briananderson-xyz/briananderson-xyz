@@ -1,6 +1,7 @@
 <script lang="ts">
   import { X, ChevronLeft, ChevronRight } from "lucide-svelte";
   import { fade } from "svelte/transition";
+  import { focusTrap } from "$lib/actions/focusTrap";
 
   interface Props {
     images: string[];
@@ -66,6 +67,7 @@
 <svelte:window onkeydown={handleKeydown} />
 
 <div
+  use:focusTrap
   class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/95 backdrop-blur-sm p-4"
   role="dialog"
   tabindex="-1"

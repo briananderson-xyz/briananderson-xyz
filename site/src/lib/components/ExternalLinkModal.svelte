@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { focusTrap } from "$lib/actions/focusTrap";
+
   interface Props {
     url: string;
     onConfirm: () => void;
@@ -28,6 +30,7 @@
     role="presentation"
   >
     <div
+      use:focusTrap={{ onEscape: onCancel }}
       class="bg-terminal-black border border-terminal-border rounded-lg shadow-2xl max-w-sm w-full font-mono"
       role="dialog"
       aria-modal="true"
