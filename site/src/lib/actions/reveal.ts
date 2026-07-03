@@ -34,6 +34,19 @@ export function reveal(node: HTMLElement, options: RevealOptions = {}) {
 				node.style.opacity = '1';
 				node.style.transform = 'none';
 				io.unobserve(node);
+				// Once revealed, drop the transform hint. `will-change: transform`
+				// (and the transient transform during the animation) establishes a
+				// containing block for any position:fixed descendant, which would
+				// otherwise offset fixed overlays like the image lightbox. Clearing
+				// it after the transition restores normal fixed positioning and is
+				// also good compositor hygiene.
+				node.addEventListener(
+					'transitionend',
+					() => {
+						node.style.willChange = 'auto';
+					},
+					{ once: true }
+				);
 			}
 		},
 		{ threshold: 0.1, rootMargin: '0px 0px -40px 0px' }
