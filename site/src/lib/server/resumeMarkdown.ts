@@ -1,12 +1,9 @@
-import fs from 'fs';
-import yaml from 'js-yaml';
-import path from 'path';
 import type { Resume } from '$lib/types';
+import { loadResume as loadResumeVariant } from './loadResume';
 
+/** Load and validate the default resume variant. */
 export function loadResume(): Resume {
-	const resumePath = path.resolve('content/resume.yaml');
-	const resumeContents = fs.readFileSync(resumePath, 'utf-8');
-	return yaml.load(resumeContents) as Resume;
+	return loadResumeVariant('resume.yaml');
 }
 
 export function buildResumeMarkdown(resume: Resume): string {

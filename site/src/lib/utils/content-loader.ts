@@ -1,34 +1,20 @@
 import type { QuickAction, ContentMetadata } from '$lib/types';
 import { readFileSync, readdirSync } from 'fs';
 import { join } from 'path';
+import matter from 'gray-matter';
 
 export type { ContentMetadata } from '$lib/types';
 
 const CONTENT_DIR = join(process.cwd(), 'content');
 
 function parseFrontmatter(content: string): ContentMetadata | null {
-	const match = content.match(/^---\n([\s\S]*?)\n---/);
-	if (!match) return null;
-
-	const frontmatter: Record<string, string | string[]> = {};
-	const lines = match[1].split('\n');
-
-	for (const line of lines) {
-		const colonIndex = line.indexOf(':');
-		if (colonIndex > 0) {
-			const key = line.slice(0, colonIndex).trim();
-			const raw = line.slice(colonIndex + 1).trim();
-
-			// Handle array values
-			if (raw.startsWith('[') && raw.endsWith(']')) {
-				frontmatter[key] = raw.slice(1, -1).split(',').map(v => v.trim().replace(/^['"]|['"]$/g, ''));
-			} else {
-				frontmatter[key] = raw;
-			}
-		}
-	}
-
-	return frontmatter as unknown as ContentMetadata;
+	// gray-matter (already used by the content-index build step) is a real YAML
+	// frontmatter parser, so multi-line, nested, quoted, and comma-containing
+	// values all parse correctly instead of tripping the previous line-based
+	// hand parser.
+	const { data } = matter(content);
+	if (!data || Object.keys(data).length === 0) return null;
+	return data as ContentMetadata;
 }
 
 function loadMarkdownFiles(dir: string): QuickAction[] {

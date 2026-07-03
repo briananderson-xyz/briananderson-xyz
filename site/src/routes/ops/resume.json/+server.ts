@@ -1,14 +1,9 @@
-import fs from 'fs';
-import yaml from 'js-yaml';
-import path from 'path';
-import type { Resume } from '$lib/types';
+import { loadResume } from '$lib/server/loadResume';
 
 export const prerender = true;
 
 export const GET = async () => {
-	const filePath = path.resolve('content/resume-ops.yaml');
-	const fileContents = fs.readFileSync(filePath, 'utf-8');
-	const resume = yaml.load(fileContents) as Resume;
+	const resume = loadResume('resume-ops.yaml');
 
 	const jsonResume = {
 		$schema: 'https://raw.githubusercontent.com/jsonresume/resume-schema/v1.0.0/schema.json',
