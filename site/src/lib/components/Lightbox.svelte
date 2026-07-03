@@ -64,8 +64,6 @@
   }
 </script>
 
-<svelte:window onkeydown={handleKeydown} />
-
 <div
   use:focusTrap
   class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/95 backdrop-blur-sm p-4"
