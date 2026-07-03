@@ -13,7 +13,7 @@
   import { trackEvent } from "$lib/utils/analytics";
   import { initWebVitals } from "$lib/utils/web-vitals";
   import { browser } from "$app/environment";
-  import { beforeNavigate, afterNavigate } from "$app/navigation";
+  import { beforeNavigate, afterNavigate, onNavigate } from "$app/navigation";
   import posthog from "posthog-js";
   import { PUBLIC_POSTHOG_KEY, PUBLIC_POSTHOG_HOST } from "$env/static/public";
   import ExternalLinkModal from "$lib/components/ExternalLinkModal.svelte";
@@ -199,6 +199,21 @@
         return; // Handled by onMount
       }
       posthog.capture("$pageview");
+    });
+
+    // Cross-page transitions via the native View Transitions API. Progressive
+    // enhancement: browsers without startViewTransition just navigate instantly,
+    // and we opt out entirely under prefers-reduced-motion. The actual fade/rise
+    // animation lives in app.css (::view-transition-old/new(root)).
+    onNavigate((navigation) => {
+      if (!document.startViewTransition) return;
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      return new Promise((resolve) => {
+        document.startViewTransition(async () => {
+          resolve();
+          await navigation.complete;
+        });
+      });
     });
   }
 </script>

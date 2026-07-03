@@ -3,6 +3,7 @@
   import { browser } from "$app/environment";
   import { addVariant, getCanonicalUrl } from "$lib/utils/variantLink";
   import SEO from "$lib/components/SEO.svelte";
+  import { reveal } from "$lib/actions/reveal";
 
   function getVariant(url: URL): string | null {
     return browser ? url.searchParams.get("v") || null : null;
@@ -30,7 +31,8 @@
   </p>
 
   <div class="grid md:grid-cols-2 gap-6">
-    {#each projects as p}
+    {#each projects as p, i}
+      <div use:reveal={{ delay: i * 60 }}>
       <a
         href={addVariant(p.route, getVariant($page.url))}
         class="group block border border-skin-border bg-skin-base/5 hover:border-skin-accent hover:shadow-[0_0_10px_rgba(var(--color-accent),0.1)] transition-all duration-300 rounded-lg overflow-hidden"
@@ -78,6 +80,7 @@
           {/if}
         </div>
       </a>
+      </div>
     {/each}
   </div>
 </section>

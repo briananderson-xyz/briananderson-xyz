@@ -4,6 +4,7 @@
   import SEO from "$lib/components/SEO.svelte";
   import type { ContentItem } from "$lib/types";
   import { addVariant, getVariant, getCanonicalUrl } from "$lib/utils/variantLink";
+  import { reveal } from "$lib/actions/reveal";
 
   let { data }: { data: { posts: ContentItem[] } } = $props();
   const posts = $derived(data.posts);
@@ -34,7 +35,8 @@
       <div class="col-span-9 md:col-span-10">Title / Description</div>
     </div>
 
-    {#each posts as post}
+    {#each posts as post, i}
+      <div use:reveal={{ delay: i * 50 }}>
       <a
         href={addVariant(post.route, variant)}
         class="group grid grid-cols-12 gap-4 items-start p-4 hover:bg-skin-base/5 border-l-2 border-transparent hover:border-skin-accent transition-all rounded-r-lg"
@@ -64,6 +66,7 @@
           {/if}
         </div>
       </a>
+      </div>
     {/each}
   </div>
 </section>
