@@ -3,6 +3,7 @@
   import { getDuration } from "$lib/utils/date";
   import { formatJobTitles } from "$lib/utils/formatters";
   import { addVariant } from "$lib/utils/variantLink";
+  import { reveal } from "$lib/actions/reveal";
   import "$lib/components/ui/glowing-green.css";
 
   interface Props {
@@ -70,7 +71,7 @@
 </header>
 
 <!-- Summary -->
-<section class="mb-10 print:mb-4">
+<section use:reveal class="mb-10 print:mb-4">
   <div
     class="flex items-center gap-2 mb-3 text-skin-accent text-sm uppercase tracking-wider print:text-black print:font-bold print:mb-1 print:text-xs"
   >
@@ -86,7 +87,7 @@
 
 <!-- Skills -->
 {#if resume.skills}
-  <section class="mb-10 print:mb-2 print:mt-2 break-inside-avoid">
+  <section use:reveal class="mb-10 print:mb-2 print:mt-2 break-inside-avoid">
     <div
       class="flex items-center gap-2 mb-6 text-skin-accent text-sm uppercase tracking-wider print:text-black print:font-bold print:mb-1 print:text-xs"
     >
@@ -142,7 +143,7 @@
 {/if}
 
 <!-- Experience -->
-<section class="mb-10 print:mb-2">
+<section use:reveal class="mb-10 print:mb-2">
   <div
     class="flex items-center gap-2 mb-4 text-skin-accent text-sm uppercase tracking-wider print:text-black print:font-bold print:mb-2 print:text-xs"
   >
@@ -224,6 +225,7 @@
 <div class="hidden print:block border-t border-black my-4"></div>
 
 <div
+  use:reveal
   class="grid md:grid-cols-2 gap-10 print:grid-cols-2 print:gap-6 print:mb-0 print:mt-2"
 >
   <section>

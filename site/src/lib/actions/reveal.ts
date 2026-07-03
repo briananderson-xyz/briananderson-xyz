@@ -22,6 +22,10 @@ export function reveal(node: HTMLElement, options: RevealOptions = {}) {
 	node.style.transform = `translateY(${y}px)`;
 	node.style.transition = `opacity 500ms ease-out ${delay}ms, transform 500ms ease-out ${delay}ms`;
 	node.style.willChange = 'opacity, transform';
+	// Marker for the print override in app.css: a section that hasn't scrolled
+	// into view yet would otherwise print at opacity 0 (blank), which matters
+	// for the printable resume. The @media print rule forces these visible.
+	node.classList.add('reveal-init');
 
 	const io = new IntersectionObserver(
 		(entries) => {

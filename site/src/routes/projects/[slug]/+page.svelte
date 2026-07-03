@@ -4,6 +4,7 @@
   import ImageGallery from "$lib/components/ImageGallery.svelte";
   import VisualArchive from "$lib/components/VisualArchive.svelte";
   import ProjectLinks from "$lib/components/ProjectLinks.svelte";
+  import { reveal } from "$lib/actions/reveal";
   import type { ContentMetadata } from "$lib/utils/content-loader";
 
   interface Props {
@@ -72,6 +73,23 @@
   />
 
   <article class="mx-auto max-w-4xl px-4">
+    <header class="mb-8 pb-6 border-b border-skin-border">
+      <h1
+        class="text-3xl md:text-4xl font-bold font-mono tracking-tight text-skin-base"
+        style:view-transition-name={"pt-" + page.params.slug}
+      >
+        {data.metadata.title}
+      </h1>
+      <p class="mt-2 font-mono text-sm text-skin-muted">
+        {data.metadata.period ?? new Date(data.metadata.date).getFullYear()}
+      </p>
+      {#if data.metadata.summary}
+        <p class="mt-3 text-skin-muted leading-relaxed max-w-2xl">
+          {data.metadata.summary}
+        </p>
+      {/if}
+    </header>
+
     <ImageGallery>
       <div class="prose prose-lg max-w-none prose-headings:font-mono">
         {@html data.html}
@@ -79,11 +97,15 @@
     </ImageGallery>
 
     {#if data.metadata.links?.length}
-      <ProjectLinks links={data.metadata.links} />
+      <div use:reveal>
+        <ProjectLinks links={data.metadata.links} />
+      </div>
     {/if}
 
     {#if data.metadata.visualArchive?.images?.length}
-      <VisualArchive images={data.metadata.visualArchive.images} />
+      <div use:reveal>
+        <VisualArchive images={data.metadata.visualArchive.images} />
+      </div>
     {/if}
   </article>
 {:else}

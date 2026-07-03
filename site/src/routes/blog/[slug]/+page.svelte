@@ -3,6 +3,7 @@
   import SEO from "$lib/components/SEO.svelte";
   import ImageGallery from "$lib/components/ImageGallery.svelte";
   import ProjectLinks from "$lib/components/ProjectLinks.svelte";
+  import { reveal } from "$lib/actions/reveal";
   import type { ContentMetadata } from "$lib/utils/content-loader";
 
   interface Props {
@@ -70,6 +71,23 @@
   />
 
   <article class="mx-auto max-w-4xl px-4">
+    <header class="mb-8 pb-6 border-b border-skin-border">
+      <h1
+        class="text-3xl md:text-4xl font-bold font-mono tracking-tight text-skin-base"
+        style:view-transition-name={"bt-" + page.params.slug}
+      >
+        {data.metadata.title}
+      </h1>
+      <p class="mt-2 font-mono text-sm text-skin-muted">
+        {new Date(data.metadata.date).toISOString().split("T")[0]}
+      </p>
+      {#if data.metadata.summary}
+        <p class="mt-3 text-skin-muted leading-relaxed max-w-2xl">
+          {data.metadata.summary}
+        </p>
+      {/if}
+    </header>
+
     <ImageGallery>
       <div class="prose prose-lg max-w-none prose-headings:font-mono">
         {@html data.html}
@@ -77,7 +95,9 @@
     </ImageGallery>
 
     {#if data.metadata.links?.length}
-      <ProjectLinks links={data.metadata.links} />
+      <div use:reveal>
+        <ProjectLinks links={data.metadata.links} />
+      </div>
     {/if}
   </article>
 {:else}

@@ -128,3 +128,13 @@ h1, h2, h3, h4, h5, h6 {
     animation: none;
   }
 }
+
+/* Never let a reveal-on-scroll section print blank: if it hasn't scrolled into
+   view when the page is printed, its inline opacity:0 would hide it on paper
+   (the printable resume in particular). Force revealed for print. */
+@media print {
+  .reveal-init {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
