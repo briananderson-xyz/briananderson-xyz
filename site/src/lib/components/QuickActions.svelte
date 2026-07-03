@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import type { QuickAction } from '$lib/types';
+	import Modal from './Modal.svelte';
 
 	interface Props {
 		visible: boolean;
@@ -73,13 +74,14 @@
 		}
 	});
 
-	// Focus input when visible
+	// Focus input when visible. Modal defers to this (it won't steal focus back).
 	$effect(() => {
 		if (visible && inputElement) {
 			inputElement.focus();
 		}
 	});
 
+	// Arrow/Enter navigation. Escape is owned by the Modal shell.
 	function handleKeyDown(e: KeyboardEvent) {
 		const actions = filteredActions();
 
@@ -92,9 +94,6 @@
 		} else if (e.key === 'Enter') {
 			e.preventDefault();
 			executeAction(actions[selectedIndex]);
-		} else if (e.key === 'Escape') {
-			e.preventDefault();
-			onClose();
 		}
 	}
 
@@ -119,90 +118,65 @@
 		};
 		return labels[category] || category;
 	}
-
-	function handleBackdropClick(e: MouseEvent) {
-		if (e.target === e.currentTarget) {
-			onClose();
-		}
-	}
 </script>
 
-{#if visible}
-	<div
-		class="fixed inset-0 z-50 flex items-start justify-center pt-20 bg-black/80 backdrop-blur-sm"
-		data-testid="quick-actions"
-		role="dialog"
-		tabindex="-1"
-		aria-modal="true"
-		aria-labelledby="quick-actions-title"
-		onclick={handleBackdropClick}
-		onkeydown={handleKeyDown}
-	>
-		<div class="bg-terminal-black border-2 border-terminal-green shadow-2xl max-w-2xl w-full mx-4">
-			<div class="flex justify-between items-center px-4 py-2 bg-terminal-green/10 border-b-2 border-terminal-green font-mono text-terminal-green">
-				<span id="quick-actions-title">Quick Actions</span>
-				<div class="flex items-center gap-1">
-					<span class="text-xs text-terminal-green/70">Esc</span>
+<Modal
+	{visible}
+	{onClose}
+	title="Quick Actions"
+	labelledby="quick-actions-title"
+	closeLabel="Close quick actions"
+	testid="quick-actions"
+	align="top"
+>
+	<div class="font-mono text-sm flex flex-col flex-1 min-h-0">
+		<div class="p-4 border-b border-terminal-green/20 shrink-0">
+			<input
+				bind:this={inputElement}
+				bind:value={searchQuery}
+				onkeydown={handleKeyDown}
+				type="text"
+				placeholder="Type to search..."
+				class="bg-transparent border-none outline-none text-terminal-green placeholder:text-terminal-text/50 w-full"
+				data-testid="quick-actions-input"
+				aria-label="Search actions"
+			/>
+		</div>
+
+		<div class="flex-1 min-h-0 overflow-y-auto">
+			{#if filteredActions().length === 0}
+				<div class="p-8 text-center text-terminal-text/70">
+					No actions found for "{searchQuery}"
+				</div>
+			{:else}
+				{#each filteredActions() as action, index (action.id)}
 					<button
-						onclick={onClose}
-						class="text-2xl leading-none hover:text-terminal-green transition-colors cursor-pointer"
-						aria-label="Close quick actions"
+						onclick={() => executeAction(action)}
+						onmouseenter={() => selectedIndex = index}
+						class="w-full px-4 py-3 flex items-center gap-3 text-left border-b border-terminal-green/10 transition-colors cursor-pointer hover:bg-terminal-green/5 {index === selectedIndex ? 'bg-terminal-green/10' : ''}"
+						data-testid="action-{action.id}"
 					>
-						×
-					</button>
-				</div>
-			</div>
-
-			<div class="font-mono text-sm">
-				<div class="p-4 border-b border-terminal-green/20">
-					<input
-						bind:this={inputElement}
-						bind:value={searchQuery}
-						onkeydown={handleKeyDown}
-						type="text"
-						placeholder="Type to search..."
-						class="bg-transparent border-none outline-none text-terminal-green placeholder:text-terminal-text/50 w-full"
-						data-testid="quick-actions-input"
-						aria-label="Search actions"
-					/>
-				</div>
-
-				<div class="max-h-96 overflow-y-auto">
-					{#if filteredActions().length === 0}
-						<div class="p-8 text-center text-terminal-text/70">
-							No actions found for "{searchQuery}"
+						<div class="flex-1">
+							<div class="flex items-center gap-2">
+								<span class="text-terminal-green font-medium">{action.title}</span>
+								<span class="text-xs text-terminal-text/70 px-2 py-0.5 rounded border border-terminal-green/30">{getCategoryLabel(action.category)}</span>
+							</div>
+							{#if action.description}
+								<div class="text-xs text-terminal-text/70 mt-1">{action.description}</div>
+							{/if}
 						</div>
-					{:else}
-						{#each filteredActions() as action, index}
-							<button
-								onclick={() => executeAction(action)}
-								onmouseenter={() => selectedIndex = index}
-								class="w-full px-4 py-3 flex items-center gap-3 text-left border-b border-terminal-green/10 transition-colors cursor-pointer hover:bg-terminal-green/5 {index === selectedIndex ? 'bg-terminal-green/10' : ''}"
-								data-testid="action-{action.id}"
-							>
-								<div class="flex-1">
-									<div class="flex items-center gap-2">
-										<span class="text-terminal-green font-medium">{action.title}</span>
-										<span class="text-xs text-terminal-text/70 px-2 py-0.5 rounded border border-terminal-green/30">{getCategoryLabel(action.category)}</span>
-									</div>
-									{#if action.description}
-										<div class="text-xs text-terminal-text/70 mt-1">{action.description}</div>
-									{/if}
-								</div>
-								{#if index === selectedIndex}
-									<span class="text-terminal-green text-xs">↵</span>
-								{/if}
-							</button>
-						{/each}
-					{/if}
-				</div>
+						{#if index === selectedIndex}
+							<span class="text-terminal-green text-xs">↵</span>
+						{/if}
+					</button>
+				{/each}
+			{/if}
+		</div>
 
-				<div class="p-3 border-t border-terminal-green/20 text-xs text-terminal-text/70 flex gap-4">
-					<span><kbd class="px-1.5 py-0.5 bg-terminal-green/10 border border-terminal-green/30 rounded text-terminal-green font-mono">↑↓</kbd> Navigate</span>
-					<span><kbd class="px-1.5 py-0.5 bg-terminal-green/10 border border-terminal-green/30 rounded text-terminal-green font-mono">↵</kbd> Select</span>
-					<span><kbd class="px-1.5 py-0.5 bg-terminal-green/10 border border-terminal-green/30 rounded text-terminal-green font-mono">Esc</kbd> Close</span>
-				</div>
-			</div>
+		<div class="p-3 border-t border-terminal-green/20 text-xs text-terminal-text/70 flex gap-4 shrink-0">
+			<span><kbd class="px-1.5 py-0.5 bg-terminal-green/10 border border-terminal-green/30 rounded text-terminal-green font-mono">↑↓</kbd> Navigate</span>
+			<span><kbd class="px-1.5 py-0.5 bg-terminal-green/10 border border-terminal-green/30 rounded text-terminal-green font-mono">↵</kbd> Select</span>
+			<span><kbd class="px-1.5 py-0.5 bg-terminal-green/10 border border-terminal-green/30 rounded text-terminal-green font-mono">Esc</kbd> Close</span>
 		</div>
 	</div>
-{/if}
+</Modal>

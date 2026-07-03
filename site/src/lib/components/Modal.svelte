@@ -21,6 +21,12 @@
 		 * content up to md:max-h-[90vh]. On mobile it is always full-screen.
 		 */
 		fill?: boolean;
+		/**
+		 * Desktop placement. 'center' is the default dialog placement; 'top' anchors
+		 * the card near the top (for command-palette style modals). Mobile is always
+		 * a full-screen sheet regardless.
+		 */
+		align?: 'center' | 'top';
 		/** Optional extra buttons rendered in the header, left of the × (e.g. "Clear"). */
 		actions?: Snippet;
 		/** Modal body. */
@@ -35,15 +41,22 @@
 		closeLabel = 'Close',
 		testid,
 		fill = false,
+		align = 'center',
 		actions,
 		children
 	}: Props = $props();
+
+	// Elements that can receive keyboard focus, for the focus trap.
+	const FOCUSABLE =
+		'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+	let panel = $state<HTMLElement | null>(null);
 
 	function handleBackdropClick(e: MouseEvent) {
 		if (e.target === e.currentTarget) onClose();
 	}
 
-	// Escape closes, regardless of focus.
+	// Escape closes, regardless of where focus currently sits.
 	$effect(() => {
 		if (visible && browser) {
 			const onKey = (e: KeyboardEvent) => {
@@ -53,26 +66,82 @@
 			return () => window.removeEventListener('keydown', onKey);
 		}
 	});
+
+	// While open: lock body scroll, move focus into the dialog, and restore focus
+	// to the previously focused element on close. This makes every modal that uses
+	// this shell a proper accessible dialog.
+	$effect(() => {
+		if (!visible || !browser) return;
+
+		const restoreFocus = document.activeElement as HTMLElement | null;
+		const prevOverflow = document.body.style.overflow;
+		document.body.style.overflow = 'hidden';
+
+		const raf = requestAnimationFrame(() => {
+			if (!panel) return;
+			// Respect a child that focused its own control (e.g. a chat input or a
+			// command-palette search box). Otherwise focus a [data-autofocus] target,
+			// then the first focusable, then the panel itself.
+			if (panel.contains(document.activeElement)) return;
+			const target =
+				panel.querySelector<HTMLElement>('[data-autofocus]') ??
+				panel.querySelector<HTMLElement>(FOCUSABLE) ??
+				panel;
+			target?.focus();
+		});
+
+		return () => {
+			cancelAnimationFrame(raf);
+			document.body.style.overflow = prevOverflow;
+			restoreFocus?.focus?.();
+		};
+	});
+
+	// Trap Tab within the dialog so focus cannot escape to the page behind it.
+	function trapTab(e: KeyboardEvent) {
+		if (e.key !== 'Tab' || !panel) return;
+		const nodes = Array.from(panel.querySelectorAll<HTMLElement>(FOCUSABLE)).filter(
+			(el) => el.offsetParent !== null
+		);
+		if (nodes.length === 0) {
+			e.preventDefault();
+			panel.focus();
+			return;
+		}
+		const first = nodes[0];
+		const last = nodes[nodes.length - 1];
+		if (e.shiftKey && document.activeElement === first) {
+			e.preventDefault();
+			last.focus();
+		} else if (!e.shiftKey && document.activeElement === last) {
+			e.preventDefault();
+			first.focus();
+		}
+	}
 </script>
 
 {#if visible}
 	<!--
 		Mobile: full-screen sheet anchored to the top, sized with 100dvh so the
 		virtual keyboard shrinks it instead of shoving a centered card off-screen.
-		Desktop (md+): a centered, bordered card.
+		Desktop (md+): a bordered card, centered or top-anchored per `align`.
 	-->
 	<div
-		class="fixed inset-0 z-50 flex flex-col md:items-center md:justify-center bg-black/80 backdrop-blur-sm md:p-4"
+		class="fixed inset-0 z-50 flex flex-col bg-black/80 backdrop-blur-sm md:p-4 {align === 'top'
+			? 'md:items-start md:justify-center md:pt-20'
+			: 'md:items-center md:justify-center'}"
 		role="dialog"
 		aria-modal="true"
 		aria-labelledby={labelledby}
 		tabindex="-1"
 		data-testid={testid}
 		onclick={handleBackdropClick}
-		onkeydown={(e) => e.key === 'Escape' && onClose()}
+		onkeydown={trapTab}
 	>
 		<div
-			class="bg-terminal-black border-terminal-green shadow-2xl w-full h-[100dvh] flex flex-col border-0 md:border-2 md:max-w-4xl {fill
+			bind:this={panel}
+			tabindex="-1"
+			class="bg-terminal-black border-terminal-green shadow-2xl w-full h-[100dvh] flex flex-col border-0 md:border-2 md:max-w-4xl focus:outline-none {fill
 				? 'md:h-[80vh]'
 				: 'md:h-auto md:max-h-[90vh]'}"
 		>
