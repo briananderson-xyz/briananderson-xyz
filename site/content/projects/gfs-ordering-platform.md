@@ -19,7 +19,7 @@ links:
 
 **Gordon Food Service** serves over 100,000 customers across North America: restaurants, healthcare facilities, schools, and more. Their legacy ordering system was a monolith tied to mainframe-era infrastructure. It worked, but it couldn't keep up. Deployments happened four times a year. Feature requests sat in queues for months. The platform that powered a billion-dollar distribution business was becoming the bottleneck.
 
-I came into this engagement as a **Technical Principal**, leading the product architecture for the new ordering platform. This was the next chapter after spending years building the [cloud infrastructure (ICDS)](/projects/gfs-cloud-enablement) that made this modernization possible. I went from laying the foundation to building on top of it.
+I came into this engagement as a **Technical Principal**, leading the product architecture for the new ordering platform. This was the first phase of the GFS modernization, and the cloud-native patterns proven here later shaped the broader [enterprise cloud platform and ICDS data store](/projects/gfs-cloud-enablement/) that generalized this work across the business.
 
 ## What I Built
 

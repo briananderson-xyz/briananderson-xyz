@@ -1,5 +1,5 @@
 ---
-title: "CampFit — Denver Kids Camp Discovery"
+title: "CampFit: Denver Kids Camp Discovery"
 date: 2026-03-01
 period: "2026 – Present"
 summary: "A discovery platform that helps Denver parents find and compare kids' camps, built on an AI-driven crawl and extraction pipeline with a human-review layer that decides which data is trustworthy enough to show."
