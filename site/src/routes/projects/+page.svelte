@@ -73,7 +73,7 @@
             <div class="flex flex-wrap gap-2">
               {#each p.metadata.tags as tag}
                 <span
-                  class="text-xs font-mono text-skin-accent/80 before:content-['#']"
+                  class="text-xs font-mono text-skin-accent before:content-['#']"
                 >
                   {tag}
                 </span>
