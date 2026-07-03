@@ -4,7 +4,7 @@
  */
 
 import { browser } from "$app/environment";
-import posthog from "posthog-js";
+import { withPostHog } from "./posthog-lazy";
 import { PUBLIC_POSTHOG_KEY } from "$env/static/public";
 import { onCLS, onFCP, onFID, onINP, onLCP, onTTFB, type Metric } from "web-vitals";
 
@@ -13,14 +13,16 @@ import { onCLS, onFCP, onFID, onINP, onLCP, onTTFB, type Metric } from "web-vita
  */
 function sendToPostHog(metric: Metric): void {
   if (browser && PUBLIC_POSTHOG_KEY) {
-    posthog.capture("web_vital", {
-      metric_name: metric.name,
-      metric_value: metric.value,
-      metric_rating: metric.rating,
-      metric_delta: metric.delta,
-      metric_id: metric.id,
-      navigation_type: metric.navigationType,
-    });
+    withPostHog((ph) =>
+      ph.capture("web_vital", {
+        metric_name: metric.name,
+        metric_value: metric.value,
+        metric_rating: metric.rating,
+        metric_delta: metric.delta,
+        metric_id: metric.id,
+        navigation_type: metric.navigationType,
+      })
+    );
   }
 }
 
