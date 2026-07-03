@@ -73,23 +73,6 @@
   />
 
   <article class="mx-auto max-w-4xl px-4">
-    <header class="mb-8 pb-6 border-b border-skin-border">
-      <h1
-        class="text-3xl md:text-4xl font-bold font-mono tracking-tight text-skin-base"
-        style:view-transition-name={"pt-" + page.params.slug}
-      >
-        {data.metadata.title}
-      </h1>
-      <p class="mt-2 font-mono text-sm text-skin-muted">
-        {data.metadata.period ?? new Date(data.metadata.date).getFullYear()}
-      </p>
-      {#if data.metadata.summary}
-        <p class="mt-3 text-skin-muted leading-relaxed max-w-2xl">
-          {data.metadata.summary}
-        </p>
-      {/if}
-    </header>
-
     <ImageGallery>
       <div class="prose prose-lg max-w-none prose-headings:font-mono">
         {@html data.html}
