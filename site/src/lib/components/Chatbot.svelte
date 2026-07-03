@@ -4,6 +4,7 @@
 	import type { ChatMessage } from '$lib/types';
 	import ChatMessageComponent from './ChatMessage.svelte';
 	import ChatInput from './ChatInput.svelte';
+	import Modal from './Modal.svelte';
 
 	function getApiBase(): string {
 		if (dev) return '/api';
@@ -26,10 +27,10 @@
 	let chatContainer = $state<HTMLDivElement | null>(null);
 	let focusTrigger = $state(0);
 
-	// Load chat history from localStorage
+	// Load chat history from sessionStorage
 	onMount(() => {
 		if (browser) {
-			const saved = localStorage.getItem('chat_history');
+			const saved = sessionStorage.getItem('chat_history');
 			if (saved) {
 				try {
 					messages = JSON.parse(saved);
@@ -40,10 +41,10 @@
 		}
 	});
 
-	// Save chat history to localStorage
+	// Save chat history to sessionStorage
 	$effect(() => {
 		if (browser && messages.length > 0) {
-			localStorage.setItem('chat_history', JSON.stringify(messages));
+			sessionStorage.setItem('chat_history', JSON.stringify(messages));
 		}
 	});
 
@@ -139,96 +140,52 @@
 	function clearHistory() {
 		messages = [];
 		if (browser) {
-			localStorage.removeItem('chat_history');
+			sessionStorage.removeItem('chat_history');
 		}
 	}
 
-	function handleBackdropClick(e: MouseEvent) {
-		if (e.target === e.currentTarget) {
-			onClose();
-		}
-	}
-
-	function handleKeyDown(e: KeyboardEvent) {
-		if (e.key === 'Escape') {
-			onClose();
-		}
-	}
-
-	$effect(() => {
-		if (visible && browser) {
-			window.addEventListener('keydown', handleKeyDown);
-			return () => window.removeEventListener('keydown', handleKeyDown);
-		}
-	});
 </script>
 
-{#if visible}
-	<div
-		class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
-		data-testid="chatbot"
-		role="dialog"
-		tabindex="-1"
-		aria-modal="true"
-		aria-labelledby="chatbot-title"
-		onclick={handleBackdropClick}
-		onkeydown={(e) => e.key === 'Escape' && onClose()}
-	>
-		<div class="bg-terminal-black border-2 border-terminal-green shadow-2xl max-w-4xl w-full h-[80vh] flex flex-col">
-			<div class="flex justify-between items-center px-4 py-2 bg-terminal-green/10 border-b-2 border-terminal-green font-mono text-terminal-green">
-				<span id="chatbot-title">guest@briananderson:~$ chat</span>
-				<div class="flex items-center gap-3">
-					<button
-						onclick={clearHistory}
-						class="text-sm hover:text-terminal-green transition-colors"
-						title="Clear chat history"
-					>
-						Clear
-					</button>
-					<div class="flex items-center gap-1">
-						<span class="text-xs text-terminal-green/70">Esc</span>
-						<button
-							onclick={onClose}
-							class="text-2xl leading-none hover:text-terminal-green transition-colors cursor-pointer"
-							aria-label="Close chatbot"
-						>
-							×
-						</button>
-					</div>
-				</div>
+<Modal
+	{visible}
+	{onClose}
+	title="guest@briananderson:~$ chat"
+	labelledby="chatbot-title"
+	closeLabel="Close chatbot"
+	testid="chatbot"
+	fill
+>
+	{#snippet actions()}
+		<button
+			onclick={clearHistory}
+			class="rounded px-3 py-2 text-sm hover:bg-terminal-green/10 active:bg-terminal-green/20 transition-colors"
+			title="Clear chat history"
+		>
+			Clear
+		</button>
+	{/snippet}
+
+	<div bind:this={chatContainer} class="flex-1 min-h-0 overflow-y-auto p-4 space-y-4">
+		{#if messages.length === 0}
+			<div class="text-center text-terminal-text/70 py-12">
+				<p class="text-lg mb-4">👋 Hi! I'm Brian's AI assistant.</p>
+				<p class="text-sm">Ask me about Brian's experience, skills, projects, or paste a job description for a fit analysis.</p>
 			</div>
+		{/if}
 
-			<div
-				bind:this={chatContainer}
-				class="flex-1 overflow-y-auto p-4 space-y-4"
-			>
-				{#if messages.length === 0}
-					<div class="text-center text-terminal-text/70 py-12">
-						<p class="text-lg mb-4">👋 Hi! I'm Brian's AI assistant.</p>
-						<p class="text-sm">Ask me about Brian's experience, skills, projects, or paste a job description for a fit analysis.</p>
-					</div>
-				{/if}
+		{#each messages as message (message.id)}
+			<ChatMessageComponent {message} />
+		{/each}
 
-				{#each messages as message (message.id)}
-					<ChatMessageComponent {message} />
-				{/each}
-
-				{#if isLoading}
-					<div class="flex items-center gap-2 text-terminal-green">
-						<div class="animate-pulse">●</div>
-						<span class="text-sm">Thinking...</span>
-					</div>
-				{/if}
+		{#if isLoading}
+			<div class="flex items-center gap-2 text-terminal-green">
+				<div class="animate-pulse">●</div>
+				<span class="text-sm">Thinking...</span>
 			</div>
-
-			<div class="border-t border-terminal-green/20">
-				<ChatInput
-					onSend={handleSendMessage}
-					disabled={isLoading}
-					autoFocus={visible}
-					focusTrigger={focusTrigger}
-				/>
-			</div>
-		</div>
+		{/if}
 	</div>
-{/if}
+
+	<div class="border-t border-terminal-green/20 shrink-0">
+		<ChatInput onSend={handleSendMessage} disabled={isLoading} autoFocus={visible} focusTrigger={focusTrigger} />
+	</div>
+</Modal>
