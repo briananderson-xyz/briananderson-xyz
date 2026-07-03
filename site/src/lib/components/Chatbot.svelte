@@ -175,7 +175,14 @@
 		</button>
 	{/snippet}
 
-	<div bind:this={chatContainer} class="flex-1 min-h-0 overflow-y-auto p-4 space-y-4">
+	<div
+		bind:this={chatContainer}
+		role="log"
+		aria-live="polite"
+		aria-relevant="additions"
+		aria-label="Chat conversation"
+		class="flex-1 min-h-0 overflow-y-auto p-4 space-y-4"
+	>
 		{#if messages.length === 0}
 			<div class="text-center text-terminal-text/70 py-12">
 				<p class="text-lg mb-4">👋 Hi! I'm Brian's AI assistant.</p>

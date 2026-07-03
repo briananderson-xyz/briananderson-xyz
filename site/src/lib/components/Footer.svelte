@@ -24,7 +24,7 @@
         {/if}
       </span>
       <span class="mx-2 opacity-50">|</span>
-      <span class="opacity-50 text-[10px]">v1.0.0</span>
+      <span class="opacity-70 text-[10px]">v1.0.0</span>
       <VariantSwitcher />
     </div>
 

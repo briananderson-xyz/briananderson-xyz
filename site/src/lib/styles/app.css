@@ -25,7 +25,7 @@
     /* Terminal Theme */
     --color-bg-page: 12, 12, 12; /* terminal-black */
     --color-text-base: 204, 204, 204; /* terminal-text */
-    --color-text-muted: 113, 113, 113; /* terminal-dim */
+    --color-text-muted: 140, 140, 140; /* terminal-dim, lifted to meet WCAG AA (4.5:1 on the dark page bg) */
     --color-border: 30, 30, 30; /* terminal-dark */
     --color-accent: 34, 197, 94; /* terminal-green (toned down) */
     --color-accent-contrast: 12, 12, 12;
