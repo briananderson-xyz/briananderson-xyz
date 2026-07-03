@@ -120,9 +120,10 @@
 
         <!-- Window Content -->
         <div
-          class="p-6 md:p-8 font-mono text-sm md:text-base leading-relaxed text-terminal-text min-h-[300px] flex flex-col md:flex-row gap-8"
+          class="p-6 md:p-8 font-mono text-sm md:text-base leading-relaxed text-terminal-text"
         >
-          <div class="flex-1">
+          <div class="min-h-[300px] flex flex-col md:flex-row gap-8">
+            <div class="flex-1">
           <div class="mb-4 text-terminal-green">$ whoami</div>
           <h1 class="text-2xl md:text-3xl font-bold text-terminal-text mb-4 block">
             {formattedTitle}
@@ -161,16 +162,6 @@
               >
             </div>
 
-            <div class="mt-8">
-              <div class="mb-4 text-terminal-green">$ cat selected-proof.log</div>
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
-                {#each proofPoints as proofPoint}
-                  <div class="border border-terminal-border px-3 py-2 text-terminal-text/90">
-                    {proofPoint}
-                  </div>
-                {/each}
-              </div>
-            </div>
           </div>
 
           <!-- Headshot -->
@@ -210,6 +201,18 @@
             <span class="mt-3 text-xs text-skin-muted font-mono"
               >[IMG_ID: B_ANDERSON]</span
             >
+          </div>
+          </div>
+
+          <div class="mt-8">
+            <div class="mb-4 text-terminal-green">$ cat selected-proof.log</div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 text-sm">
+              {#each proofPoints as proofPoint}
+                <div class="border border-terminal-border px-3 py-2 text-terminal-text/90">
+                  {proofPoint}
+                </div>
+              {/each}
+            </div>
           </div>
         </div>
       </div>
