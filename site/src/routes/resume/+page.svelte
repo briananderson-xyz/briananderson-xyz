@@ -4,17 +4,20 @@
   import { page } from "$app/stores";
   import { goto } from "$app/navigation";
   import { browser } from "$app/environment";
+  import type { PageData } from "./$types";
 
-  export let data;
-  const resume = data.resume;
+  let { data }: { data: PageData } = $props();
+  const resume = $derived(data.resume);
 
-  $: variant = browser ? $page.url.searchParams.get("v") : null;
-  $: if (browser && variant) {
-    const target = getRedirectTarget("/resume", variant);
-    if (target) {
-      goto(target, { replaceState: true });
+  const variant = $derived(browser ? $page.url.searchParams.get("v") : null);
+  $effect(() => {
+    if (browser && variant) {
+      const target = getRedirectTarget("/resume", variant);
+      if (target) {
+        goto(target, { replaceState: true });
+      }
     }
-  }
+  });
 </script>
 
 <ResumePage

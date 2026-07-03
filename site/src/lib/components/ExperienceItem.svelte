@@ -3,11 +3,15 @@
   import type { ResumeJob } from '$lib/types';
   import '$lib/components/ui/glowing-green.css';
 
-  export let job: ResumeJob;
-  export let compact = false;
+  interface Props {
+    job: ResumeJob;
+    compact?: boolean;
+  }
 
-  function isCurrentJob(job: ResumeJob): boolean {
-    return !job.end_date;
+  let { job, compact = false }: Props = $props();
+
+  function isCurrentJob(j: ResumeJob): boolean {
+    return !j.end_date;
   }
 </script>
 

@@ -6,13 +6,17 @@
   import { formatJobTitles } from "$lib/utils/formatters";
   import { addVariant } from "$lib/utils/variantLink";
 
-  export let resume: Resume;
-  export let variant: string | null = null;
-  export let links: Record<string, string> | null = null;
+  interface Props {
+    resume: Resume;
+    variant?: string | null;
+    links?: Record<string, string> | null;
+  }
 
-  const currentJob = resume.experience[0];
+  let { resume, variant = null, links = null }: Props = $props();
 
-  const jsonLd = {
+  const currentJob = $derived(resume.experience[0]);
+
+  const jsonLd = $derived({
     "@context": "https://schema.org",
     "@type": "Person",
     "name": resume.name,
@@ -42,22 +46,23 @@
       "name": currentJob.role,
       "description": currentJob.description
     }
-  };
+  });
 
-  $: generatedLinks = links || {
+  const generatedLinks = $derived(links || {
     resume: addVariant('/resume/', variant),
     projects: addVariant('/projects/', variant),
     blog: addVariant('/blog/', variant)
-  };
+  });
 
-  $: recruiterSummary =
+  const recruiterSummary = $derived(
     variant === "ops"
       ? "I build reliable delivery platforms and observability systems for high-stakes production environments, and I apply that same discipline to AI workloads."
       : variant === "builder"
         ? "I ship production software across the stack and now build agent-driven products with tracing, tool orchestration, and evaluation in mind."
-        : "I help enterprises modernize delivery systems at scale and now bring that same rigor to AI platforms, agent workflows, and developer productivity.";
+        : "I help enterprises modernize delivery systems at scale and now bring that same rigor to AI platforms, agent workflows, and developer productivity."
+  );
 
-  $: proofPoints =
+  const proofPoints = $derived(
     variant === "ops"
       ? [
           "14 mission-critical apps migrated with zero downtime",
@@ -77,10 +82,11 @@
             "New features and responses to customer feedback shipped in 8-9 production deployments per day",
             "90% deployment lead-time reduction & $30M estimated savings",
             "Top 0.03% of 280k+ Amazon Kiro CLI users"
-          ];
+          ]
+  );
 
-  let openCategories: Record<string, boolean> = {};
-  let showAllExperience = false;
+  let openCategories = $state<Record<string, boolean>>({});
+  let showAllExperience = $state(false);
 
   function toggleCategory(category: string) {
     openCategories = {
@@ -89,10 +95,12 @@
     };
   }
 
-  $: formattedTitle = formatJobTitles(resume.jobTitles);
+  const formattedTitle = $derived(formatJobTitles(resume.jobTitles));
 
   // Build JSON-LD tag to avoid ESLint parser confusion with <script> in templates
-  const jsonLdTag = `<${"script"} type="application/ld+json">${JSON.stringify(jsonLd, null, 2)}</${"script"}>`;
+  const jsonLdTag = $derived(
+    `<${"script"} type="application/ld+json">${JSON.stringify(jsonLd, null, 2)}</${"script"}>`
+  );
 </script>
 
 <svelte:head>
@@ -239,7 +247,7 @@
             <button
               type="button"
               class="w-full cursor-pointer p-3 font-bold text-skin-muted uppercase text-xs tracking-wider hover:text-skin-accent flex justify-between items-center select-none text-left"
-              on:click={() => toggleCategory(category)}
+              onclick={() => toggleCategory(category)}
             >
               {category}
               <span
@@ -292,7 +300,7 @@
       <div class="pt-4 space-y-3">
         {#if resume.experience.length > 3}
           <button
-            on:click={() => (showAllExperience = !showAllExperience)}
+            onclick={() => (showAllExperience = !showAllExperience)}
             class="text-sm text-skin-accent hover:underline font-mono"
           >
             {showAllExperience

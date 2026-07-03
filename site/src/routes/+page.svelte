@@ -5,16 +5,19 @@
   import { goto } from "$app/navigation";
   import { browser } from "$app/environment";
   import SEO from "$lib/components/SEO.svelte";
+  import type { PageData } from "./$types";
 
-  export let data;
+  let { data }: { data: PageData } = $props();
 
-  $: variant = browser ? $page.url.searchParams.get("v") : null;
-  $: if (browser && variant) {
-    const target = getRedirectTarget("/", variant);
-    if (target) {
-      goto(target, { replaceState: true });
+  const variant = $derived(browser ? $page.url.searchParams.get("v") : null);
+  $effect(() => {
+    if (browser && variant) {
+      const target = getRedirectTarget("/", variant);
+      if (target) {
+        goto(target, { replaceState: true });
+      }
     }
-  }
+  });
 </script>
 
 <SEO

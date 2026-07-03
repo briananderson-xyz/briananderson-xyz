@@ -1,23 +1,13 @@
 <script lang="ts">
   import { page } from '$app/stores';
-  import { onMount } from 'svelte';
+  import { browser } from '$app/environment';
   import { getCanonicalVariantPath, getVariant } from '$lib/utils/variantLink';
   import { variants } from '$lib/data/variants';
 
-  let currentVariant = 'default';
-  let currentPath = '/';
-
-  $: if (typeof window !== 'undefined' && $page) {
-    currentVariant = getVariant($page.url) || 'default';
-    currentPath = $page.url.pathname;
-  }
-
-  onMount(() => {
-    if ($page) {
-      currentVariant = getVariant($page.url) || 'default';
-      currentPath = $page.url.pathname;
-    }
-  });
+  // Resolve the active variant/path on the client (SSR keeps the neutral
+  // default, matching the prior onMount-driven behavior).
+  const currentVariant = $derived(browser ? getVariant($page.url) || 'default' : 'default');
+  const currentPath = $derived(browser ? $page.url.pathname : '/');
 </script>
 
 <div class="flex items-center gap-2 text-[10px] uppercase">

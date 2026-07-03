@@ -3,11 +3,12 @@
   import ResumePage from "$lib/components/ResumePage.svelte";
   import { page } from "$app/stores";
   import { browser } from "$app/environment";
+  import type { PageData } from "./$types";
 
-  export let data;
-  const resume = data.resume;
+  let { data }: { data: PageData } = $props();
+  const resume = $derived(data.resume);
 
-  $: variant = browser ? $page.url.searchParams.get("v") : null;
+  const variant = $derived(browser ? $page.url.searchParams.get("v") : null);
 </script>
 
 <ResumePage

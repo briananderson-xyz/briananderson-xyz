@@ -2,7 +2,7 @@
   import { page } from "$app/stores";
   import VariantSwitcher from "$lib/components/VariantSwitcher.svelte";
 
-  $: isError = $page.status >= 400;
+  const isError = $derived($page.status >= 400);
 </script>
 
 <footer
