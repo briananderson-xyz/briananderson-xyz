@@ -51,6 +51,8 @@
               <img
                 src={post.metadata.featuredImage}
                 alt={post.metadata.featuredImageAlt || post.metadata.title}
+                loading="lazy"
+                decoding="async"
                 class="w-[65%] aspect-video my-2 mx-auto rounded border border-skin-border object-contain"
               />
             </div>
