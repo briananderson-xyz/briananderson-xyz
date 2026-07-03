@@ -547,8 +547,13 @@ Suggest exactly 3 natural follow-up questions the visitor is likely to ask next 
 		const result = await ai.models.generateContent({
 			model: 'gemini-2.5-flash',
 			config: {
-				maxOutputTokens: 300,
+				maxOutputTokens: 512,
 				temperature: 0.4,
+				// Gemini 2.5 Flash enables "thinking" by default, which spends the
+				// output-token budget before any text is produced; on a small budget
+				// that leaves an empty response. This is a trivial structured task, so
+				// disable thinking for a fast, reliable JSON answer.
+				thinkingConfig: { thinkingBudget: 0 },
 				responseMimeType: 'application/json',
 				// Force a bare array of strings; without a schema the model often
 				// wraps the list in an object (e.g. { questions: [...] }).
@@ -561,7 +566,10 @@ Suggest exactly 3 natural follow-up questions the visitor is likely to ask next 
 		});
 
 		const raw = (result.text || '').trim();
-		if (!raw) return [];
+		if (!raw) {
+			console.warn('Chat suggestions: empty model response');
+			return [];
+		}
 		const parsed: unknown = JSON.parse(raw);
 		// Accept a bare array, or the first array value of an object wrapper.
 		const arr: unknown[] = Array.isArray(parsed)
@@ -574,9 +582,7 @@ Suggest exactly 3 natural follow-up questions the visitor is likely to ask next 
 			.map((s) => s.trim())
 			.slice(0, 3);
 	} catch (error) {
-		if (!IS_PRODUCTION) {
-			console.error('Chat suggestion generation failed:', error);
-		}
+		console.error('Chat suggestion generation failed:', error);
 		return [];
 	}
 }
