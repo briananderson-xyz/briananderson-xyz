@@ -47,7 +47,9 @@ async function validateChatEndpoint() {
   try {
     // Test 1: Basic chat request
     console.log('Test 1: Basic question about AWS...');
-    const response1 = await fetch(endpoint, {
+    // Use smokeFetch so a cold start / transient 5xx retries instead of
+    // failing the whole smoke run (the fit-finder primary call already does).
+    const response1 = await smokeFetch(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
