@@ -4,6 +4,7 @@
   import ThemeToggle from "$lib/components/ThemeToggle.svelte";
   import KeyboardIndicator from "$lib/components/KeyboardIndicator.svelte";
   import { page } from "$app/stores";
+  import { goto } from "$app/navigation";
   import { addVariant, getVariant } from "$lib/utils/variantLink";
 
   interface Props {
@@ -18,25 +19,92 @@
   let open = $state(false);
 
   // Terminal input state
-  let terminalInput = $state('');
+  let terminalInput = $state("");
   let showAutocomplete = $state(false);
   let selectedIndex = $state(0);
   let inputElement: HTMLInputElement | undefined;
-  let inputButtonElement: HTMLButtonElement | undefined;
+  let inputButtonElement = $state<HTMLButtonElement | undefined>(undefined);
   let isFocused = $state(false);
 
-  const commands = [
-    { id: 'chat', label: 'chat --with brian', description: 'Chat about experience, skills, projects, or anything else', action: onOpenChat },
-    { id: 'fit-finder', label: 'check-fit', description: 'Paste your job/project description → instant compatibility analysis', action: onOpenFitFinder },
-    { id: 'quick-actions', label: 'quick-actions', description: 'Navigate quickly with keyboard shortcuts', action: onOpenQuickActions }
-  ];
+  const commands = $derived([
+    {
+      id: "chat",
+      label: "chat --with brian",
+      description: "Chat about experience, skills, projects, or anything else",
+      icon: "›",
+      aliases: ["ask", "talk"],
+      action: onOpenChat
+    },
+    {
+      id: "fit-finder",
+      label: "check-fit",
+      description: "Paste your job/project description → instant compatibility analysis",
+      icon: "⚡",
+      aliases: ["job", "match", "hire"],
+      action: onOpenFitFinder
+    },
+    {
+      id: "quick-actions",
+      label: "quick-actions",
+      description: "Navigate quickly with keyboard shortcuts",
+      icon: "⌘",
+      aliases: ["shortcuts", "keys"],
+      action: onOpenQuickActions
+    },
+    {
+      id: "resume",
+      label: "cd resume",
+      description: "View the full resume and work history",
+      icon: "→",
+      aliases: ["resume", "cv", "experience", "./resume"],
+      action: () => goto(addVariant("/resume/", variant))
+    },
+    {
+      id: "projects",
+      label: "cd projects",
+      description: "Browse projects and case studies",
+      icon: "→",
+      aliases: ["projects", "work", "portfolio", "./projects"],
+      action: () => goto(addVariant("/projects/", variant))
+    },
+    {
+      id: "blog",
+      label: "cd blog",
+      description: "Read the blog",
+      icon: "→",
+      aliases: ["blog", "posts", "writing", "./blog"],
+      action: () => goto(addVariant("/blog/", variant))
+    },
+    {
+      id: "interests",
+      label: "cd interests",
+      description: "What I follow, my setup, and life outside work",
+      icon: "→",
+      aliases: ["interests", "about", "./interests"],
+      action: () => goto("/interests/")
+    },
+    {
+      id: "contact",
+      label: "contact",
+      description: "Get in touch",
+      icon: "→",
+      aliases: ["contact", "email", "reach"],
+      action: () => goto(addVariant("/#contact", variant))
+    }
+  ]);
+
+  // "help" / "ls" list everything, like a real shell would.
+  const listAllQueries = ["help", "ls", "ls -la", "ls -a", "?", "man", "commands"];
 
   const filteredCommands = $derived(() => {
-    if (!terminalInput.trim()) return commands;
-    const query = terminalInput.toLowerCase();
-    return commands.filter(cmd =>
-      cmd.label.toLowerCase().includes(query) ||
-      cmd.description.toLowerCase().includes(query)
+    const query = terminalInput.trim().toLowerCase();
+    if (!query) return commands;
+    if (listAllQueries.includes(query)) return commands;
+    return commands.filter(
+      (cmd) =>
+        cmd.label.toLowerCase().includes(query) ||
+        cmd.description.toLowerCase().includes(query) ||
+        (cmd.aliases ?? []).some((alias) => alias.includes(query) || query.includes(alias))
     );
   });
 
@@ -60,21 +128,21 @@
   function handleTerminalKeydown(e: KeyboardEvent) {
     const filtered = filteredCommands();
 
-    if (e.key === 'ArrowDown') {
+    if (e.key === "ArrowDown") {
       e.preventDefault();
       selectedIndex = (selectedIndex + 1) % filtered.length;
-    } else if (e.key === 'ArrowUp') {
+    } else if (e.key === "ArrowUp") {
       e.preventDefault();
       selectedIndex = selectedIndex === 0 ? filtered.length - 1 : selectedIndex - 1;
-    } else if (e.key === 'Enter') {
+    } else if (e.key === "Enter") {
       e.preventDefault();
       if (filtered[selectedIndex]) {
         executeCommand(filtered[selectedIndex]);
       }
-    } else if (e.key === 'Escape') {
+    } else if (e.key === "Escape") {
       e.preventDefault();
       inputElement?.blur();
-      terminalInput = '';
+      terminalInput = "";
       showAutocomplete = false;
     }
   }
@@ -84,11 +152,11 @@
     selectedIndex = 0;
   }
 
-  function executeCommand(command: typeof commands[0]) {
+  function executeCommand(command: (typeof commands)[0]) {
     if (command.action) {
       command.action();
     }
-    terminalInput = '';
+    terminalInput = "";
     showAutocomplete = false;
     inputElement?.blur();
   }
@@ -97,14 +165,12 @@
 <header
   class="sticky top-0 z-40 bg-skin-page/90 backdrop-blur border-b border-skin-border font-mono transition-colors duration-300 print:hidden"
 >
-  <div
-    class="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between gap-4"
-  >
+  <div class="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between gap-4">
     <div class="relative">
-      <div class="text-sm md:text-base font-bold tracking-tight text-skin-base flex items-center gap-2 group">
-        <a
-          href={addVariant("/", variant)}
-          class="text-skin-accent hover:animate-pulse"
+      <div
+        class="text-sm md:text-base font-bold tracking-tight text-skin-base flex items-center gap-2 group"
+      >
+        <a href={addVariant("/", variant)} class="text-skin-accent hover:animate-pulse"
           >guest@briananderson:~$</a
         >
         <button
@@ -116,7 +182,11 @@
             <span class="w-2 h-4 bg-skin-accent animate-terminal-blink"></span>
           {/if}
           <div class="relative inline-flex items-center" style="min-width: 8px; max-width: 300px;">
-            <span class="invisible whitespace-pre font-mono text-skin-accent" aria-hidden="true" style="padding: 0 16px 0 0;">{terminalInput || ''}</span>
+            <span
+              class="invisible whitespace-pre font-mono text-skin-accent"
+              aria-hidden="true"
+              style="padding: 0 16px 0 0;">{terminalInput || ""}</span
+            >
             <input
               bind:this={inputElement}
               bind:value={terminalInput}
@@ -140,7 +210,10 @@
               </style>
             {/if}
             {#if !isFocused && terminalInput}
-              <span class="w-2 h-4 bg-skin-accent animate-terminal-blink" style="margin-left: -1rem;"></span>
+              <span
+                class="w-2 h-4 bg-skin-accent animate-terminal-blink"
+                style="margin-left: -1rem;"
+              ></span>
             {/if}
           </div>
         </button>
@@ -154,9 +227,12 @@
           {#each filteredCommands() as command, index}
             <button
               onclick={() => executeCommand(command)}
-              class="w-full px-4 py-3 text-left flex items-start gap-3 border-b border-terminal-green/10 last:border-b-0 hover:bg-terminal-green/20 transition-colors cursor-pointer {index === selectedIndex ? 'bg-terminal-green/10' : ''}"
+              class="w-full px-4 py-3 text-left flex items-start gap-3 border-b border-terminal-green/10 last:border-b-0 hover:bg-terminal-green/20 transition-colors cursor-pointer {index ===
+              selectedIndex
+                ? 'bg-terminal-green/10'
+                : ''}"
             >
-              <span class="text-xl">{command.id === 'chat' ? '›' : command.id === 'fit-finder' ? '⚡' : '⌘'}</span>
+              <span class="text-xl">{command.icon}</span>
               <div class="flex-1">
                 <div class="text-terminal-green font-semibold mb-1">$ {command.label}</div>
                 <div class="text-terminal-text/70 text-xs">{command.description}</div>
@@ -169,33 +245,25 @@
 
     <nav class="hidden md:flex gap-6 text-sm items-center">
       <a
-        class="hover:text-skin-accent transition-colors {activeRoute.includes(
-          '/resume',
-        )
+        class="hover:text-skin-accent transition-colors {activeRoute.includes('/resume')
           ? 'text-skin-accent'
           : 'text-skin-muted'}"
         href={addVariant("/resume/", variant)}>./resume</a
       >
       <a
-        class="hover:text-skin-accent transition-colors {activeRoute.startsWith(
-          '/projects',
-        )
+        class="hover:text-skin-accent transition-colors {activeRoute.startsWith('/projects')
           ? 'text-skin-accent'
           : 'text-skin-muted'}"
         href={addVariant("/projects/", variant)}>./projects</a
       >
       <a
-        class="hover:text-skin-accent transition-colors {activeRoute.startsWith(
-          '/blog',
-        )
+        class="hover:text-skin-accent transition-colors {activeRoute.startsWith('/blog')
           ? 'text-skin-accent'
           : 'text-skin-muted'}"
         href={addVariant("/blog/", variant)}>./blog</a
       >
       <a
-        class="hover:text-skin-accent transition-colors {activeRoute.startsWith(
-          '/interests',
-        )
+        class="hover:text-skin-accent transition-colors {activeRoute.startsWith('/interests')
           ? 'text-skin-accent'
           : 'text-skin-muted'}"
         href="/interests/">./interests</a
@@ -220,13 +288,8 @@
   </div>
 
   {#if open}
-    <div
-      transition:slide
-      class="md:hidden border-t border-skin-border bg-skin-page"
-    >
-      <div
-        class="mx-auto max-w-6xl px-4 py-3 flex flex-col gap-3 font-mono text-sm"
-      >
+    <div transition:slide class="md:hidden border-t border-skin-border bg-skin-page">
+      <div class="mx-auto max-w-6xl px-4 py-3 flex flex-col gap-3 font-mono text-sm">
         <a
           class="hover:text-skin-accent {activeRoute.includes('/resume')
             ? 'text-skin-accent'
@@ -260,9 +323,7 @@
           onclick={() => (open = false)}
           href={addVariant("/#contact", variant)}>./contact</a
         >
-        <div
-          class="pt-2 border-t border-skin-border mt-2 flex justify-between items-center"
-        >
+        <div class="pt-2 border-t border-skin-border mt-2 flex justify-between items-center">
           <span class="text-xs text-skin-muted">Theme:</span>
           <ThemeToggle />
         </div>

@@ -67,6 +67,12 @@ function removeVariantFromPath(path: string): string {
   // First remove query param variant
   clean = removeVariant(clean);
 
+  // Normalize static-file artifacts. On the statically served site the current
+  // path can surface as e.g. `/blog/index.html/`, which would otherwise fall
+  // through to a malformed `/blog/index.html/?v=ops` link (404). Strip a
+  // trailing index.html so canonical variant links resolve correctly.
+  clean = clean.replace(/index\.html\/?$/, '');
+
   // Then remove path prefix variants
   // We check specifically for our known variants to avoid false positives
   for (const v of variants) {
