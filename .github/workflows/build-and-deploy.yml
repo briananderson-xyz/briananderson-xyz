@@ -365,7 +365,7 @@ jobs:
           fi
 
           # Upload everything else (standard cache)
-          gcloud storage rsync site/build/ gs://dev.briananderson.xyz/ --recursive --delete-unmatched-destination-objects --cache-control="public, max-age=3600, must-revalidate"
+          gcloud storage rsync site/build/ gs://dev.briananderson.xyz/ --recursive --delete-unmatched-destination-objects --cache-control="public, max-age=60, must-revalidate"
       - name: Warm up dev API services
         run: |
           echo "Warming up dev Cloud Run services..."
@@ -439,7 +439,7 @@ jobs:
             gcloud storage cp site/build/content-index.json gs://dev.briananderson.xyz/ --cache-control="public, max-age=300, must-revalidate"
           fi
 
-          gcloud storage rsync site/build/ gs://dev.briananderson.xyz/ --recursive --delete-unmatched-destination-objects --cache-control="public, max-age=3600, must-revalidate"
+          gcloud storage rsync site/build/ gs://dev.briananderson.xyz/ --recursive --delete-unmatched-destination-objects --cache-control="public, max-age=60, must-revalidate"
           echo "Rollback complete."
           exit 1
       - name: Fail if smoke tests failed
