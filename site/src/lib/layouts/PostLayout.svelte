@@ -2,6 +2,7 @@
   import Lightbox from "$lib/components/Lightbox.svelte";
   import type { ContentMetadata } from "$lib/utils/content-loader";
   import type { Snippet } from "svelte";
+  import { titleTransitionName } from "$lib/utils/transitionName";
 
   interface Props {
     metadata: ContentMetadata;
@@ -9,6 +10,12 @@
   }
 
   let { metadata, children }: Props = $props();
+
+  // Shared-element view transition: this title morphs from the matching card
+  // title on the /projects or /blog list, which uses the same title-derived
+  // name. (PostLayout is rendered by mdsvex without route context, so the
+  // title is the only key both sides share.)
+  const titleVt = $derived(titleTransitionName(metadata.title));
   
   let lightboxOpen = $state(false);
   
@@ -34,6 +41,7 @@
 
     <h1
       class="text-3xl md:text-4xl font-bold font-mono tracking-tight text-skin-base mb-4"
+      style:view-transition-name={titleVt}
     >
       {metadata.title}
     </h1>

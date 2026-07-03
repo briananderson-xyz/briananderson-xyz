@@ -4,6 +4,7 @@
   import { addVariant, getCanonicalUrl } from "$lib/utils/variantLink";
   import SEO from "$lib/components/SEO.svelte";
   import { reveal } from "$lib/actions/reveal";
+  import { titleTransitionName } from "$lib/utils/transitionName";
 
   function getVariant(url: URL): string | null {
     return browser ? url.searchParams.get("v") || null : null;
@@ -32,7 +33,6 @@
 
   <div class="grid md:grid-cols-2 gap-6">
     {#each projects as p, i}
-      {@const slug = p.route.split("/").pop()}
       <div use:reveal={{ delay: i * 60 }}>
       <a
         href={addVariant(p.route, getVariant($page.url))}
@@ -52,7 +52,7 @@
           <div class="flex justify-between items-start mb-2">
             <h2
               class="font-bold text-lg font-mono text-skin-base group-hover:text-skin-accent transition-colors"
-              style:view-transition-name={"pt-" + slug}
+              style:view-transition-name={titleTransitionName(p.metadata.title)}
             >
               {p.metadata.title}
             </h2>

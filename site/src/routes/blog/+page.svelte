@@ -5,6 +5,7 @@
   import type { ContentItem } from "$lib/types";
   import { addVariant, getVariant, getCanonicalUrl } from "$lib/utils/variantLink";
   import { reveal } from "$lib/actions/reveal";
+  import { titleTransitionName } from "$lib/utils/transitionName";
 
   let { data }: { data: { posts: ContentItem[] } } = $props();
   const posts = $derived(data.posts);
@@ -36,7 +37,6 @@
     </div>
 
     {#each posts as post, i}
-      {@const slug = post.route.split("/").pop()}
       <div use:reveal={{ delay: i * 50 }}>
       <a
         href={addVariant(post.route, variant)}
@@ -57,7 +57,7 @@
           {/if}
           <h2
             class="text-base text-skin-base group-hover:text-skin-accent font-bold transition-colors mb-1"
-            style:view-transition-name={"bt-" + slug}
+            style:view-transition-name={titleTransitionName(post.metadata.title)}
           >
             {post.metadata.title}
           </h2>
