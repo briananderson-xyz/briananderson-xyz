@@ -2,7 +2,7 @@
  * Extracted handler logic for chat and fit-finder functions.
  * Shared between Firebase Functions (local dev) and Cloud Run (production).
  */
-import { GoogleGenAI } from '@google/genai';
+import { GoogleGenAI, Type } from '@google/genai';
 import { getSystemPrompt } from './systemPrompt.js';
 import { checkGuardrails, getRefusalMessage } from './guardrails.js';
 import {
@@ -536,25 +536,40 @@ async function generateChatSuggestions(
 	userMessage: string,
 	assistantResponse: string
 ): Promise<string[]> {
-	try {
-		const result = await ai.models.generateContent({
-			model: 'gemini-2.5-flash',
-			config: {
-				maxOutputTokens: 200,
-				temperature: 0.4,
-				responseMimeType: 'application/json'
-			},
-			contents: `A visitor is chatting with an AI assistant about Brian Anderson, an engineering leader and hands-on builder, on his personal site.
+	const prompt = `A visitor is chatting with an AI assistant about Brian Anderson, an engineering leader and hands-on builder, on his personal site.
 
 Their message: "${userMessage}"
 The assistant's answer: "${assistantResponse}"
 
-Suggest exactly 3 natural follow-up questions the visitor is likely to ask next to learn more about Brian. Each must be phrased in the visitor's own voice, under 8 words, and grounded in what was just discussed. Return ONLY a JSON array of 3 strings, e.g. ["...","...","..."].`
+Suggest exactly 3 natural follow-up questions the visitor is likely to ask next to learn more about Brian. Each must be phrased in the visitor's own voice, under 8 words, and grounded in what was just discussed. Return a JSON array of 3 strings.`;
+
+	try {
+		const result = await ai.models.generateContent({
+			model: 'gemini-2.5-flash',
+			config: {
+				maxOutputTokens: 300,
+				temperature: 0.4,
+				responseMimeType: 'application/json',
+				// Force a bare array of strings; without a schema the model often
+				// wraps the list in an object (e.g. { questions: [...] }).
+				responseSchema: {
+					type: Type.ARRAY,
+					items: { type: Type.STRING }
+				}
+			},
+			contents: [{ role: 'user', parts: [{ text: prompt }] }]
 		});
 
-		const parsed = JSON.parse(result.text || '[]');
-		if (!Array.isArray(parsed)) return [];
-		return parsed
+		const raw = (result.text || '').trim();
+		if (!raw) return [];
+		const parsed: unknown = JSON.parse(raw);
+		// Accept a bare array, or the first array value of an object wrapper.
+		const arr: unknown[] = Array.isArray(parsed)
+			? parsed
+			: parsed && typeof parsed === 'object'
+				? (Object.values(parsed).find(Array.isArray) as unknown[] | undefined) ?? []
+				: [];
+		return arr
 			.filter((s): s is string => typeof s === 'string' && s.trim().length > 0)
 			.map((s) => s.trim())
 			.slice(0, 3);
