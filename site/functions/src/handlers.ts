@@ -12,6 +12,7 @@ import {
 	executeToolCall,
 	isSubmitAnalysisCall
 } from './tools.js';
+import type { Request, Response } from 'express';
 import type {
 	ContentIndex,
 	ContentIndexPointer,
@@ -527,8 +528,7 @@ async function fetchContentIndexInner(): Promise<ContentIndex | null> {
 /**
  * Chat handler — can be called from Firebase Functions or Express/Cloud Run
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function handleChat(req: any, res: any): Promise<void> {
+export async function handleChat(req: Request, res: Response): Promise<void> {
 	// Handle preflight
 	if (req.method === 'OPTIONS') {
 		res.set(corsHeadersFor(req));
@@ -691,8 +691,7 @@ export async function handleChat(req: any, res: any): Promise<void> {
 /**
  * Fit Finder handler — can be called from Firebase Functions or Express/Cloud Run
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function handleFitFinder(req: any, res: any): Promise<void> {
+export async function handleFitFinder(req: Request, res: Response): Promise<void> {
 	// Handle preflight
 	if (req.method === 'OPTIONS') {
 		res.set(corsHeadersFor(req));
