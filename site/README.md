@@ -2,7 +2,7 @@
 
 > **📚 Full documentation:** See [`../CLAUDE.md`](../CLAUDE.md) or [`../AGENTS.md`](../AGENTS.md)
 
-**Stack:** SvelteKit 2 + Svelte 5 + TypeScript + Tailwind CSS 3 + Firebase Functions
+**Stack:** SvelteKit 2 + Svelte 5 + TypeScript + Tailwind CSS 3 + Cloud Run (Express) API
 
 ## Quick Start
 
@@ -15,8 +15,12 @@ pnpm dev
 
 ```bash
 pnpm run build              # Builds content index + static site
-firebase deploy             # Deploys to GCS + Firebase Functions
 ```
+
+Deployment is automated via GitHub Actions: a push to `main` deploys the static
+site to GCS (dev) and the Express API to Cloud Run. Production is a manual
+`workflow_dispatch`. See [`../.github/workflows/build-and-deploy.yml`](../.github/workflows/build-and-deploy.yml).
+The `functions/` directory name is Firebase heritage; the backend now runs on Cloud Run.
 
 ## AI Features
 

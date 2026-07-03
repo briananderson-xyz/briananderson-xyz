@@ -1,16 +1,10 @@
 <script lang="ts">
-	import { browser, dev } from '$app/environment';
+	import { browser } from '$app/environment';
 	import type { FitAnalysis } from '$lib/types';
 	import { trackEvent } from '$lib/utils/analytics';
 	import Modal from './Modal.svelte';
+	import { getApiBase } from '$lib/utils/apiBase';
 
-	function getApiBase(): string {
-		if (dev) return '/api';
-		if (typeof window !== 'undefined' && window.location.hostname === 'dev.briananderson.xyz') {
-			return 'https://api-dev.briananderson.xyz';
-		}
-		return 'https://api.briananderson.xyz';
-	}
 	const API_BASE = getApiBase();
 
 	interface Props {
