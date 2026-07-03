@@ -52,6 +52,45 @@
 
 	let panel = $state<HTMLElement | null>(null);
 
+	// Track the visual viewport so the mobile sheet hugs the space *above* the
+	// on-screen keyboard. 100dvh shrinks for browser chrome but not for the
+	// keyboard on iOS, so without this the header gets scrolled off the top when
+	// an input is focused. visualViewport.height/offsetTop follow the keyboard.
+	let isMobile = $state(false);
+	let vvHeight = $state(0);
+	let vvOffsetTop = $state(0);
+
+	$effect(() => {
+		if (!visible || !browser) return;
+
+		const mq = window.matchMedia('(max-width: 767px)');
+		const syncMobile = () => (isMobile = mq.matches);
+		syncMobile();
+		mq.addEventListener('change', syncMobile);
+
+		const vv = window.visualViewport;
+		const syncVv = () => {
+			if (!vv) return;
+			vvHeight = vv.height;
+			vvOffsetTop = vv.offsetTop;
+		};
+		syncVv();
+		vv?.addEventListener('resize', syncVv);
+		vv?.addEventListener('scroll', syncVv);
+
+		return () => {
+			mq.removeEventListener('change', syncMobile);
+			vv?.removeEventListener('resize', syncVv);
+			vv?.removeEventListener('scroll', syncVv);
+		};
+	});
+
+	// On mobile, pin the sheet to the visible viewport (falls back to the
+	// h-[100dvh] class when visualViewport is unavailable). Desktop uses classes.
+	const panelStyle = $derived(
+		isMobile && vvHeight ? `height:${vvHeight}px;transform:translateY(${vvOffsetTop}px);` : ''
+	);
+
 	function handleBackdropClick(e: MouseEvent) {
 		if (e.target === e.currentTarget) onClose();
 	}
@@ -141,6 +180,7 @@
 		<div
 			bind:this={panel}
 			tabindex="-1"
+			style={panelStyle}
 			class="bg-terminal-black border-terminal-green shadow-2xl w-full h-[100dvh] flex flex-col border-0 md:border-2 md:max-w-4xl focus:outline-none {fill
 				? 'md:h-[80vh]'
 				: 'md:h-auto md:max-h-[90vh]'}"
