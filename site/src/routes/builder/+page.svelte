@@ -2,8 +2,9 @@
   import { getCanonicalUrl } from "$lib/utils/variantLink";
   import Homepage from "$lib/components/Homepage.svelte";
   import SEO from "$lib/components/SEO.svelte";
+  import type { PageData } from "./$types";
 
-  export let data;
+  let { data }: { data: PageData } = $props();
 </script>
 
 <SEO

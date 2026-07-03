@@ -3,33 +3,46 @@
     import { page } from "$app/stores";
     // import { PUBLIC_ENV } from "$env/static/public";
 
-    export let title: string;
-    export let description: string;
-    export let type: string = "website";
-    export let image: string | undefined = undefined;
-    export let canonical: string | undefined = undefined;
-    export let keywords: string[] | undefined = undefined;
-    export let tags: string[] | undefined = undefined;
+    interface Props {
+        title: string;
+        description: string;
+        type?: string;
+        image?: string | undefined;
+        canonical?: string | undefined;
+        keywords?: string[] | undefined;
+        tags?: string[] | undefined;
+    }
 
-    // $: isDev = dev || PUBLIC_ENV === "dev";
-    $: finalTitle = dev ? `[dev] ${title}` : title;
+    let {
+        title,
+        description,
+        type = "website",
+        image = undefined,
+        canonical = undefined,
+        keywords = undefined,
+        tags = undefined
+    }: Props = $props();
+
+    const finalTitle = $derived(dev ? `[dev] ${title}` : title);
 
     // Default canonical to current URL if not provided, but remove query params for clean canonical
-    $: finalCanonical =
-        canonical ||
-        ($page.url ? `${$page.url.origin}${$page.url.pathname}` : undefined);
+    const finalCanonical = $derived(
+        canonical || ($page.url ? `${$page.url.origin}${$page.url.pathname}` : undefined)
+    );
 
     // Construct absolute image URL if provided; fall back to the default
     // social image (headshot) so every page emits og:image / twitter:image.
     const defaultImage = "/headshot.jpg";
-    $: finalImage = image
-        ? image.startsWith("http")
-            ? image
-            : `${$page.url.origin}${image}`
-        : `${$page.url.origin}${defaultImage}`;
+    const finalImage = $derived(
+        image
+            ? image.startsWith("http")
+                ? image
+                : `${$page.url.origin}${image}`
+            : `${$page.url.origin}${defaultImage}`
+    );
 
     // Combine tags and keywords for meta keywords
-    $: metaKeywords = [...(tags || []), ...(keywords || [])].join(", ");
+    const metaKeywords = $derived([...(tags || []), ...(keywords || [])].join(", "));
 </script>
 
 <svelte:head>

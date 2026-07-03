@@ -8,8 +8,10 @@
     return browser ? url.searchParams.get("v") || null : null;
   }
 
-  export let data;
-  $: projects = data.projects;
+  import type { PageData } from "./$types";
+
+  let { data }: { data: PageData } = $props();
+  const projects = $derived(data.projects);
 </script>
 
 <SEO

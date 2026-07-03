@@ -5,11 +5,15 @@
   import { addVariant } from "$lib/utils/variantLink";
   import "$lib/components/ui/glowing-green.css";
 
-  export let resume: Resume;
-  export let variant: string | null = null;
+  interface Props {
+    resume: Resume;
+    variant?: string | null;
+  }
 
-  $: formattedTitle = formatJobTitles(resume.jobTitles);
-  $: siteUrl = addVariant('/', variant);
+  let { resume, variant = null }: Props = $props();
+
+  const formattedTitle = $derived(formatJobTitles(resume.jobTitles));
+  const siteUrl = $derived(addVariant('/', variant));
 </script>
 
 <!-- Header -->

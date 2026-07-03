@@ -3,11 +3,15 @@
     import SEO from "$lib/components/SEO.svelte";
     import type { Resume, SkillItem } from "$lib/types";
 
-    export let resume: Resume;
-    export let variant: string | null = null;
-    export let title: string;
-    export let description: string;
-    export let canonical: string;
+    interface Props {
+        resume: Resume;
+        variant?: string | null;
+        title: string;
+        description: string;
+        canonical: string;
+    }
+
+    let { resume, variant = null, title, description, canonical }: Props = $props();
 
     const formatSkillsAsDefinedTerms = (skills: Record<string, SkillItem[]>) => {
         const definedTerms: { "@type": string; name: string; url?: string; inDefinedTermSet: string }[] = [];
@@ -24,7 +28,7 @@
         return definedTerms;
     };
 
-    $: jsonLd = {
+    const jsonLd = $derived({
         "@context": "https://schema.org",
         "@type": "Person",
         name: resume.name,
@@ -66,10 +70,12 @@
             description: job.description,
         })),
         knowsAbout: formatSkillsAsDefinedTerms(resume.skills),
-    };
+    });
 
     // Build JSON-LD tag to avoid ESLint parser confusion with <script> in templates
-    $: jsonLdTag = `<${"script"} type="application/ld+json">${JSON.stringify(jsonLd, null, 2)}</${"script"}>`;
+    const jsonLdTag = $derived(
+        `<${"script"} type="application/ld+json">${JSON.stringify(jsonLd, null, 2)}</${"script"}>`
+    );
 </script>
 
 <SEO {title} {description} {canonical} />
@@ -82,7 +88,7 @@
     <div class="flex justify-end">
         <button
             class="px-4 py-2 bg-skin-accent text-skin-accent-contrast text-sm font-bold uppercase tracking-wider hover:opacity-90 transition-opacity rounded-md"
-            on:click={() => window.print()}
+            onclick={() => window.print()}
         >
             Print / Save as PDF
         </button>

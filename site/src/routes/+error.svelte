@@ -5,9 +5,11 @@
   import { getCanonicalVariantPath } from "$lib/utils/variantLink";
   import SEO from "$lib/components/SEO.svelte";
 
-  $: rebootUrl = getCanonicalVariantPath(
-    "/",
-    browser ? $page.url.searchParams.get("v") : null,
+  const rebootUrl = $derived(
+    getCanonicalVariantPath(
+      "/",
+      browser ? $page.url.searchParams.get("v") : null,
+    ),
   );
 </script>
 

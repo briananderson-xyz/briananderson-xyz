@@ -1,17 +1,14 @@
 <script lang="ts">
   import { page } from "$app/stores";
+  import { browser } from "$app/environment";
   import SEO from "$lib/components/SEO.svelte";
   import type { ContentItem } from "$lib/types";
   import { addVariant, getVariant, getCanonicalUrl } from "$lib/utils/variantLink";
-  import { onMount } from "svelte";
 
-  export let data: { posts: ContentItem[] };
-  $: posts = data.posts;
+  let { data }: { data: { posts: ContentItem[] } } = $props();
+  const posts = $derived(data.posts);
 
-  let variant: string | null = null;
-  onMount(() => {
-    variant = getVariant($page.url);
-  });
+  const variant = $derived(browser ? getVariant($page.url) : null);
 </script>
 
 <SEO
