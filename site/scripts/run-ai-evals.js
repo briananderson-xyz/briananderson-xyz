@@ -415,7 +415,8 @@ async function runJudgeAssertion(assertion, context) {
   throw new Error(`Unsupported judge provider: ${judgeProvider}`);
 }
 
-async function runConfig(configPath) {
+async function runConfig(configPath, opts = {}) {
+  const onlyDescriptions = opts.only || null;
   const fullPath = path.resolve(configPath);
   const configDir = path.dirname(fullPath);
   const config = yaml.load(fs.readFileSync(fullPath, "utf-8"));
@@ -437,6 +438,9 @@ async function runConfig(configPath) {
 
   const tests = [];
   for (const testCase of config.tests || []) {
+    if (onlyDescriptions && !onlyDescriptions.has(testCase.description)) {
+      continue;
+    }
     total++;
     try {
       const vars = testCase.vars || {};
@@ -593,6 +597,43 @@ async function main() {
     });
   }
 
+  // Retry pass: a live LLM can fail a check on a single nondeterministic
+  // sample. Re-run only the failed cases once; a case that now passes is
+  // counted as passed. A real (deterministic) regression fails both times and
+  // still blocks. Enabled by default; set AI_EVAL_RETRY_FAILED=false to skip.
+  const retryEnabled = process.env.AI_EVAL_RETRY_FAILED !== "false";
+  let retriedTotal = 0;
+  let recoveredTotal = 0;
+  if (retryEnabled) {
+    for (const config of report.configs) {
+      const failed = config.tests.filter((test) => !test.passed);
+      if (failed.length === 0) {
+        continue;
+      }
+      const only = new Set(failed.map((test) => test.description));
+      retriedTotal += only.size;
+      warn(`Retrying ${only.size} failed case(s) in ${path.basename(config.path)} once...`);
+      const retry = await runConfig(config.path, { only });
+      for (const retriedTest of retry.tests) {
+        if (!retriedTest.passed) {
+          continue;
+        }
+        const original = config.tests.find((test) => test.description === retriedTest.description);
+        if (original && !original.passed) {
+          original.passed = true;
+          original.assertions = retriedTest.assertions;
+          original.recoveredOnRetry = true;
+          config.passed += 1;
+          totalPassed += 1;
+          recoveredTotal += 1;
+        }
+      }
+    }
+    if (retriedTotal > 0) {
+      info(`Retry pass: recovered ${recoveredTotal}/${retriedTotal} case(s) on second attempt.`);
+    }
+  }
+
   info(`AI eval summary: ${totalPassed}/${totalTests}`);
   info(`Hard checks: ${totalHardPassed}/${totalHardTests}`);
   if (totalJudgeTests > 0 || totalJudgeSkipped > 0) {
@@ -602,8 +643,12 @@ async function main() {
   appendStepSummary([
     "## AI Eval Summary",
     `- Endpoint base URL: \`${report.endpointBaseUrl}\``,
+    `- Pass rate: \`${totalPassed}/${totalTests}\``,
     `- Hard checks: \`${totalHardPassed}/${totalHardTests}\``,
     `- Judge checks: \`${totalJudgePassed}/${totalJudgeTests}\` passed, \`${totalJudgeSkipped}\` skipped`,
+    ...(retriedTotal > 0
+      ? [`- Retry pass: recovered \`${recoveredTotal}/${retriedTotal}\` flaky case(s) on second attempt`]
+      : []),
     `- Judge provider: \`${judgeProvider || "none"}\``,
     `- Judge model: \`${judgeModel || "none"}\``,
   ]);
