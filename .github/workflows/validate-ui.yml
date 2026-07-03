@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: validate-ui
+  group: validate-ui-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
