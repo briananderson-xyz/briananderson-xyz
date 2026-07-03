@@ -106,6 +106,8 @@
     ontouchstart={handleTouchStart}
     ontouchmove={handleTouchMove}
     ontouchend={handleTouchEnd}
+    role="group"
+    aria-label="Image viewer, swipe left or right to change image"
   >
     <img
       src={images[index]}

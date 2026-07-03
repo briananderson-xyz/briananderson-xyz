@@ -19,12 +19,16 @@
 {#if url}
   <div
     class="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
-    onclick={onCancel}
+    onclick={(e) => {
+      // Close only when the backdrop itself is clicked, not the dialog. Checking
+      // the event target avoids a stopPropagation handler on the dialog (which
+      // would be a click handler on a non-interactive element).
+      if (e.target === e.currentTarget) onCancel();
+    }}
     role="presentation"
   >
     <div
       class="bg-terminal-black border border-terminal-border rounded-lg shadow-2xl max-w-sm w-full font-mono"
-      onclick={(e) => e.stopPropagation()}
       role="dialog"
       aria-modal="true"
       aria-label="External link confirmation"
