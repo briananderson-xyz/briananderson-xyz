@@ -12,7 +12,7 @@ email: brian@briananderson.xyz
 location: Denver, CO
 summary: >
   Platform engineering has always been about one thing: making the path to production reliable
-  enough that teams stop thinking about it. Over 10 years that meant paved-road CI/CD,
+  enough that teams stop thinking about it. Over 15+ years that meant paved-road CI/CD,
   zero-downtime migrations, Kubernetes platforms for financial and e-commerce systems, and
   observability stacks that surface problems before they become incidents. AI agent workloads
   have the same failure modes as distributed systems: unpredictable behavior, cost spikes,
@@ -169,7 +169,7 @@ education:
     start_date: August 2009
     end_date: May 2013
 certificates:
-  - name: AWS Certified Advanced Networking – Specialty
+  - name: AWS Certified Advanced Networking - Specialty
     url: https://www.credly.com/badges/03e0f406-6962-49b3-9c05-d3ffb271a31d
     start_date: January 2026
     end_date: January 2029

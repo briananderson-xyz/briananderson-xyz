@@ -36,7 +36,7 @@ I joined as a **Senior Technical Principal** leading both the cloud enablement s
 - Reduced environment provisioning time from **weeks to minutes**.
 - Ensured **100% compliance** with corporate security standards through automated guardrails.
 - Drove a **20% increase** in users ordering 90%+ of their volume online. The infrastructure directly enabled the digital experience.
-- The platform became the foundation for the [GFS Ordering Platform](/projects/gfs-ordering-platform), the next phase of the engagement where we built the product that ran on top of this infrastructure.
+- This platform was the next phase of the GFS engagement, generalizing the cloud-native patterns first proven on the earlier [GFS Ordering Platform](/projects/gfs-ordering-platform/) into a paved road for every product team.
 
 ## The Bigger Picture
 
