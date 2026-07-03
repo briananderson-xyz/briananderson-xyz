@@ -5,6 +5,7 @@
   import ExperienceItem from "$lib/components/ExperienceItem.svelte";
   import { formatJobTitles } from "$lib/utils/formatters";
   import { addVariant } from "$lib/utils/variantLink";
+  import { reveal } from "$lib/actions/reveal";
 
   interface Props {
     resume: Resume;
@@ -54,26 +55,27 @@
     blog: addVariant('/blog/', variant)
   });
 
+  // Each proof point links to the case study that substantiates it.
   const proofPoints = $derived(
     variant === "ops"
       ? [
-          "14 mission-critical apps migrated with zero downtime",
-          "90% deployment lead-time reduction",
-          "8-9 production deployments per day",
-          "Agent runs traced end-to-end: OTel + Grafana"
+          { text: "14 mission-critical apps migrated with zero downtime", href: "/projects/discover-trident/" },
+          { text: "90% deployment lead-time reduction", href: "/projects/gfs-cloud-enablement/" },
+          { text: "8-9 production deployments per day", href: "/projects/gfs-ordering-platform/" },
+          { text: "Agent runs traced end-to-end: OTel + Grafana", href: "/projects/stallion-agent-platform/" }
         ]
       : variant === "builder"
         ? [
-            "Top 0.03% of 280k+ Amazon Kiro CLI users",
-            "Reusable Kiro agent workflows, gated by promptfoo evals",
-            "Agent platform: MCP orchestration + prompt evals + OTel tracing",
-            "16+ years shipping mobile, web, and cloud apps"
+            { text: "Top 0.03% of 280k+ Amazon Kiro CLI users", href: "/projects/kiro-agent-workflows/" },
+            { text: "Reusable Kiro agent workflows, gated by promptfoo evals", href: "/projects/kiro-agent-workflows/" },
+            { text: "Agent platform: MCP orchestration + prompt evals + OTel tracing", href: "/projects/stallion-agent-platform/" },
+            { text: "16+ years shipping mobile, web, and cloud apps", href: "/resume/" }
           ]
         : [
-            "CI/CD standardization across 5,000+ enterprise apps",
-            "New features and responses to customer feedback shipped in 8-9 production deployments per day",
-            "90% deployment lead-time reduction & $30M estimated savings",
-            "Top 0.03% of 280k+ Amazon Kiro CLI users"
+            { text: "CI/CD standardization across 5,000+ enterprise apps", href: "/projects/gfs-cloud-enablement/" },
+            { text: "New features and responses to customer feedback shipped in 8-9 production deployments per day", href: "/projects/gfs-ordering-platform/" },
+            { text: "90% deployment lead-time reduction & $30M estimated savings", href: "/projects/gfs-cloud-enablement/" },
+            { text: "Top 0.03% of 280k+ Amazon Kiro CLI users", href: "/projects/kiro-agent-workflows/" }
           ]
   );
 
@@ -203,9 +205,18 @@
           <div class="mt-8">
             <div class="mb-4 text-terminal-green">$ cat selected-proof.log</div>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 text-sm">
-              {#each proofPoints as proofPoint}
-                <div class="border border-terminal-border px-3 py-2 text-terminal-text/90">
-                  {proofPoint}
+              {#each proofPoints as proofPoint, i (proofPoint.text)}
+                <div use:reveal={{ delay: i * 80 }} class="h-full">
+                  <a
+                    href={addVariant(proofPoint.href, variant)}
+                    class="group h-full flex items-start justify-between gap-2 border border-terminal-border px-3 py-2 text-terminal-text/90 rounded hover:border-terminal-green hover:bg-terminal-green/5 hover:text-terminal-text hover:shadow-[0_0_12px_rgba(var(--color-terminal-accent),0.15)] transition-colors duration-200"
+                  >
+                    <span>{proofPoint.text}</span>
+                    <span
+                      class="shrink-0 text-terminal-green opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200"
+                      aria-hidden="true">↗</span
+                    >
+                  </a>
                 </div>
               {/each}
             </div>
@@ -220,7 +231,7 @@
 <section id="skills" class="py-12 border-t border-dashed border-skin-border">
   <div class="max-w-4xl mx-auto px-4">
     <article>
-      <div class="flex items-center gap-2 mb-6 text-skin-accent font-mono">
+      <div use:reveal class="flex items-center gap-2 mb-6 text-skin-accent font-mono">
         <span>></span>
         <h2 class="text-xl font-bold">SYSTEM_MODULES_LOADED</h2>
       </div>
@@ -228,8 +239,9 @@
       <div
         class="grid grid-cols-1 md:grid-cols-2 gap-4 items-start font-mono text-sm"
       >
-        {#each Object.entries(resume.skills) as [category, items]}
+        {#each Object.entries(resume.skills) as [category, items], i (category)}
           <div
+            use:reveal={{ delay: i * 60 }}
             class="group bg-skin-page border border-skin-border rounded shadow-sm overflow-hidden"
           >
             <button
@@ -274,12 +286,13 @@
   class="py-12 border-t border-dashed border-skin-border"
 >
   <div class="max-w-4xl mx-auto px-4">
-    <div class="flex items-center gap-2 mb-6 text-skin-accent font-mono">
+    <div use:reveal class="flex items-center gap-2 mb-6 text-skin-accent font-mono">
       <span>></span>
       <h2 class="text-xl font-bold">WORK_HISTORY_LOG</h2>
     </div>
 
     <div
+      use:reveal
       class="space-y-6 font-mono border-l-2 border-skin-border ml-2 pl-6 relative hover:z-10"
     >
       {#each showAllExperience ? resume.experience : resume.experience.slice(0, 3) as job}
@@ -309,7 +322,7 @@
 <!-- Contact/Footer Section -->
 <section id="contact" class="py-12 border-t border-dashed border-skin-border">
   <div class="max-w-4xl mx-auto px-4">
-    <div class="flex items-center gap-2 mb-6 text-skin-accent font-mono">
+    <div use:reveal class="flex items-center gap-2 mb-6 text-skin-accent font-mono">
       <span>></span>
       <h2 class="text-xl font-bold">INITIATE_CONTACT</h2>
     </div>
