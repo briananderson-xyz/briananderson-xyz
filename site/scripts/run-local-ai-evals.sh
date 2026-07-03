@@ -1,28 +1,38 @@
 #!/usr/bin/env bash
 
+# Local AI-eval loop. Boots the real API server (the same Express app that runs
+# on Cloud Run: `node lib/server.js`) plus the Vite dev server for the content
+# index, then runs the eval suite against the local API. This lets you iterate
+# on prompts / handlers / local content and see the eval result before pushing.
+#
+# History: this used to boot a Firebase Functions emulator. The backend migrated
+# to Cloud Run (a plain Express server), so the emulator path was dead — the
+# functions no longer export a Firebase handler and the firebase CLI isn't even
+# a dependency. It now runs the Cloud Run entrypoint directly.
+
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
-REPO_ROOT="$(cd "$ROOT_DIR/.." && pwd)"
 FUNCTIONS_DIR="$ROOT_DIR/functions"
 FUNCTIONS_ENV_FILE="$FUNCTIONS_DIR/.env.local"
-LOCAL_BASE_URL="${AI_EVAL_BASE_URL:-http://127.0.0.1:5173/api}"
-FIREBASE_EVAL_CONFIG="$REPO_ROOT/.firebase-ai-evals.json"
-EMULATOR_PID=""
+# The API server grounds the chat/fit-finder tools in ${SITE_URL}/content-index*.json.
+# Point it at the local Vite server so the loop evaluates your *local* content.
+SITE_ORIGIN="${AI_EVAL_SITE_ORIGIN:-http://127.0.0.1:5173}"
+API_PORT="${AI_EVAL_API_PORT:-8080}"
+LOCAL_BASE_URL="${AI_EVAL_BASE_URL:-http://127.0.0.1:${API_PORT}}"
 VITE_PID=""
-STARTED_EMULATOR=0
+API_PID=""
 STARTED_VITE=0
+STARTED_API=0
 
 cleanup() {
+  if [ -n "$API_PID" ] && kill -0 "$API_PID" 2>/dev/null; then
+    kill "$API_PID" 2>/dev/null || true
+  fi
+
   if [ -n "$VITE_PID" ] && kill -0 "$VITE_PID" 2>/dev/null; then
     kill "$VITE_PID" 2>/dev/null || true
   fi
-
-  if [ -n "$EMULATOR_PID" ] && kill -0 "$EMULATOR_PID" 2>/dev/null; then
-    kill "$EMULATOR_PID" 2>/dev/null || true
-  fi
-
-  rm -f "$FIREBASE_EVAL_CONFIG"
 }
 
 trap cleanup EXIT INT TERM
@@ -73,42 +83,23 @@ ensure_local_stack() {
     wait_for_url "http://127.0.0.1:5173/" "Vite dev server"
   fi
 
-  if curl -sf http://127.0.0.1:5001/ >/dev/null 2>&1; then
-    echo "Firebase Functions emulator already running"
+  if curl -sf "http://127.0.0.1:${API_PORT}/" >/dev/null 2>&1; then
+    echo "API server already running on port ${API_PORT}"
   else
-    echo "Starting Firebase Functions emulator..."
-    cat >"$FIREBASE_EVAL_CONFIG" <<EOF
-{
-  "functions": [
-    {
-      "source": "site/functions",
-      "codebase": "default",
-      "ignore": [
-        "node_modules",
-        ".git",
-        "firebase-debug.log",
-        "firebase-debug.*.log"
-      ]
-    }
-  ],
-  "emulators": {
-    "functions": {
-      "port": 5001
-    },
-    "ui": {
-      "enabled": false
-    }
-  }
-}
-EOF
+    echo "Starting API server (node lib/server.js) on port ${API_PORT}..."
     (
-      cd "$REPO_ROOT"
-      pnpm --dir "$FUNCTIONS_DIR" run build >/tmp/brian-ai-evals-functions.log 2>&1
-      pnpm --dir "$ROOT_DIR" exec firebase emulators:start --config "$FIREBASE_EVAL_CONFIG" --project demo-no-project --only functions >>/tmp/brian-ai-evals-functions.log 2>&1
+      cd "$FUNCTIONS_DIR"
+      pnpm run build >/tmp/brian-ai-evals-functions-build.log 2>&1
+      # API_RATE_LIMIT lifted so the whole suite firing from one host doesn't 429.
+      # SITE_URL points at the local Vite server so tools ground in local content.
+      PORT="$API_PORT" \
+      SITE_URL="$SITE_ORIGIN" \
+      API_RATE_LIMIT="1000" \
+      node --env-file-if-exists=.env.local lib/server.js >/tmp/brian-ai-evals-api.log 2>&1
     ) &
-    EMULATOR_PID=$!
-    STARTED_EMULATOR=1
-    wait_for_url "http://127.0.0.1:5001/" "Firebase Functions emulator"
+    API_PID=$!
+    STARTED_API=1
+    wait_for_url "http://127.0.0.1:${API_PORT}/" "API server"
   fi
 }
 
@@ -116,8 +107,8 @@ show_started_logs() {
   if [ "$STARTED_VITE" -eq 1 ]; then
     echo "Vite log: /tmp/brian-ai-evals-vite.log"
   fi
-  if [ "$STARTED_EMULATOR" -eq 1 ]; then
-    echo "Functions log: /tmp/brian-ai-evals-functions.log"
+  if [ "$STARTED_API" -eq 1 ]; then
+    echo "API log: /tmp/brian-ai-evals-api.log"
   fi
 }
 
@@ -126,7 +117,7 @@ main() {
   ensure_local_stack
   show_started_logs
 
-  echo "Running AI evals against $LOCAL_BASE_URL"
+  echo "Running AI evals against $LOCAL_BASE_URL (content from $SITE_ORIGIN)"
   (
     cd "$ROOT_DIR"
     AI_EVAL_BASE_URL="$LOCAL_BASE_URL" \

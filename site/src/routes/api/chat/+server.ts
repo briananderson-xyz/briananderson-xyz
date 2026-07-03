@@ -5,11 +5,13 @@ import { dev } from '$app/environment';
 export const POST: RequestHandler = async ({ request, fetch }) => {
 	try {
 		const body = await request.json();
-		const emulatorProjectId = process.env.FIREBASE_EMULATOR_PROJECT_ID || 'demo-no-project';
 
-		// Use local emulator in dev, Cloudflare Worker proxy in production
+		// In dev, proxy to the local API server (the Cloud Run Express app run
+		// via `node lib/server.js`, or `pnpm test:ai:loop:local`) at :8080.
+		// In production, the Cloudflare Worker fronts the deployed service.
+		const localApiOrigin = process.env.LOCAL_API_ORIGIN || 'http://127.0.0.1:8080';
 		const functionUrl = dev
-			? `http://127.0.0.1:5001/${emulatorProjectId}/us-central1/chat`
+			? `${localApiOrigin}/chat`
 			: 'https://api.briananderson.xyz/chat';
 
 		const response = await fetch(functionUrl, {
@@ -22,7 +24,7 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 
 		if (!response.ok) {
 			const errorData = await response.json().catch(() => ({}));
-			console.error('Firebase function error:', response.status, errorData);
+			console.error('API error:', response.status, errorData);
 
 			return json(
 				{

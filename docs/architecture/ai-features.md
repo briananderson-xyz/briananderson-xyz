@@ -99,7 +99,7 @@ cd site
 pnpm run dev                # Port 5173
 ```
 
-**Dev mode detection:** API routes (`/api/chat`, `/api/fit-finder`) automatically use `http://localhost:5001` when `dev=true` in `$app/environment`.
+**Dev mode detection:** API routes (`/api/chat`, `/api/fit-finder`) proxy to the local API server at `http://127.0.0.1:8080` (the Cloud Run Express app run via `node lib/server.js`, or `pnpm test:ai:loop:local`) when `dev=true` in `$app/environment`, overridable with `LOCAL_API_ORIGIN`. In production the Cloudflare Worker fronts the deployed service.
 
 ### Testing
 

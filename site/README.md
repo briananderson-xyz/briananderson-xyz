@@ -34,4 +34,3 @@ See [`../docs/architecture/ai-features.md`](../docs/architecture/ai-features.md)
 
 - **Architecture & Patterns:** [`../CLAUDE.md`](../CLAUDE.md)
 - **AI Features:** [`../docs/architecture/ai-features.md`](../docs/architecture/ai-features.md)
-- **Quick Start Guide:** [`../QUICK_START.md`](../QUICK_START.md)
