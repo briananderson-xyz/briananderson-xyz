@@ -2,7 +2,8 @@ import fs from 'fs';
 import yaml from 'js-yaml';
 import path from 'path';
 import { PUBLIC_SITE_URL } from '$env/static/public';
-import type { ContentMetadata, Resume } from '$lib/types';
+import type { ContentMetadata } from '$lib/types';
+import { loadResume } from '$lib/server/loadResume';
 import { buildResumeMarkdown } from '$lib/server/resumeMarkdown';
 
 interface Personal {
@@ -14,9 +15,7 @@ interface Personal {
 export const prerender = true;
 
 export const GET = async () => {
-	const resumePath = path.resolve('content/resume.yaml');
-	const resumeContents = fs.readFileSync(resumePath, 'utf-8');
-	const resume = yaml.load(resumeContents) as Resume;
+	const resume = loadResume('resume.yaml');
 
 	const personalPath = path.resolve('content/personal.yaml');
 	const personalContents = fs.readFileSync(personalPath, 'utf-8');
