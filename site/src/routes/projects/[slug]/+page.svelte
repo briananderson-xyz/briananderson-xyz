@@ -103,9 +103,10 @@
     {/if}
 
     {#if data.metadata.visualArchive?.images?.length}
-      <div use:reveal>
-        <VisualArchive images={data.metadata.visualArchive.images} />
-      </div>
+      <!-- Not wrapped in use:reveal: VisualArchive renders a position:fixed
+           image lightbox, and a transforming/will-change ancestor would become
+           its containing block and offset the overlay. -->
+      <VisualArchive images={data.metadata.visualArchive.images} />
     {/if}
   </article>
 {:else}
