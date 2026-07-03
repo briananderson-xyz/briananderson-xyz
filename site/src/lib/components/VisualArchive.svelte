@@ -35,6 +35,8 @@
           <img
             src={img.path}
             alt={img.alt}
+            loading="lazy"
+            decoding="async"
             class="max-w-full h-auto object-contain grayscale group-hover:grayscale-0 transition-all"
           />
         </button>

@@ -40,16 +40,18 @@ export function reveal(node: HTMLElement, options: RevealOptions = {}) {
 				// otherwise offset fixed overlays like the image lightbox. Clearing
 				// it after the transition restores normal fixed positioning and is
 				// also good compositor hygiene.
-				node.addEventListener(
-					'transitionend',
-					() => {
-						node.style.willChange = 'auto';
-					},
-					{ once: true }
-				);
+				node.addEventListener('transitionend', function onEnd(e) {
+					// Ignore transitionend bubbling up from children (e.g. a card's
+					// hover transition), which would otherwise clear the hint early.
+					if (e.target !== node) return;
+					node.style.willChange = 'auto';
+					node.removeEventListener('transitionend', onEnd);
+				});
 			}
 		},
-		{ threshold: 0.1, rootMargin: '0px 0px -40px 0px' }
+		// threshold 0 so an element taller than the viewport still reveals (with
+		// threshold 0.1, 10% might never be visible at once and it would stay hidden).
+		{ threshold: 0, rootMargin: '0px 0px -40px 0px' }
 	);
 
 	io.observe(node);
