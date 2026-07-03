@@ -54,14 +54,6 @@
     blog: addVariant('/blog/', variant)
   });
 
-  const recruiterSummary = $derived(
-    variant === "ops"
-      ? "I build reliable delivery platforms and observability systems for high-stakes production environments, and I apply that same discipline to AI workloads."
-      : variant === "builder"
-        ? "I ship production software across the stack and now build agent-driven products with tracing, tool orchestration, and evaluation in mind."
-        : "I help enterprises modernize delivery systems at scale and now bring that same rigor to AI platforms, agent workflows, and developer productivity."
-  );
-
   const proofPoints = $derived(
     variant === "ops"
       ? [
@@ -138,10 +130,6 @@
           </h1>
             <p class="mb-6 opacity-80">
               {resume.tagline}
-            </p>
-
-            <p class="mb-6 text-terminal-text/90">
-              {recruiterSummary}
             </p>
 
             <div class="mb-4 text-terminal-green">$ cat mission.txt</div>

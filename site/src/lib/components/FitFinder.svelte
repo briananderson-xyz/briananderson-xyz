@@ -144,6 +144,7 @@
 	labelledby="fit-finder-title"
 	closeLabel="Close fit finder"
 	testid="fit-finder"
+	fill
 >
 	{#snippet actions()}
 		{#if analysis}
@@ -157,49 +158,45 @@
 		{/if}
 	{/snippet}
 
-	<div class="flex-1 min-h-0 overflow-y-auto p-6 space-y-6">
-				{#if !analysis}
-					<!-- Input Section -->
-					<div class="space-y-4">
-						<div>
-							<label for="job-description" class="block text-terminal-green text-sm font-mono mb-2">
-								📄 Paste Job Description or Project Requirements
-							</label>
-							<textarea
-								id="job-description"
-								bind:value={jobDescription}
-								placeholder="Paste the full job description here..."
-								class="w-full bg-terminal-dark border border-terminal-green/30 rounded px-3 py-2 text-terminal-text font-mono text-sm resize-none focus:outline-none focus:border-terminal-green placeholder:text-terminal-text/50"
-								rows="12"
-								data-testid="jd-input"
-							></textarea>
-							<div class="text-xs text-terminal-text/50 mt-1">
-								{jobDescription.length} characters
-							</div>
-						</div>
+	{#if !analysis}
+		<!-- Input: the textarea fills the sheet, Analyze stays pinned at the bottom -->
+		<div class="flex-1 min-h-0 flex flex-col gap-4 p-6">
+			<label for="job-description" class="shrink-0 block text-terminal-green text-sm font-mono">
+				📄 Paste Job Description or Project Requirements
+			</label>
+			<textarea
+				id="job-description"
+				bind:value={jobDescription}
+				placeholder="Paste the full job description here..."
+				class="flex-1 min-h-0 w-full bg-terminal-dark border border-terminal-green/30 rounded px-3 py-2 text-terminal-text font-mono text-sm resize-none focus:outline-none focus:border-terminal-green placeholder:text-terminal-text/50"
+				data-testid="jd-input"
+			></textarea>
+			<div class="shrink-0 text-xs text-terminal-text/50">
+				{jobDescription.length} characters
+			</div>
 
-						{#if error}
-							<div class="p-3 bg-red-500/10 border border-red-500/30 rounded text-red-500 text-sm">
-								❌ {error}
-							</div>
-						{/if}
+			{#if error}
+				<div class="shrink-0 p-3 bg-red-500/10 border border-red-500/30 rounded text-red-500 text-sm">
+					❌ {error}
+				</div>
+			{/if}
 
-						<button
-							onclick={handleAnalyze}
-							disabled={isAnalyzing || !jobDescription.trim()}
-							class="w-full bg-terminal-green/10 border-2 border-terminal-green rounded px-6 py-3 text-terminal-green font-mono font-semibold hover:bg-terminal-green/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-							data-testid="analyze-button"
-						>
-							{#if isAnalyzing}
-								<span class="animate-pulse">Analyzing...</span>
-							{:else}
-								Analyze Fit
-							{/if}
-						</button>
-					</div>
+			<button
+				onclick={handleAnalyze}
+				disabled={isAnalyzing || !jobDescription.trim()}
+				class="shrink-0 w-full bg-terminal-green/10 border-2 border-terminal-green rounded px-6 py-3 text-terminal-green font-mono font-semibold hover:bg-terminal-green/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+				data-testid="analyze-button"
+			>
+				{#if isAnalyzing}
+					<span class="animate-pulse">Analyzing...</span>
 				{:else}
-					<!-- Results Section -->
-					<div class="space-y-6">
+					Analyze Fit
+				{/if}
+			</button>
+		</div>
+	{:else}
+		<!-- Results: scrollable -->
+		<div class="flex-1 min-h-0 overflow-y-auto space-y-6 p-6">
 						<!-- Fit Level & Score -->
 						<div class="p-4 bg-terminal-dark border border-terminal-green/20 rounded">
 							<div class="flex items-center justify-between mb-4">
@@ -364,5 +361,4 @@
 						{/if}
 					</div>
 				{/if}
-			</div>
 </Modal>
