@@ -65,9 +65,34 @@ The AI can call these tools during analysis:
 | `get_project` | `slug: string` | Get full project details |
 | `search_experience` | `keywords: string[]` | Search work experience by role/company |
 | `get_skills_by_category` | `category: string` | Get all skills in a category |
-| `get_resume_summary` | — | Get resume overview |
+| `get_resume_summary` | (none) | Get resume overview |
 
-**Tool execution:** Firebase function (`functions/src/index.ts`) executes tool calls and returns results to Gemini in a loop (max 10 iterations for Fit Finder, 5 for Chat).
+**Tool execution:** the Cloud Run handlers (`functions/src/handlers.ts`) execute tool calls and return results to Gemini in a loop (max 10 iterations for Fit Finder, 5 for Chat).
+
+## MCP Server
+
+**Implementation:** `site/functions/src/mcp.ts`, served at `POST /mcp` (`https://api.briananderson.xyz/mcp`).
+
+An MCP (Model Context Protocol) server over Streamable HTTP lets any MCP-capable
+agent query the site directly. It runs on the same Cloud Run service as the REST
+API and is stateless (`sessionIdGenerator: undefined`, `enableJsonResponse: true`),
+so a fresh server + transport is created per request, which suits Cloud Run's
+ephemeral, multi-instance model. It reuses the existing logic rather than
+duplicating it: `search_projects`/`search_skills` use the same `ContentTools` +
+content index as the chatbot, and `ask_brian`/`analyze_fit` invoke the real
+`handleChat`/`handleFitFinder` handlers through an in-process response adapter,
+so guardrails and grounding are identical.
+
+| MCP Tool | Parameters | Wraps |
+|------|-----------|-------|
+| `get_resume` | `variant?: leader\|ops\|builder` | Fetches the deployed `resume.json` variant |
+| `search_projects` | `query: string` | `ContentTools.searchProjects` |
+| `search_skills` | `query: string` | `ContentTools.searchSkills` |
+| `ask_brian` | `question: string` | `handleChat` |
+| `analyze_fit` | `job_description: string`, `variant?` | `handleFitFinder` |
+
+Advertised to agents in `/llms.txt`. Covered by `site/functions/src/mcp.test.ts`
+(hermetic, via the SDK's in-memory transport).
 
 ## Local Testing
 

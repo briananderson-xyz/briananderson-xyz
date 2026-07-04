@@ -448,7 +448,7 @@ function stabilizeFitAnalysis(
 /**
  * Fetch content index using versioned approach to avoid stale cache
  */
-async function fetchContentIndex(): Promise<ContentIndex | null> {
+export async function fetchContentIndex(): Promise<ContentIndex | null> {
 	if (contentIndexCache && contentIndexVersion) {
 		return contentIndexCache;
 	}

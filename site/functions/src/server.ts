@@ -8,9 +8,11 @@
  */
 import express from 'express';
 import { rateLimit, ipKeyGenerator } from 'express-rate-limit';
+import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { handleChat } from './handlers.js';
 import { handleFitFinder } from './handlers.js';
 import { corsHeadersFor } from './security.js';
+import { createMcpServer } from './mcp.js';
 
 const asyncHandler = (fn: express.RequestHandler) => (req: express.Request, res: express.Response, next: express.NextFunction) => {
 	Promise.resolve(fn(req, res, next)).catch(next);
@@ -81,6 +83,28 @@ app.post('/chat', apiLimiter, asyncHandler((req, res) => handleChat(req, res)));
 app.options('/chat', asyncHandler((req, res) => handleChat(req, res)));
 app.post('/fit-finder', apiLimiter, asyncHandler((req, res) => handleFitFinder(req, res)));
 app.options('/fit-finder', asyncHandler((req, res) => handleFitFinder(req, res)));
+
+// MCP (Model Context Protocol) endpoint over Streamable HTTP. Stateless: a
+// fresh server + transport per request (enableJsonResponse returns a single
+// JSON-RPC response rather than an SSE stream, which suits these
+// request/response tools). Rate-limited like the other endpoints.
+app.post('/mcp', apiLimiter, asyncHandler(async (req, res) => {
+	const server = createMcpServer();
+	const transport = new StreamableHTTPServerTransport({
+		sessionIdGenerator: undefined,
+		enableJsonResponse: true,
+	});
+	res.on('close', () => {
+		transport.close();
+		server.close();
+	});
+	await server.connect(transport);
+	await transport.handleRequest(req, res, req.body);
+}));
+// Streamable HTTP session GET/DELETE are unused in stateless mode.
+app.get('/mcp', (_req, res) => {
+	res.status(405).json({ error: 'Method not allowed' });
+});
 
 app.use((err: Error & { status?: number; statusCode?: number }, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
 	console.error('Unhandled error:', err);
