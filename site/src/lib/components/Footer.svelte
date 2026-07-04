@@ -29,6 +29,8 @@
     </div>
 
     <div class="flex items-center gap-4">
+      <a href="/now/" class="hover:text-skin-accent transition-colors">[ now ]</a>
+      <a href="/uses/" class="hover:text-skin-accent transition-colors">[ uses ]</a>
       <a
         href="https://github.com/briananderson1222"
         target="_blank"

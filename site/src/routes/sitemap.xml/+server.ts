@@ -5,7 +5,7 @@ export const prerender = true;
 const site = PUBLIC_SITE_URL;
 export const GET = async () => {
   const buildDate = new Date().toISOString().split('T')[0];
-  const staticPages = ['/', '/blog', '/projects', '/interests', '/following', '/resume', '/ops', '/builder', '/ops/resume', '/builder/resume'];
+  const staticPages = ['/', '/blog', '/projects', '/interests', '/now', '/uses', '/following', '/resume', '/ops', '/builder', '/ops/resume', '/builder/resume'];
   const aiPages = ['/llms.txt', '/resume.json'];
   const mBlog = import.meta.glob('/content/blog/**/*.md', { eager: true });
   const mProj = import.meta.glob('/content/projects/**/*.md', { eager: true });
