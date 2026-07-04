@@ -26,6 +26,7 @@ import {
 	MAX_MESSAGE_BYTES,
 	MAX_JOBDESC_BYTES,
 	isValidVariant,
+	aiEnabled,
 	type Variant
 } from './security.js';
 
@@ -603,6 +604,13 @@ export async function handleChat(req: Request, res: Response): Promise<void> {
 		return;
 	}
 
+	// Kill switch: skip all work (and Gemini spend) when AI is disabled.
+	if (!aiEnabled()) {
+		res.set(corsHeadersFor(req));
+		res.status(503).json({ error: 'AI features are temporarily unavailable.', code: 'ai_disabled' });
+		return;
+	}
+
 	try {
 		const { message, history = [], variant: rawVariant }: ChatRequest = req.body;
 
@@ -766,6 +774,13 @@ export async function handleFitFinder(req: Request, res: Response): Promise<void
 
 	if (req.method !== 'POST') {
 		res.status(405).json({ error: 'Method not allowed' });
+		return;
+	}
+
+	// Kill switch: skip all work (and Gemini spend) when AI is disabled.
+	if (!aiEnabled()) {
+		res.set(corsHeadersFor(req));
+		res.status(503).json({ error: 'AI features are temporarily unavailable.', code: 'ai_disabled' });
 		return;
 	}
 

@@ -4,6 +4,7 @@
 	import { trackEvent } from '$lib/utils/analytics';
 	import Modal from './Modal.svelte';
 	import { getApiBase } from '$lib/utils/apiBase';
+	import { describeApiError } from '$lib/utils/apiError';
 
 	const API_BASE = getApiBase();
 
@@ -48,10 +49,11 @@
 				})
 			});
 
-			const data = await response.json();
+			const data = await response.json().catch(() => null);
 
 			if (!response.ok) {
-				throw new Error(data.details || data.error || 'Failed to analyze job description');
+				error = describeApiError(response.status, data).message;
+				return;
 			}
 
 			analysis = data.analysis;

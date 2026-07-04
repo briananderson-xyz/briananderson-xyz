@@ -15,7 +15,8 @@ import {
 	MAX_HISTORY,
 	MAX_HISTORY_CONTENT_BYTES,
 	ALLOWED_VARIANTS,
-	isValidVariant
+	isValidVariant,
+	aiEnabled
 } from './security.js';
 
 describe('isAllowedCtaLink — AC-11 bypass vectors', () => {
@@ -186,5 +187,33 @@ describe('isValidVariant — AC-16', () => {
 
 	test('is case-sensitive (does not silently normalize)', () => {
 		assert.equal(isValidVariant('Leader'), false);
+	});
+});
+
+describe('aiEnabled — kill switch', () => {
+	const original = process.env.AI_ENABLED;
+	const restore = () => {
+		if (original === undefined) delete process.env.AI_ENABLED;
+		else process.env.AI_ENABLED = original;
+	};
+
+	test('defaults to enabled when AI_ENABLED is unset', () => {
+		delete process.env.AI_ENABLED;
+		assert.equal(aiEnabled(), true);
+		restore();
+	});
+
+	test('disabled only when explicitly "false"', () => {
+		process.env.AI_ENABLED = 'false';
+		assert.equal(aiEnabled(), false);
+		restore();
+	});
+
+	test('any other value stays enabled (no accidental dark-ship)', () => {
+		for (const v of ['true', 'FALSE', '0', 'off', '']) {
+			process.env.AI_ENABLED = v;
+			assert.equal(aiEnabled(), true, `value "${v}" should be enabled`);
+		}
+		restore();
 	});
 });
