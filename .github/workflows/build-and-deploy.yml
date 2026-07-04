@@ -158,6 +158,8 @@ jobs:
             --set-secrets "GEMINI_API_KEY=gemini-api-key:latest" \
             --service-account "cloud-run-runtime@${PROJECT_ID}.iam.gserviceaccount.com" \
             --max-instances 5 \
+            --concurrency 20 \
+            --timeout 120 \
             --memory 512Mi
       - name: Deploy fitfinder-dev
         env:
@@ -177,6 +179,8 @@ jobs:
             --set-secrets "GEMINI_API_KEY=gemini-api-key:latest" \
             --service-account "cloud-run-runtime@${PROJECT_ID}.iam.gserviceaccount.com" \
             --max-instances 5 \
+            --concurrency 20 \
+            --timeout 120 \
             --memory 512Mi
       - name: Smoke test dev Cloud Run services
         id: smoke
@@ -279,6 +283,8 @@ jobs:
             --set-secrets "GEMINI_API_KEY=gemini-api-key:latest" \
             --service-account "cloud-run-runtime@${PROJECT_ID}.iam.gserviceaccount.com" \
             --max-instances 10 \
+            --concurrency 20 \
+            --timeout 120 \
             --memory 512Mi
       - name: Deploy fitfinder (prod)
         env:
@@ -298,6 +304,8 @@ jobs:
             --set-secrets "GEMINI_API_KEY=gemini-api-key:latest" \
             --service-account "cloud-run-runtime@${PROJECT_ID}.iam.gserviceaccount.com" \
             --max-instances 10 \
+            --concurrency 20 \
+            --timeout 120 \
             --memory 512Mi
       - name: Smoke test prod Cloud Run services
         id: smoke

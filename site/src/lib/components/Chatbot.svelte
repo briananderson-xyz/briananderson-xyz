@@ -6,6 +6,7 @@
 	import ChatInput from './ChatInput.svelte';
 	import Modal from './Modal.svelte';
 	import { getApiBase } from '$lib/utils/apiBase';
+	import { describeApiError } from '$lib/utils/apiError';
 	import { fly } from 'svelte/transition';
 
 	const API_BASE = getApiBase();
@@ -112,7 +113,18 @@
 			});
 
 			if (!response.ok) {
-				throw new Error('Failed to get response');
+				const body = await response.json().catch(() => null);
+				const info = describeApiError(response.status, body);
+				messages = [
+					...messages,
+					{
+						id: (Date.now() + 1).toString(),
+						role: 'system',
+						content: info.message,
+						timestamp: Date.now()
+					}
+				];
+				return;
 			}
 
 			const data = await response.json();

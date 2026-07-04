@@ -172,3 +172,14 @@ export type Variant = (typeof ALLOWED_VARIANTS)[number];
 export function isValidVariant(variant: unknown): variant is Variant {
 	return typeof variant === 'string' && (ALLOWED_VARIANTS as readonly string[]).includes(variant);
 }
+
+/**
+ * Kill switch. When AI_ENABLED is explicitly "false" (set manually via
+ * `gcloud run services update ... --update-env-vars AI_ENABLED=false`, or by
+ * the budget-breach automation), the AI handlers short-circuit with a
+ * structured 503 {code:"ai_disabled"} and make no Gemini call. Defaults to
+ * enabled so a missing/typo'd value never dark-ships the API.
+ */
+export function aiEnabled(): boolean {
+	return process.env.AI_ENABLED !== 'false';
+}
