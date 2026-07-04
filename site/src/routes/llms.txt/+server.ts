@@ -102,6 +102,14 @@ Response:
 }
 \`\`\`
 
+### MCP Server (POST https://api.briananderson.xyz/mcp)
+An MCP (Model Context Protocol) server over Streamable HTTP, so any MCP-capable agent can query Brian directly. Add \`https://api.briananderson.xyz/mcp\` as a Streamable-HTTP MCP server. Stateless JSON-RPC: send \`initialize\`, then \`tools/list\` or \`tools/call\`. Tools:
+- \`get_resume(variant?: "leader" | "ops" | "builder")\` - Brian's resume as JSONResume for the chosen persona.
+- \`search_projects(query: string)\` - projects matching keywords, with summaries and links.
+- \`search_skills(query: string)\` - skills matching keywords, with the projects/posts that evidence them.
+- \`ask_brian(question: string)\` - free-form Q&A grounded in Brian's content (same engine as the site chatbot).
+- \`analyze_fit(job_description: string, variant?: "leader" | "ops" | "builder")\` - structured fit analysis of a role against Brian's background.
+
 ## About Brian
 
 ${resume.summary}
