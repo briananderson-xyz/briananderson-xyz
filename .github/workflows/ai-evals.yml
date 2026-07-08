@@ -4,11 +4,12 @@ on:
   workflow_dispatch:
     inputs:
       target:
-        description: "Eval target environment"
+        description: "Full eval target environment"
         required: true
-        default: "production"
+        default: "dev"
         type: choice
         options:
+          - dev
           - production
           - custom
       custom_base_url:
@@ -55,14 +56,39 @@ jobs:
 
       - name: Resolve AI eval target
         id: target
+        env:
+          TARGET: ${{ github.event.inputs.target }}
+          CUSTOM_BASE_URL: ${{ github.event.inputs.custom_base_url }}
         run: |
-          if [ "${{ github.event.inputs.target }}" = "custom" ] && [ -n "${{ github.event.inputs.custom_base_url }}" ]; then
-            echo "base_url=${{ github.event.inputs.custom_base_url }}" >> "$GITHUB_OUTPUT"
-          else
-            echo "base_url=https://api.briananderson.xyz" >> "$GITHUB_OUTPUT"
-          fi
+          node <<'NODE'
+          const fs = require('fs');
 
-      - name: Run AI eval suite
+          const target = process.env.TARGET;
+          const customBaseUrl = process.env.CUSTOM_BASE_URL || '';
+          let baseUrl;
+
+          if (target === 'custom') {
+            if (!customBaseUrl) {
+              throw new Error('custom_base_url is required when target=custom');
+            }
+            if (/[\r\n]/.test(customBaseUrl)) {
+              throw new Error('custom_base_url must be a single-line URL');
+            }
+            const parsed = new URL(customBaseUrl);
+            if (!['http:', 'https:'].includes(parsed.protocol)) {
+              throw new Error('custom_base_url must use http or https');
+            }
+            baseUrl = parsed.toString().replace(/\/$/, '');
+          } else if (target === 'dev') {
+            baseUrl = 'https://api-dev.briananderson.xyz';
+          } else {
+            baseUrl = 'https://api.briananderson.xyz';
+          }
+
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, `base_url=${baseUrl}\n`);
+          NODE
+
+      - name: Run full AI eval suite
         working-directory: site
         env:
           AI_EVAL_BASE_URL: ${{ steps.target.outputs.base_url }}

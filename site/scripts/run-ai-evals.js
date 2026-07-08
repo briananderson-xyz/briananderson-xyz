@@ -71,6 +71,20 @@ function warn(message) {
   log(`⚠ ${message}`, "yellow");
 }
 
+function parseOnlyDescriptions() {
+  const raw = process.env.AI_EVAL_ONLY_DESCRIPTIONS;
+  if (!raw) {
+    return null;
+  }
+
+  const descriptions = raw
+    .split(/\r?\n|,/)
+    .map((description) => description.trim())
+    .filter(Boolean);
+
+  return descriptions.length > 0 ? new Set(descriptions) : null;
+}
+
 function renderTemplate(template, vars) {
   return template.replace(/\{\{\s*([\w.-]+)\s*\}\}/g, (_, key) => String(vars[key] ?? ""));
 }
@@ -417,6 +431,7 @@ async function runJudgeAssertion(assertion, context) {
 
 async function runConfig(configPath, opts = {}) {
   const onlyDescriptions = opts.only || null;
+  const matchedDescriptions = new Set();
   const fullPath = path.resolve(configPath);
   const configDir = path.dirname(fullPath);
   const config = yaml.load(fs.readFileSync(fullPath, "utf-8"));
@@ -440,6 +455,9 @@ async function runConfig(configPath, opts = {}) {
   for (const testCase of config.tests || []) {
     if (onlyDescriptions && !onlyDescriptions.has(testCase.description)) {
       continue;
+    }
+    if (onlyDescriptions) {
+      matchedDescriptions.add(testCase.description);
     }
     total++;
     try {
@@ -544,6 +562,7 @@ description: testCase.description,
     judgePassed,
     judgeTotal,
     judgeSkipped,
+    matchedDescriptions,
   };
 }
 
@@ -559,6 +578,11 @@ async function main() {
     warn(`Judge provider "${judgeProvider}" configured without required credentials/model. Judge assertions will be skipped.`);
   }
 
+  const onlyDescriptions = parseOnlyDescriptions();
+  if (onlyDescriptions) {
+    info(`Filtering AI evals to ${onlyDescriptions.size} description(s) from AI_EVAL_ONLY_DESCRIPTIONS`);
+  }
+
   let totalPassed = 0;
   let totalTests = 0;
   let totalHardPassed = 0;
@@ -566,6 +590,7 @@ async function main() {
   let totalJudgePassed = 0;
   let totalJudgeTests = 0;
   let totalJudgeSkipped = 0;
+  const matchedOnlyDescriptions = new Set();
   const report = {
     endpointBaseUrl: process.env.AI_EVAL_BASE_URL || "https://api.briananderson.xyz",
     generatedAt: new Date().toISOString(),
@@ -576,7 +601,7 @@ async function main() {
   };
 
   for (const configPath of configs) {
-    const result = await runConfig(configPath);
+    const result = await runConfig(configPath, { only: onlyDescriptions });
     totalPassed += result.passed;
     totalTests += result.total;
     totalHardPassed += result.hardPassed;
@@ -584,6 +609,9 @@ async function main() {
     totalJudgePassed += result.judgePassed;
     totalJudgeTests += result.judgeTotal;
     totalJudgeSkipped += result.judgeSkipped;
+    for (const description of result.matchedDescriptions || []) {
+      matchedOnlyDescriptions.add(description);
+    }
     report.configs.push({
       path: configPath,
       passed: result.passed,
@@ -595,6 +623,19 @@ async function main() {
       judgeSkipped: result.judgeSkipped,
       tests: result.tests,
     });
+  }
+
+  if (onlyDescriptions) {
+    const missingDescriptions = [...onlyDescriptions].filter(
+      (description) => !matchedOnlyDescriptions.has(description)
+    );
+    if (missingDescriptions.length > 0) {
+      error("AI_EVAL_ONLY_DESCRIPTIONS included description(s) not found in any config:");
+      for (const description of missingDescriptions) {
+        error(`- ${description}`);
+      }
+      process.exit(1);
+    }
   }
 
   // Retry pass: a live LLM can fail a check on a single nondeterministic

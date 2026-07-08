@@ -11,7 +11,7 @@ import { rateLimit, ipKeyGenerator } from 'express-rate-limit';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { handleChat } from './handlers.js';
 import { handleFitFinder } from './handlers.js';
-import { corsHeadersFor } from './security.js';
+import { corsHeadersFor, verifyOriginHeader } from './security.js';
 import { createMcpServer } from './mcp.js';
 
 const asyncHandler = (fn: express.RequestHandler) => (req: express.Request, res: express.Response, next: express.NextFunction) => {
@@ -60,11 +60,24 @@ const apiLimiter = rateLimit({
 	},
 });
 
+const requireOriginVerify: express.RequestHandler = (req, res, next) => {
+	const result = verifyOriginHeader(req);
+	if (result.ok) {
+		next();
+		return;
+	}
+
+	if (result.reason === 'missing_token') {
+		console.error('ORIGIN_VERIFY_TOKEN is required but is not configured');
+	}
+	res.status(403).json({ error: 'Forbidden' });
+};
+
 app.get('/', (_req, res) => {
 	res.status(200).json({ status: 'ok', service: 'briananderson-xyz-api' });
 });
 
-app.post('/', apiLimiter, asyncHandler((req, res) => {
+app.post('/', requireOriginVerify, apiLimiter, asyncHandler((req, res) => {
 	const fn = process.env.FUNCTION_TARGET || 'chat';
 	if (fn === 'fitfinder') {
 		return handleFitFinder(req, res);
@@ -79,16 +92,16 @@ app.options('/', asyncHandler((req, res) => {
 	return handleChat(req, res);
 }));
 
-app.post('/chat', apiLimiter, asyncHandler((req, res) => handleChat(req, res)));
+app.post('/chat', requireOriginVerify, apiLimiter, asyncHandler((req, res) => handleChat(req, res)));
 app.options('/chat', asyncHandler((req, res) => handleChat(req, res)));
-app.post('/fit-finder', apiLimiter, asyncHandler((req, res) => handleFitFinder(req, res)));
+app.post('/fit-finder', requireOriginVerify, apiLimiter, asyncHandler((req, res) => handleFitFinder(req, res)));
 app.options('/fit-finder', asyncHandler((req, res) => handleFitFinder(req, res)));
 
 // MCP (Model Context Protocol) endpoint over Streamable HTTP. Stateless: a
 // fresh server + transport per request (enableJsonResponse returns a single
 // JSON-RPC response rather than an SSE stream, which suits these
 // request/response tools). Rate-limited like the other endpoints.
-app.post('/mcp', apiLimiter, asyncHandler(async (req, res) => {
+app.post('/mcp', requireOriginVerify, apiLimiter, asyncHandler(async (req, res) => {
 	const server = createMcpServer();
 	const transport = new StreamableHTTPServerTransport({
 		sessionIdGenerator: undefined,

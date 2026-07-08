@@ -1,0 +1,76 @@
+version: 2
+updates:
+  - package-ecosystem: "pnpm"
+    directory: "/site"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "07:00"
+      timezone: "America/Denver"
+    open-pull-requests-limit: 5
+    groups:
+      svelte-vite:
+        patterns:
+          - "@sveltejs/*"
+          - "svelte"
+          - "svelte-*"
+          - "vite"
+          - "@vitejs/*"
+          - "rollup"
+      lint-test-tooling:
+        patterns:
+          - "eslint*"
+          - "@eslint/*"
+          - "typescript*"
+          - "vitest"
+          - "@playwright/*"
+      security-overrides:
+        patterns:
+          - "dompurify"
+          - "devalue"
+          - "protobufjs"
+          - "postcss"
+          - "js-yaml"
+
+  - package-ecosystem: "pnpm"
+    directory: "/site/functions"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "07:15"
+      timezone: "America/Denver"
+    open-pull-requests-limit: 5
+    groups:
+      functions-runtime:
+        patterns:
+          - "express"
+          - "express-*"
+          - "@google-cloud/*"
+          - "@modelcontextprotocol/*"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "07:30"
+      timezone: "America/Denver"
+    open-pull-requests-limit: 5
+
+  - package-ecosystem: "docker"
+    directory: "/site/functions"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "07:45"
+      timezone: "America/Denver"
+    open-pull-requests-limit: 3
+
+  - package-ecosystem: "terraform"
+    directory: "/infra/terraform"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "08:00"
+      timezone: "America/Denver"
+    open-pull-requests-limit: 3

@@ -18,6 +18,7 @@
     "test:posthog": "node scripts/validate-posthog.js",
     "test:resumes": "tsx scripts/validate-resumes.ts",
     "test:ai": "node scripts/validate-ai.js",
+    "test:ai:evals:smoke": "AI_EVAL_ONLY_DESCRIPTIONS=\"AWS experience answer stays grounded in Brian's background,Prompt extraction attempt is refused without leaking internal instructions,Projects query returns concrete project names (search_projects),Strong platform role shows evidence-backed fit,Unrelated clinical role is scored as not fit with gaps\" node scripts/run-ai-evals.js ai-evals/chat.promptfoo.yaml ai-evals/fit-finder.promptfoo.yaml",
     "test:ai:evals": "node scripts/run-ai-evals.js ai-evals/chat.promptfoo.yaml ai-evals/fit-finder.promptfoo.yaml",
     "test:ai:evals:chat": "node scripts/run-ai-evals.js ai-evals/chat.promptfoo.yaml",
     "test:ai:evals:fit-finder": "node scripts/run-ai-evals.js ai-evals/fit-finder.promptfoo.yaml",

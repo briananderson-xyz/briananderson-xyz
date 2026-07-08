@@ -16,8 +16,112 @@ import {
 	MAX_HISTORY_CONTENT_BYTES,
 	ALLOWED_VARIANTS,
 	isValidVariant,
-	aiEnabled
+	aiEnabled,
+	ORIGIN_VERIFY_HEADER,
+	originVerificationRequired,
+	verifyOriginHeader
 } from './security.js';
+
+function restoreEnv(name: string, original: string | undefined) {
+	if (original === undefined) delete process.env[name];
+	else process.env[name] = original;
+}
+
+describe('origin verification', () => {
+	const originalToken = process.env.ORIGIN_VERIFY_TOKEN;
+	const originalNodeEnv = process.env.NODE_ENV;
+
+	const restore = () => {
+		restoreEnv('ORIGIN_VERIFY_TOKEN', originalToken);
+		restoreEnv('NODE_ENV', originalNodeEnv);
+	};
+
+	test('does not require a token for local/test when ORIGIN_VERIFY_TOKEN is unset', () => {
+		process.env.NODE_ENV = 'test';
+		delete process.env.ORIGIN_VERIFY_TOKEN;
+
+		assert.equal(originVerificationRequired(), false);
+		assert.deepEqual(verifyOriginHeader({ headers: {} }), { ok: true });
+
+		restore();
+	});
+
+	test('accepts a matching configured token', () => {
+		process.env.NODE_ENV = 'test';
+		process.env.ORIGIN_VERIFY_TOKEN = 'shared-secret';
+
+		assert.equal(originVerificationRequired(), true);
+		assert.deepEqual(
+			verifyOriginHeader({ headers: { [ORIGIN_VERIFY_HEADER]: 'shared-secret' } }),
+			{ ok: true }
+		);
+
+		restore();
+	});
+
+	test('rejects a missing configured token header', () => {
+		process.env.NODE_ENV = 'test';
+		process.env.ORIGIN_VERIFY_TOKEN = 'shared-secret';
+
+		assert.deepEqual(verifyOriginHeader({ headers: {} }), {
+			ok: false,
+			reason: 'missing_header'
+		});
+
+		restore();
+	});
+
+	test('rejects a wrong configured token header', () => {
+		process.env.NODE_ENV = 'test';
+		process.env.ORIGIN_VERIFY_TOKEN = 'shared-secret';
+
+		assert.deepEqual(
+			verifyOriginHeader({ headers: { [ORIGIN_VERIFY_HEADER]: 'wrong-secret' } }),
+			{ ok: false, reason: 'invalid_header' }
+		);
+
+		restore();
+	});
+
+	test('rejects array headers instead of trusting the first value', () => {
+		process.env.NODE_ENV = 'test';
+		process.env.ORIGIN_VERIFY_TOKEN = 'shared-secret';
+
+		assert.deepEqual(
+			verifyOriginHeader({
+				headers: { [ORIGIN_VERIFY_HEADER]: ['shared-secret', 'wrong-secret'] }
+			}),
+			{ ok: false, reason: 'missing_header' }
+		);
+
+		restore();
+	});
+
+	test('production with no configured token fails closed', () => {
+		process.env.NODE_ENV = 'production';
+		delete process.env.ORIGIN_VERIFY_TOKEN;
+
+		assert.equal(originVerificationRequired(), true);
+		assert.deepEqual(verifyOriginHeader({ headers: {} }), {
+			ok: false,
+			reason: 'missing_token'
+		});
+
+		restore();
+	});
+
+	test('different-length token comparisons reject safely', () => {
+		process.env.NODE_ENV = 'test';
+		process.env.ORIGIN_VERIFY_TOKEN = 'shared-secret';
+
+		assert.deepEqual(verifyOriginHeader({ headers: { [ORIGIN_VERIFY_HEADER]: 'short' } }), {
+			ok: false,
+			reason: 'invalid_header'
+		});
+
+		restore();
+	});
+});
 
 describe('isAllowedCtaLink — AC-11 bypass vectors', () => {
 	const vectors: Array<[string, boolean]> = [

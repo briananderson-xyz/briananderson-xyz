@@ -6,6 +6,58 @@
  * (module load time excepted) so it can be unit tested directly with
  * `node:test` — see `security.test.ts`.
  */
+import { timingSafeEqual } from 'node:crypto';
+
+// ---------------------------------------------------------------------------
+// Cloudflare Worker → Cloud Run origin verification
+// ---------------------------------------------------------------------------
+
+export const ORIGIN_VERIFY_HEADER = 'x-origin-verify';
+
+type OriginVerificationResult =
+	| { ok: true }
+	| { ok: false; reason: 'missing_token' | 'missing_header' | 'invalid_header' };
+
+function originVerifyToken(): string | undefined {
+	const token = process.env.ORIGIN_VERIFY_TOKEN;
+	return typeof token === 'string' && token.length > 0 ? token : undefined;
+}
+
+/**
+ * Require the shared Worker→origin token in production, and whenever a token is
+ * configured locally. This keeps local tests/dev open by default, but production
+ * fails closed if the secret was accidentally omitted from Cloud Run.
+ */
+export function originVerificationRequired(): boolean {
+	return process.env.NODE_ENV === 'production' || originVerifyToken() !== undefined;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function verifyOriginHeader(req: any): OriginVerificationResult {
+	if (!originVerificationRequired()) {
+		return { ok: true };
+	}
+
+	const expected = originVerifyToken();
+	if (!expected) {
+		return { ok: false, reason: 'missing_token' };
+	}
+
+	const actual = req?.headers?.[ORIGIN_VERIFY_HEADER];
+	if (typeof actual !== 'string') {
+		return { ok: false, reason: 'missing_header' };
+	}
+
+	const expectedBuffer = Buffer.from(expected);
+	const actualBuffer = Buffer.from(actual);
+	if (actualBuffer.length !== expectedBuffer.length) {
+		return { ok: false, reason: 'invalid_header' };
+	}
+
+	return timingSafeEqual(actualBuffer, expectedBuffer)
+		? { ok: true }
+		: { ok: false, reason: 'invalid_header' };
+}
 
 // ---------------------------------------------------------------------------
 // CORS allowlist
