@@ -446,6 +446,17 @@ function stabilizeFitAnalysis(
 	};
 }
 
+export function completeFitAnalysis(
+	contentTools: ContentTools,
+	jobDescription: string,
+	variant: Variant,
+	analysis: Record<string, unknown> | null
+): Record<string, unknown> {
+	const fallbackAnalysis = buildFallbackFitAnalysis(contentTools, jobDescription, variant);
+	const stableAnalysis = stabilizeFitAnalysis(analysis ?? {}, fallbackAnalysis);
+	return normalizeFitAnalysis(jobDescription, stableAnalysis);
+}
+
 /**
  * Fetch content index using versioned approach to avoid stale cache
  */
@@ -983,18 +994,12 @@ FIT LEVELS:
 			}
 		}
 
-		if (!analysis) {
-			throw new Error('Model did not produce a fit analysis');
-		}
+		analysis = completeFitAnalysis(contentTools, jobDescription, variant, analysis);
 
-			const fallbackAnalysis = buildFallbackFitAnalysis(contentTools, jobDescription, variant);
-			analysis = stabilizeFitAnalysis(analysis, fallbackAnalysis);
-			analysis = normalizeFitAnalysis(jobDescription, analysis);
-
-			res.set(corsHeadersFor(req));
-			res.status(200).json({
-				analysis
-			});
+		res.set(corsHeadersFor(req));
+		res.status(200).json({
+			analysis
+		});
 
 	} catch (error) {
 		console.error('Fit finder error:', error);
