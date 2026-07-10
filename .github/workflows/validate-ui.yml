@@ -6,10 +6,6 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
     branches: ["main"]
-    paths:
-      - "site/**"
-      - ".github/workflows/**"
-      - ".gitignore"
   workflow_dispatch:
 
 concurrency:
@@ -18,6 +14,7 @@ concurrency:
 
 jobs:
   validate:
+    name: UI Validate
     if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     permissions:
@@ -64,6 +61,10 @@ jobs:
       - name: Validate GitHub Actions policy
         working-directory: site
         run: pnpm run test:workflow-policy
+
+      - name: Validate delivery workflow semantics
+        working-directory: site
+        run: pnpm run test:delivery-policy
 
       - name: Run unit tests
         working-directory: site

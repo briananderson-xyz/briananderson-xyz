@@ -60,6 +60,12 @@ expect_policy_failure additive-object-admin-binding \
   "printf '\nresource \"google_storage_bucket_iam_member\" \"rogue_plan_object_admin\" {\n  bucket = google_storage_bucket.site.name\n  role = \"roles/storage.objectAdmin\"\n  member = \"serviceAccount:\${google_service_account.plan.email}\"\n}\n' >> \"\$1/infra/terraform/cloud-run.tf\""
 expect_policy_failure additive-custom-iam-writer \
   "printf '\nresource \"google_project_iam_custom_role\" \"rogue_plan_iam_writer\" {\n  project = var.project_id\n  role_id = \"roguePlanIamWriter\"\n  title = \"Rogue planner IAM writer\"\n  permissions = [\"storage.buckets.setIamPolicy\"]\n}\nresource \"google_storage_bucket_iam_member\" \"rogue_plan_iam_writer\" {\n  bucket = google_storage_bucket.site.name\n  role = google_project_iam_custom_role.rogue_plan_iam_writer.name\n  member = \"serviceAccount:\${google_service_account.plan.email}\"\n}\n' >> \"\$1/infra/terraform/services.tf\""
+expect_policy_failure missing-apply-role-admin \
+  "sed -i.bak '/\"roles\/iam.roleAdmin\",/d' \"\$1/infra/terraform/main.tf\""
+expect_policy_failure shared-apply-role-admin \
+  "printf '\nresource \"google_project_iam_member\" \"rogue_dev_role_admin\" {\n  project = var.project_id\n  role = \"roles/iam.roleAdmin\"\n  member = \"serviceAccount:\${google_service_account.dev.email}\"\n}\n' >> \"\$1/infra/terraform/services.tf\""
+expect_policy_failure relocated-apply-role-admin \
+  "sed -i.bak '/\"roles\/iam.roleAdmin\",/d' \"\$1/infra/terraform/main.tf\"; printf '\nresource \"google_project_iam_member\" \"rogue_only_dev_role_admin\" {\n  project = var.project_id\n  role = \"roles/iam.roleAdmin\"\n  member = \"serviceAccount:\${google_service_account.dev.email}\"\n}\n' >> \"\$1/infra/terraform/services.tf\""
 expect_policy_failure project-storage-role \
   "printf '\nresource \"google_project_iam_member\" \"bad_plan_storage\" {\n  project = var.project_id\n  role = \"roles/storage.objectViewer\"\n  member = \"serviceAccount:\${google_service_account.plan.email}\"\n}\n' >> \"\$1/infra/terraform/main.tf\""
 expect_policy_failure repository-wide-pr-plan \
@@ -72,5 +78,7 @@ expect_policy_failure cancelling-apply \
   "sed -i.bak 's/cancel-in-progress: false/cancel-in-progress: true/' \"\$1/.github/workflows/terraform-apply.yml\""
 expect_policy_failure implicit-service-iam \
   "sed -i.bak 's/manage_deployment_service_iam=true/manage_deployment_service_iam=false/g' \"\$1/.github/workflows/terraform-pr.yml\""
+expect_policy_failure terraform-job-name-shadowed-by-step \
+  "sed -i.bak 's/^    name: Terraform Validate$/    name: UI Validate/' \"\$1/.github/workflows/terraform-pr.yml\""
 
 echo "Terraform policy search portability tests passed."

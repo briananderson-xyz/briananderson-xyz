@@ -55,6 +55,10 @@ remote plan. The planner therefore receives a custom role containing only
 The state bucket separately grants `roles/storage.objectViewer` so the backend can read state
 objects at the exact backend bucket only.
 
+The apply identity alone receives `roles/iam.roleAdmin` because Terraform manages the planner's
+custom bucket-IAM reader role and must read, create, update, or retire that role after a reviewed
+merge. Planner, publisher, dev, and production deployment identities never receive Role Admin.
+
 Dev/prod may read images only from `site-functions`; publisher alone writes them. Cloud Run rollout
 uses resource-level `roles/run.developer` and preserves service IAM. A trusted administrator must
 separately grant `allUsers` `roles/run.invoker` for an intended public service. Both PR and apply
@@ -117,8 +121,11 @@ Populate values from Terraform outputs without printing them:
   application deployment workflow manual/protected.
 
 Do not configure legacy `GCP_WIF_PROVIDER` or `GCP_WIF_SA_EMAIL` fallbacks. Install branch
-protection only after observing the exact successful `Terraform Gate` context: require PRs,
-up-to-date checks, conversation resolution, and disallow force pushes/deletion.
+protection only after observing the exact successful `Terraform Gate` and `UI Validate` contexts:
+require PRs, up-to-date checks, conversation resolution, and disallow force pushes/deletion.
+`Terraform Validate` is deliberately distinct from `UI Validate`, so one workflow can never satisfy
+the other's required check. Both PR validation jobs execute the parsed delivery-workflow validator,
+so invalid trigger or job-name semantics fail before merge.
 
 Keep `DEV_DEPLOY_ENABLED` absent or false until planner/apply/publisher/dev authentication, negative
 cross-identity probes, dev DNS/origin routing, rollback digests, and public invoker policy are all
