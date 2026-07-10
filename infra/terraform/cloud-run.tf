@@ -148,6 +148,20 @@ resource "google_storage_bucket_iam_member" "prod_deployer" {
   member = "serviceAccount:${google_service_account.prod.email}"
 }
 
+# gcloud storage rsync reads bucket metadata after synchronizing objects.
+# Legacy Bucket Reader is bucket-scoped and contains no write permissions.
+resource "google_storage_bucket_iam_member" "dev_bucket_metadata_reader" {
+  bucket = google_storage_bucket.site_dev.name
+  role   = "roles/storage.legacyBucketReader"
+  member = "serviceAccount:${google_service_account.dev.email}"
+}
+
+resource "google_storage_bucket_iam_member" "prod_bucket_metadata_reader" {
+  bucket = google_storage_bucket.site.name
+  role   = "roles/storage.legacyBucketReader"
+  member = "serviceAccount:${google_service_account.prod.email}"
+}
+
 # Cloud Run service-level grants are disabled by default so a trust bootstrap
 # does not require the application services to exist. Enable only after an
 # administrator verifies the named services and reviews the state-backed plan.
