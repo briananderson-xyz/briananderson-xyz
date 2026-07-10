@@ -26,4 +26,4 @@
   canonical={getCanonicalUrl("/")}
 />
 
-<Homepage resume={data.resume} />
+<Homepage resume={data.resume} proofClaims={data.proofClaims} />

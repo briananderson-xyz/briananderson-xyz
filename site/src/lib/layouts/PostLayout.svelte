@@ -16,37 +16,39 @@
   // name. (PostLayout is rendered by mdsvex without route context, so the
   // title is the only key both sides share.)
   const titleVt = $derived(titleTransitionName(metadata.title));
-  
+
   let lightboxOpen = $state(false);
-  
+
   function openLightbox() {
     if (metadata.featuredImage) {
       lightboxOpen = true;
     }
   }
-  
+
   function closeLightbox() {
     lightboxOpen = false;
   }
 </script>
 
-<article class="prose prose-zinc max-w-3xl mx-auto px-4 py-16">
-  <header class="mb-10 not-prose border-b border-skin-border pb-8">
-    <div
-      class="flex items-center gap-2 text-skin-accent font-mono text-xs mb-4"
-    >
-      <span>></span>
-      <span>cat {metadata.title.toLowerCase().replace(/\s+/g, "_")}.md</span>
+<article class="prose prose-zinc mx-auto w-full min-w-0 max-w-3xl px-4 py-16">
+  <header class="mb-10 min-w-0 border-b border-skin-border pb-8 not-prose">
+    <div class="flex min-w-0 items-start gap-2 font-mono text-xs text-skin-accent mb-4">
+      <span class="shrink-0">></span>
+      <span class="min-w-0 [overflow-wrap:anywhere]"
+        >cat {metadata.title.toLowerCase().replace(/\s+/g, "_")}.md</span
+      >
     </div>
 
     <h1
-      class="text-3xl md:text-4xl font-bold font-mono tracking-tight text-skin-base mb-4"
+      class="text-3xl md:text-4xl font-bold font-mono tracking-tight text-skin-base mb-4 [overflow-wrap:anywhere]"
       style:view-transition-name={titleVt}
     >
       {metadata.title}
     </h1>
 
-    <div class="flex items-center gap-4 font-mono text-xs text-skin-muted">
+    <div
+      class="flex min-w-0 flex-wrap items-center gap-x-4 gap-y-2 font-mono text-xs text-skin-muted"
+    >
       {#if metadata.date}
         <span class="flex items-center gap-1">
           <span class="text-skin-accent">[DATE]</span>
@@ -66,13 +68,13 @@
     <div class="mb-10 not-prose">
       <button
         onclick={openLightbox}
-        class="cursor-pointer group"
-        aria-label="View full size image"
+        class="cursor-pointer group max-w-full"
+        aria-label="View full size: {metadata.featuredImageAlt || metadata.title}"
       >
         <img
           src={metadata.featuredImage}
           alt={metadata.featuredImageAlt || metadata.title}
-          class="max-h-[30vh] rounded-lg border border-skin-border shadow-lg group-hover:border-skin-accent transition-colors"
+          class="max-h-[30vh] max-w-full rounded-lg border border-skin-border shadow-lg group-hover:border-skin-accent transition-colors"
         />
       </button>
       {#if metadata.featuredImageCaption}
@@ -83,11 +85,18 @@
     </div>
   {/if}
 
-  <div class="font-sans text-lg leading-relaxed text-skin-base">
+  <div
+    class="min-w-0 max-w-full font-sans text-lg leading-relaxed text-skin-base [overflow-wrap:anywhere] [&_a]:break-words [&_code]:break-words [&_img]:max-w-full [&_pre]:max-w-full [&_pre]:overflow-x-auto [&_table]:block [&_table]:max-w-full [&_table]:overflow-x-auto"
+  >
     {@render children()}
   </div>
 </article>
 
 {#if lightboxOpen && metadata.featuredImage}
-  <Lightbox images={[metadata.featuredImage]} currentIndex={0} onClose={closeLightbox} />
+  <Lightbox
+    images={[metadata.featuredImage]}
+    imageAlts={[metadata.featuredImageAlt || metadata.title]}
+    currentIndex={0}
+    onClose={closeLightbox}
+  />
 {/if}

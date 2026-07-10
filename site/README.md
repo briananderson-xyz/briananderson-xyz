@@ -1,36 +1,47 @@
-# briananderson.xyz — SvelteKit + Markdown
+# briananderson.xyz site
 
-> **📚 Full documentation:** See [`../CLAUDE.md`](../CLAUDE.md) or [`../AGENTS.md`](../AGENTS.md)
+SvelteKit 2 and Svelte 5 static site with Markdown/mdsvex content, schema-validated resume and proof
+data, Tailwind themes, deterministic machine-readable outputs, and a Cloud Run Express API.
 
-**Stack:** SvelteKit 2 + Svelte 5 + TypeScript + Tailwind CSS 3 + Cloud Run (Express) API
-
-## Quick Start
+## Start the site
 
 ```bash
-pnpm i
+pnpm install --frozen-lockfile
 pnpm dev
 ```
 
-## Build & Deploy
+## Start AI features locally
+
+Add `GEMINI_API_KEY` to `functions/.env.local`, then run two terminals:
 
 ```bash
-pnpm run build              # Builds content index + static site
+# Terminal 1, from site/functions/
+pnpm install --frozen-lockfile
+pnpm run dev
+
+# Terminal 2, from site/
+pnpm run build-content-index
+pnpm dev
 ```
 
-Deployment is automated via GitHub Actions: a push to `main` deploys the static
-site to GCS (dev) and the Express API to Cloud Run. Production is a manual
-`workflow_dispatch`. See [`../.github/workflows/build-and-deploy.yml`](../.github/workflows/build-and-deploy.yml).
-The `functions/` directory name is Firebase heritage; the backend now runs on Cloud Run.
+The local SvelteKit API routes proxy to Express on port 8080. Production calls the
+Cloudflare-fronted Cloud Run service directly.
 
-## AI Features
+## Build and verify
 
-- **Chat:** AI assistant using Gemini function calling to answer questions about Brian's background
-- **Fit Finder:** Analyzes job descriptions against Brian's skills/experience with tool-based retrieval
-- **Content Index:** Auto-generated at build time from markdown files (versioned for cache-busting)
+```bash
+pnpm run validate
+pnpm run test:e2e
+```
 
-See [`../docs/architecture/ai-features.md`](../docs/architecture/ai-features.md) for details.
+Run `pnpm test` from `functions/` for API, security, handler, and MCP coverage.
 
 ## Documentation
 
-- **Architecture & Patterns:** [`../CLAUDE.md`](../CLAUDE.md)
-- **AI Features:** [`../docs/architecture/ai-features.md`](../docs/architecture/ai-features.md)
+- [AI features, privacy, evaluation, and edge boundaries](../docs/architecture/ai-features.md)
+- [Content authoring and proof ledger](../docs/architecture/content-authoring.md)
+- [Themes and semantic status tokens](../docs/architecture/theming.md)
+
+Deployment is automated in `.github/workflows/build-and-deploy.yml`: pushes to `main` deploy dev;
+production requires `workflow_dispatch` with `deploy_prod`. The `functions/` name is historical—the
+backend is Express on Cloud Run, not Firebase Functions.

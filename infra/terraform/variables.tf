@@ -17,7 +17,7 @@ variable "site_domain" {
 }
 variable "github_org" {
   type    = string
-  default = "briananderson1222"
+  default = "briananderson-xyz"
 }
 variable "github_repo" {
   type    = string
@@ -27,17 +27,65 @@ variable "github_branch" {
   type    = string
   default = "main"
 }
-variable "wif_pool_id" {
+variable "wif_plan_pool_id" {
   type    = string
-  default = "github-pool"
+  default = "github-plan-pool"
 }
-variable "wif_provider_id" {
+variable "wif_plan_provider_id" {
   type    = string
-  default = "github-oidc"
+  default = "github-oidc-plan"
 }
-variable "wif_sa_name" {
+variable "wif_plan_sa_name" {
   type    = string
-  default = "github-ci-deployer"
+  default = "github-terraform-planner"
+}
+variable "wif_publisher_pool_id" {
+  type    = string
+  default = "github-publisher-pool"
+}
+variable "wif_publisher_provider_id" {
+  type    = string
+  default = "github-oidc-publisher"
+}
+variable "wif_publisher_sa_name" {
+  type    = string
+  default = "github-artifact-publisher"
+}
+variable "wif_dev_pool_id" {
+  type    = string
+  default = "github-dev-pool"
+}
+variable "wif_dev_provider_id" {
+  type    = string
+  default = "github-oidc-dev"
+}
+variable "wif_dev_sa_name" {
+  type    = string
+  default = "github-dev-deployer"
+}
+variable "wif_prod_pool_id" {
+  type    = string
+  default = "github-prod-pool"
+}
+variable "wif_prod_provider_id" {
+  type    = string
+  default = "github-oidc-prod"
+}
+variable "wif_prod_sa_name" {
+  type    = string
+  default = "github-prod-deployer"
+}
+variable "wif_apply_pool_id" {
+  type    = string
+  default = "github-apply-pool"
+}
+variable "wif_apply_provider_id" {
+  type    = string
+  default = "github-oidc-apply"
+}
+variable "wif_apply_sa_name" {
+  type    = string
+  default = "github-terraform-applier"
 }
 variable "auth_proxy_image" {
   type    = string
@@ -48,4 +96,22 @@ variable "allowed_repository_owner_ids" {
   description = "List of GitHub repository owner IDs allowed to authenticate"
   type        = list(string)
   default     = ["256009379", "4603907"]
+}
+
+variable "manage_deployment_service_iam" {
+  description = "Manage resource-level Cloud Run deployer IAM after the named services are verified to exist"
+  type        = bool
+  default     = false
+}
+
+variable "dev_cloud_run_services" {
+  description = "Existing dev Cloud Run services eligible for the dev deployer grant"
+  type        = list(string)
+  default     = ["chat-dev", "fitfinder-dev"]
+}
+
+variable "prod_cloud_run_services" {
+  description = "Existing production Cloud Run services eligible for the prod deployer grant"
+  type        = list(string)
+  default     = ["chat", "fitfinder"]
 }

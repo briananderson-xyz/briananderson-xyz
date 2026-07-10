@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { Menu } from "lucide-svelte";
+  import { Menu, X } from "lucide-svelte";
+  import { onDestroy } from "svelte";
   import { slide } from "svelte/transition";
   import ThemeToggle from "$lib/components/ThemeToggle.svelte";
   import KeyboardIndicator from "$lib/components/KeyboardIndicator.svelte";
@@ -23,8 +24,13 @@
   let showAutocomplete = $state(false);
   let selectedIndex = $state(0);
   let inputElement: HTMLInputElement | undefined;
-  let inputButtonElement = $state<HTMLButtonElement | undefined>(undefined);
+  let inputContainerElement = $state<HTMLLabelElement | undefined>(undefined);
   let isFocused = $state(false);
+  let blurTimer: ReturnType<typeof setTimeout> | undefined;
+  let mobileMenuButton: HTMLButtonElement | undefined;
+
+  const commandListId = "terminal-command-listbox";
+  const mobileMenuId = "mobile-navigation";
 
   const commands = $derived([
     {
@@ -84,6 +90,30 @@
       action: () => goto("/interests/")
     },
     {
+      id: "proof",
+      label: "cat proof-ledger",
+      description: "Trace selected portfolio claims to their published sources",
+      icon: "✓",
+      aliases: ["proof", "evidence", "claims", "sources"],
+      action: () => goto("/proof/")
+    },
+    {
+      id: "ai-evals",
+      label: "cat ai-evals",
+      description: "View sanitized aggregate checks for the public AI features",
+      icon: "✓",
+      aliases: ["ai", "evals", "quality", "tests"],
+      action: () => goto("/ai-evals/")
+    },
+    {
+      id: "trace-one-answer",
+      label: "trace ai-answer",
+      description: "Follow an AI request through the implemented architecture",
+      icon: "→",
+      aliases: ["ai", "trace", "architecture", "gemini"],
+      action: () => goto("/trace-one-answer/")
+    },
+    {
       id: "contact",
       label: "contact",
       description: "Get in touch",
@@ -110,8 +140,32 @@
 
   const activeRoute = $derived($page.url.pathname);
   const variant = $derived(getVariant($page.url));
+  const autocompleteOpen = $derived(showAutocomplete && filteredCommands().length > 0);
+  const activeOptionId = $derived(
+    autocompleteOpen && filteredCommands()[selectedIndex]
+      ? `terminal-command-option-${filteredCommands()[selectedIndex].id}`
+      : undefined
+  );
+
+  let previousRoute: string | undefined;
+
+  $effect(() => {
+    if (previousRoute === undefined) {
+      previousRoute = activeRoute;
+      return;
+    }
+    if (activeRoute !== previousRoute) {
+      open = false;
+      previousRoute = activeRoute;
+    }
+  });
+
+  onDestroy(() => {
+    if (blurTimer) clearTimeout(blurTimer);
+  });
 
   function handleTerminalFocus() {
+    if (blurTimer) clearTimeout(blurTimer);
     isFocused = true;
     showAutocomplete = true;
     selectedIndex = 0;
@@ -119,9 +173,11 @@
 
   function handleTerminalBlur() {
     // Delay to allow click on autocomplete
-    setTimeout(() => {
+    if (blurTimer) clearTimeout(blurTimer);
+    blurTimer = setTimeout(() => {
       isFocused = false;
       showAutocomplete = false;
+      blurTimer = undefined;
     }, 200);
   }
 
@@ -130,9 +186,11 @@
 
     if (e.key === "ArrowDown") {
       e.preventDefault();
+      if (filtered.length === 0) return;
       selectedIndex = (selectedIndex + 1) % filtered.length;
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
+      if (filtered.length === 0) return;
       selectedIndex = selectedIndex === 0 ? filtered.length - 1 : selectedIndex - 1;
     } else if (e.key === "Enter") {
       e.preventDefault();
@@ -153,6 +211,10 @@
   }
 
   function executeCommand(command: (typeof commands)[0]) {
+    if (blurTimer) {
+      clearTimeout(blurTimer);
+      blurTimer = undefined;
+    }
     if (command.action) {
       command.action();
     }
@@ -160,7 +222,31 @@
     showAutocomplete = false;
     inputElement?.blur();
   }
+
+  function closeMobileMenu(restoreFocus = false) {
+    open = false;
+    if (restoreFocus) {
+      requestAnimationFrame(() => mobileMenuButton?.focus());
+    }
+  }
+
+  function toggleMobileMenu() {
+    if (open) {
+      closeMobileMenu(true);
+    } else {
+      open = true;
+    }
+  }
+
+  function handleWindowKeydown(event: KeyboardEvent) {
+    if (event.key === "Escape" && open) {
+      event.preventDefault();
+      closeMobileMenu(true);
+    }
+  }
 </script>
+
+<svelte:window onkeydown={handleWindowKeydown} />
 
 <header
   class="sticky top-0 z-40 bg-skin-page/90 backdrop-blur border-b border-skin-border font-mono transition-colors duration-300 print:hidden"
@@ -173,15 +259,14 @@
         <a href={addVariant("/", variant)} class="text-skin-accent hover:animate-pulse"
           >guest@briananderson:~$</a
         >
-        <button
-          bind:this={inputButtonElement}
-          onclick={() => inputElement?.focus()}
-          class="cursor-text flex items-center gap-0"
-        >
+        <label bind:this={inputContainerElement} class="cursor-text flex items-center gap-0">
           {#if !isFocused && !terminalInput}
-            <span class="w-2 h-4 bg-skin-accent animate-terminal-blink"></span>
+            <span class="w-2 h-4 bg-skin-accent animate-terminal-blink" aria-hidden="true"></span>
           {/if}
-          <div class="relative inline-flex items-center" style="min-width: 8px; max-width: 300px;">
+          <div
+            class="relative inline-flex items-center h-5"
+            style="min-width: 8px; max-width: 300px;"
+          >
             <span
               class="invisible whitespace-pre font-mono text-skin-accent"
               aria-hidden="true"
@@ -200,6 +285,11 @@
               placeholder=""
               maxlength="30"
               aria-label="Terminal command input"
+              role="combobox"
+              aria-autocomplete="list"
+              aria-expanded={autocompleteOpen}
+              aria-controls={commandListId}
+              aria-activedescendant={activeOptionId}
               style="caret-color: transparent;"
             />
             {#if isFocused}
@@ -212,20 +302,30 @@
             {#if !isFocused && terminalInput}
               <span
                 class="w-2 h-4 bg-skin-accent animate-terminal-blink"
+                aria-hidden="true"
                 style="margin-left: -1rem;"
               ></span>
             {/if}
           </div>
-        </button>
+        </label>
       </div>
 
-      {#if showAutocomplete && filteredCommands().length > 0}
+      {#if autocompleteOpen}
         <div
+          id={commandListId}
+          role="listbox"
+          aria-label="Terminal commands"
           class="absolute top-full mt-2 min-w-[320px] z-50 bg-terminal-black border-2 border-terminal-green rounded-lg shadow-2xl font-mono text-sm"
-          style="left: {inputButtonElement?.offsetLeft ?? 0}px;"
+          style="left: {inputContainerElement?.offsetLeft ?? 0}px;"
         >
           {#each filteredCommands() as command, index}
             <button
+              id={`terminal-command-option-${command.id}`}
+              type="button"
+              role="option"
+              aria-selected={index === selectedIndex}
+              tabindex="-1"
+              onmousedown={(event) => event.preventDefault()}
               onclick={() => executeCommand(command)}
               class="w-full px-4 py-3 text-left flex items-start gap-3 border-b border-terminal-green/10 last:border-b-0 hover:bg-terminal-green/20 transition-colors cursor-pointer {index ===
               selectedIndex
@@ -243,7 +343,7 @@
       {/if}
     </div>
 
-    <nav class="hidden md:flex gap-6 text-sm items-center">
+    <nav aria-label="Primary navigation" class="hidden md:flex gap-6 text-sm items-center">
       <a
         class="hover:text-skin-accent transition-colors {activeRoute.includes('/resume')
           ? 'text-skin-accent'
@@ -279,48 +379,61 @@
     </nav>
 
     <button
+      bind:this={mobileMenuButton}
+      type="button"
       class="md:hidden p-2 text-skin-muted hover:text-skin-accent"
-      aria-label="Menu"
-      onclick={() => (open = !open)}
+      aria-label={open ? "Close navigation menu" : "Open navigation menu"}
+      aria-expanded={open}
+      aria-controls={mobileMenuId}
+      onclick={toggleMobileMenu}
     >
-      <Menu size={20} />
+      {#if open}
+        <X size={20} aria-hidden="true" />
+      {:else}
+        <Menu size={20} aria-hidden="true" />
+      {/if}
     </button>
   </div>
 
   {#if open}
-    <div transition:slide class="md:hidden border-t border-skin-border bg-skin-page">
+    <nav
+      id={mobileMenuId}
+      aria-label="Mobile navigation"
+      transition:slide
+      class="md:hidden border-t border-skin-border bg-skin-page"
+    >
       <div class="mx-auto max-w-6xl px-4 py-3 flex flex-col gap-3 font-mono text-sm">
         <a
           class="hover:text-skin-accent {activeRoute.includes('/resume')
             ? 'text-skin-accent'
             : 'text-skin-muted'}"
-          onclick={() => (open = false)}
+          onclick={() => closeMobileMenu()}
           href={addVariant("/resume/", variant)}>./resume</a
         >
         <a
           class="hover:text-skin-accent {activeRoute.startsWith('/projects')
             ? 'text-skin-accent'
             : 'text-skin-muted'}"
-          onclick={() => (open = false)}
+          onclick={() => closeMobileMenu()}
           href={addVariant("/projects/", variant)}>./projects</a
         >
         <a
           class="hover:text-skin-accent {activeRoute.startsWith('/blog')
             ? 'text-skin-accent'
             : 'text-skin-muted'}"
-          onclick={() => (open = false)}
+          onclick={() => closeMobileMenu()}
           href={addVariant("/blog/", variant)}>./blog</a
         >
         <a
           class="hover:text-skin-accent {activeRoute.startsWith('/interests')
             ? 'text-skin-accent'
             : 'text-skin-muted'}"
-          onclick={() => (open = false)}
+          onclick={() => closeMobileMenu()}
           href="/interests/">./interests</a
         >
         <a
           class="text-skin-muted hover:text-skin-accent"
-          onclick={() => (open = false)}
+          onclick={() => closeMobileMenu()}
           href={addVariant("/#contact", variant)}>./contact</a
         >
         <div class="pt-2 border-t border-skin-border mt-2 flex justify-between items-center">
@@ -328,7 +441,7 @@
           <ThemeToggle />
         </div>
       </div>
-    </div>
+    </nav>
   {/if}
 </header>
 

@@ -53,6 +53,7 @@
 
   let { data }: Props = $props();
 
+  // These badges intentionally use official platform brand colors, not semantic status colors.
   const platformMeta: Record<string, { label: string; color: string; icon: string }> = {
     youtube: {
       label: "YouTube",
@@ -72,7 +73,9 @@
   };
 
   function getPlatform(key: string) {
-    return platformMeta[key] ?? { label: key, color: "bg-skin-accent/20 text-skin-accent", icon: "" };
+    return (
+      platformMeta[key] ?? { label: key, color: "bg-skin-accent/20 text-skin-accent", icon: "" }
+    );
   }
 
   function asCreatorCategories(cats: unknown): CreatorCategory[] {
@@ -117,12 +120,16 @@
     {#each data.interests.sections as section}
       <div id={section.id} class="mb-20 scroll-mt-20">
         <!-- Section header -->
-        <div class="flex items-center gap-2 mb-2 text-skin-accent font-mono text-sm uppercase tracking-wider">
+        <div
+          class="flex items-center gap-2 mb-2 text-skin-accent font-mono text-sm uppercase tracking-wider"
+        >
           <span>></span>
           <h2 class="font-bold">{section.name}</h2>
         </div>
         {#if section.description}
-          <p class="font-mono text-skin-muted text-sm mb-8 border-l-2 border-skin-border pl-4 leading-relaxed">
+          <p
+            class="font-mono text-skin-muted text-sm mb-8 border-l-2 border-skin-border pl-4 leading-relaxed"
+          >
             {section.description}
           </p>
         {/if}
@@ -132,7 +139,9 @@
           {#each asCreatorCategories(section.categories) as category}
             <div class="mb-10">
               {#if category.name}
-                <div class="flex items-center gap-2 mb-4 text-skin-muted font-mono text-xs uppercase tracking-widest">
+                <div
+                  class="flex items-center gap-2 mb-4 text-skin-muted font-mono text-xs uppercase tracking-widest"
+                >
                   <span class="w-4 h-px bg-skin-border"></span>
                   <span>{category.name}</span>
                 </div>
@@ -156,7 +165,9 @@
                           loading="lazy"
                         />
                       {:else}
-                        <div class="w-14 h-14 rounded-full border border-skin-border bg-skin-page flex items-center justify-center text-skin-accent font-mono font-bold text-xl">
+                        <div
+                          class="w-14 h-14 rounded-full border border-skin-border bg-skin-page flex items-center justify-center text-skin-accent font-mono font-bold text-xl"
+                        >
                           {creator.name[0]}
                         </div>
                       {/if}
@@ -165,18 +176,26 @@
                     <!-- Content -->
                     <div class="flex-1 min-w-0">
                       <div class="flex items-center gap-2 flex-wrap mb-1">
-                        <h3 class="font-mono font-bold text-skin-base group-hover:text-skin-accent transition-colors">
+                        <h3
+                          class="font-mono font-bold text-skin-base group-hover:text-skin-accent transition-colors"
+                        >
                           {creator.name}
                         </h3>
-                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide {platform.color}">
+                        <span
+                          class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide {platform.color}"
+                        >
                           {@html platform.icon}
                           {platform.label}
                         </span>
                       </div>
-                      <div class="text-xs font-mono text-skin-muted mb-2 group-hover:text-skin-accent/70 transition-colors">
+                      <div
+                        class="text-xs font-mono text-skin-muted mb-2 group-hover:text-skin-accent/70 transition-colors"
+                      >
                         {creator.handle} ↗
                       </div>
-                      <p class="text-skin-muted text-sm font-mono leading-relaxed">{creator.description}</p>
+                      <p class="text-skin-muted text-sm font-mono leading-relaxed">
+                        {creator.description}
+                      </p>
                     </div>
                   </a>
                 {/each}
@@ -184,18 +203,24 @@
             </div>
           {/each}
 
-        <!-- Setup section -->
+          <!-- Setup section -->
         {:else if section.type === "setup" && section.categories}
           <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {#each asSetupCategories(section.categories) as category}
-              <div class="border border-skin-border rounded-lg p-5 bg-skin-base/5 hover:border-skin-accent/50 transition-colors">
-                <h3 class="font-mono text-xs font-bold uppercase tracking-wider text-skin-muted mb-4">
+              <div
+                class="border border-skin-border rounded-lg p-5 bg-skin-base/5 hover:border-skin-accent/50 transition-colors"
+              >
+                <h3
+                  class="font-mono text-xs font-bold uppercase tracking-wider text-skin-muted mb-4"
+                >
                   {category.name}
                 </h3>
                 <dl class="space-y-2">
                   {#each category.items as item}
                     <div class="flex flex-col gap-0.5">
-                      <dt class="font-mono text-xs text-skin-muted/60 uppercase tracking-wide">{item.label}</dt>
+                      <dt class="font-mono text-xs text-skin-muted/60 uppercase tracking-wide">
+                        {item.label}
+                      </dt>
                       <dd class="font-mono text-sm text-skin-base">{item.value}</dd>
                     </div>
                   {/each}
@@ -204,12 +229,16 @@
             {/each}
           </div>
 
-        <!-- Text / outside work section -->
+          <!-- Text / outside work section -->
         {:else if section.type === "text" && section.items}
           <div class="grid gap-6 sm:grid-cols-2">
             {#each section.items as item}
-              <div class="border-l-2 border-skin-border pl-4 hover:border-skin-accent transition-colors group">
-                <h3 class="font-mono font-bold text-skin-base mb-2 group-hover:text-skin-accent transition-colors">
+              <div
+                class="border-l-2 border-skin-border pl-4 hover:border-skin-accent transition-colors group"
+              >
+                <h3
+                  class="font-mono font-bold text-skin-base mb-2 group-hover:text-skin-accent transition-colors"
+                >
                   {item.heading}
                 </h3>
                 <p class="font-mono text-sm text-skin-muted leading-relaxed">{item.body}</p>

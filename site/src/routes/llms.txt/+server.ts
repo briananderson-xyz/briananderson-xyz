@@ -1,25 +1,25 @@
-import fs from 'fs';
-import yaml from 'js-yaml';
-import path from 'path';
-import { PUBLIC_SITE_URL } from '$env/static/public';
-import { loadResume } from '$lib/server/loadResume';
+import fs from "fs";
+import yaml from "js-yaml";
+import path from "path";
+import { PUBLIC_SITE_URL } from "$env/static/public";
+import { loadResume } from "$lib/server/loadResume";
 
 interface Personal {
-	interests: { name: string; description: string }[];
-	values: string[];
-	hobbies: { name: string; details: string }[];
+  interests: { name: string; description: string }[];
+  values: string[];
+  hobbies: { name: string; details: string }[];
 }
 
 export const prerender = true;
 
 export const GET = async () => {
-	const resume = loadResume('resume.yaml');
+  const resume = loadResume("resume.yaml");
 
-	const personalPath = path.resolve('content/personal.yaml');
-	const personalContents = fs.readFileSync(personalPath, 'utf-8');
-	const personal = yaml.load(personalContents) as Personal;
+  const personalPath = path.resolve("content/personal.yaml");
+  const personalContents = fs.readFileSync(personalPath, "utf-8");
+  const personal = yaml.load(personalContents) as Personal;
 
-	const content = `# briananderson.xyz
+  const content = `# briananderson.xyz
 
 Personal portfolio and professional site for Brian Anderson - Technical Director & Enterprise Solutions Architect specializing in GenAI, Cloud Native transformation, and DevOps.
 
@@ -48,6 +48,9 @@ Personal portfolio and professional site for Brian Anderson - Technical Director
 - **Blog Markdown Mirrors:** ${PUBLIC_SITE_URL}/blog/{slug}.md - Raw Markdown source of each post
 - **Projects:** ${PUBLIC_SITE_URL}/projects/ - Portfolio of software development work
 - **Project Markdown Mirrors:** ${PUBLIC_SITE_URL}/projects/{slug}.md - Raw Markdown source of each project
+- **Proof Ledger:** ${PUBLIC_SITE_URL}/proof/ - Selected portfolio claims mapped to published sources, freshness, and evidence state
+- **AI Evaluation Trends:** ${PUBLIC_SITE_URL}/ai-evals/ - Sanitized aggregate quality signals; no prompts, job descriptions, answers, or judge text
+- **Trace One AI Answer:** ${PUBLIC_SITE_URL}/trace-one-answer/ - Repository-grounded request flow and explicit external verification limits
 - **Interests:** ${PUBLIC_SITE_URL}/interests/ - Personal interests, values, and hobbies
 - **RSS Feed:** ${PUBLIC_SITE_URL}/rss.xml - Blog posts in RSS format
 - **Content Index:** ${PUBLIC_SITE_URL}/content-index.json - Structured JSON index of skills, experience, projects, and blog posts for agent tooling
@@ -115,13 +118,13 @@ An MCP (Model Context Protocol) server over Streamable HTTP, so any MCP-capable 
 ${resume.summary}
 
 ### Personal Interests
-${personal.interests.map((i) => `- **${i.name}:** ${i.description}`).join('\n')}
+${personal.interests.map((i) => `- **${i.name}:** ${i.description}`).join("\n")}
 
 ### Core Values
-${personal.values.map((v: string) => `- ${v}`).join('\n')}
+${personal.values.map((v: string) => `- ${v}`).join("\n")}
 
 ### Hobbies
-${personal.hobbies.map((h) => `- **${h.name}:** ${h.details}`).join('\n')}
+${personal.hobbies.map((h) => `- **${h.name}:** ${h.details}`).join("\n")}
 
 ## Expertise
 
@@ -132,10 +135,16 @@ ${personal.hobbies.map((h) => `- **${h.name}:** ${h.details}`).join('\n')}
 - Enterprise architecture and team leadership
 
 ### Key Technologies
-${Object.entries(resume.skills).slice(0, 5).map(([cat, skills]) => `**${cat}:** ${skills.map((s) => s.name).join(', ')}`).join('\n')}
+${Object.entries(resume.skills)
+  .slice(0, 5)
+  .map(([cat, skills]) => `**${cat}:** ${skills.map((s) => s.name).join(", ")}`)
+  .join("\n")}
 
 ### Certifications
-${resume.certificates.slice(0, 3).map((cert) => `- ${cert.name}`).join('\n')}
+${resume.certificates
+  .slice(0, 3)
+  .map((cert) => `- ${cert.name}`)
+  .join("\n")}
 
 ## Featured Work
 
@@ -153,9 +162,9 @@ ${resume.certificates.slice(0, 3).map((cert) => `- ${cert.name}`).join('\n')}
 - **Analytics:** PostHog
 `;
 
-	return new Response(content, {
-		headers: {
-			'Content-Type': 'text/plain; charset=utf-8'
-		}
-	});
+  return new Response(content, {
+    headers: {
+      "Content-Type": "text/plain; charset=utf-8"
+    }
+  });
 };

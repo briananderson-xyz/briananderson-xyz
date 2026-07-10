@@ -14,6 +14,65 @@ test.describe("Projects List", () => {
     const fairviewCard = page.locator('a[href*="fairview"]');
     await expect(fairviewCard.locator("img")).toBeVisible();
   });
+
+  test("restores a shareable combined filter query", async ({ page }) => {
+    await page.goto(
+      "/projects/?v=builder&skill=Rust&outcome=Developer+productivity&type=Open-source+tool"
+    );
+
+    await expect(page.getByLabel("Variant")).toHaveValue("builder");
+    await expect(page.getByLabel("Skill / topic")).toHaveValue("Rust");
+    await expect(page.getByLabel("Outcome")).toHaveValue("Developer productivity");
+    await expect(page.getByLabel("Project type")).toHaveValue("Open-source tool");
+    await expect(page.locator("article[data-project-slug]")).toHaveCount(1);
+    await expect(page.locator('[data-project-slug="boo-agent-scheduler"]')).toBeVisible();
+  });
+
+  test("updates filter state in the URL", async ({ page }) => {
+    await page.goto("/projects/");
+    await page.getByLabel("Variant").selectOption("ops");
+    await expect(page).toHaveURL(/\/projects\/\?v=ops$/);
+    await expect(page.locator('[data-project-slug="gfs-cloud-enablement"]')).toBeVisible();
+    await expect(page.locator('[data-project-slug="boo-agent-scheduler"]')).toHaveCount(0);
+  });
+
+  test("caps comparison at three and restores the accessible table", async ({ page }) => {
+    await page.goto("/projects/");
+    const choices = page.locator('input[name="compare"]');
+    await choices.nth(0).check();
+    await choices.nth(1).check();
+    await choices.nth(2).check();
+
+    await expect(page).toHaveURL(/compare=[^&]+%2C[^&]+%2C[^&]+/);
+    await expect(
+      page.getByRole("table", { name: "Comparison of selected projects" })
+    ).toBeVisible();
+    await expect(page.getByRole("row")).toHaveCount(4);
+    await expect(choices.nth(3)).toBeDisabled();
+
+    await page.reload();
+    await expect(
+      page.getByRole("table", { name: "Comparison of selected projects" })
+    ).toBeVisible();
+    await expect(page.getByText("Compare 3/3 selected")).toBeVisible();
+
+    await page
+      .getByRole("button", { name: /^Remove .* from comparison$/ })
+      .first()
+      .click();
+    await expect(page.getByText("Compare 2/3 selected")).toBeVisible();
+    await expect(choices.nth(3)).toBeEnabled();
+  });
+
+  test("keeps the complete catalog available without JavaScript", async ({ browser }) => {
+    const context = await browser.newContext({ javaScriptEnabled: false });
+    const page = await context.newPage();
+    await page.goto("/projects/?v=builder&skill=Rust");
+
+    await expect(page.getByText(/Filtering and comparison require JavaScript/)).toBeVisible();
+    expect(await page.locator("article[data-project-slug]").count()).toBeGreaterThanOrEqual(11);
+    await context.close();
+  });
 });
 
 test.describe("Project Detail - Visual Archive", () => {
@@ -53,8 +112,8 @@ test.describe("Project Detail - Visual Archive", () => {
     await page.locator("section.not-prose button").first().click();
     const dialog = page.locator('[role="dialog"]');
     await expect(dialog).toBeVisible();
-    // Main image has alt="Lightbox view"; thumbnails have alt="Thumbnail N"
-    const mainImage = dialog.locator('img[alt="Lightbox view"]');
+    const mainImage = dialog.locator('[role="group"] > img');
+    await expect(mainImage).not.toHaveAttribute("alt", "Lightbox view");
     const initialSrc = await mainImage.getAttribute("src");
     await page.keyboard.press("ArrowRight");
     const nextSrc = await mainImage.getAttribute("src");
@@ -68,7 +127,7 @@ test.describe("Project Detail - Visual Archive", () => {
     await page.locator("section.not-prose button").nth(1).click();
     const dialog = page.locator('[role="dialog"]');
     await expect(dialog).toBeVisible();
-    const mainImage = dialog.locator('img[alt="Lightbox view"]');
+    const mainImage = dialog.locator('[role="group"] > img');
     const initialSrc = await mainImage.getAttribute("src");
     await page.keyboard.press("ArrowLeft");
     const prevSrc = await mainImage.getAttribute("src");

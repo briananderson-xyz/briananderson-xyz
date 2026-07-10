@@ -3,7 +3,7 @@
  *
  * Parses all markdown content (projects, blog posts) and resume YAML files,
  * builds skill-to-content relationships, and outputs a structured JSON index
- * to static/content-index.json for the Firebase function to consume.
+ * to static/content-index.json for the Cloud Run API to consume.
  *
  * Run: pnpm build-content-index
  */
@@ -12,11 +12,16 @@ import fs from "fs";
 import path from "path";
 import matter from "gray-matter";
 import yaml from "js-yaml";
+import { parseContentMetadata, type ContentMetadata } from "../src/lib/schemas/content.ts";
+import { ResumeSchema, type Resume, type SkillItem } from "../src/lib/schemas/resume.ts";
 
 const SITE_URL = "https://briananderson.xyz";
 const CONTENT_DIR = path.join(process.cwd(), "content");
 const STATIC_DIR = path.join(process.cwd(), "static");
 const OUTPUT_FILE = path.join(STATIC_DIR, "content-index.json");
+const VERSIONED_INDEX_PATTERN = /^content-index\.[a-f0-9]{8}\.json$/;
+// This is the last pre-retention-policy index and remains available for cached legacy pointers.
+const LEGACY_VERSIONED_FALLBACK = "content-index.c2cd0c88.json";
 
 // --- Types ---
 
@@ -46,6 +51,7 @@ interface ContentIndex {
 }
 
 interface SkillEntry {
+  id: string;
   name: string;
   category: string;
   projects: string[];
@@ -86,10 +92,10 @@ interface BlogEntry {
 
 function parseMarkdownFiles(
   dir: string
-): Array<{ slug: string; frontmatter: Record<string, any>; content: string }> {
+): Array<{ slug: string; frontmatter: ContentMetadata; content: string }> {
   const results: Array<{
     slug: string;
-    frontmatter: Record<string, any>;
+    frontmatter: ContentMetadata;
     content: string;
   }> = [];
 
@@ -98,13 +104,14 @@ function parseMarkdownFiles(
     return results;
   }
 
-  const files = fs.readdirSync(dir);
+  const files = fs.readdirSync(dir).sort((a, b) => a.localeCompare(b));
   for (const file of files) {
     if (!file.endsWith(".md")) continue;
 
     const filePath = path.join(dir, file);
     const fileContent = fs.readFileSync(filePath, "utf-8");
-    const { data: frontmatter, content } = matter(fileContent);
+    const { data, content } = matter(fileContent);
+    const frontmatter = parseContentMetadata(data, filePath);
     const slug = file.replace(/\.md$/, "");
     results.push({ slug, frontmatter, content });
   }
@@ -112,7 +119,7 @@ function parseMarkdownFiles(
   return results;
 }
 
-function parseResumeYaml(filename: string): Record<string, any> | null {
+function parseResumeYaml(filename: string): Resume | null {
   const filePath = path.join(CONTENT_DIR, filename);
   if (!fs.existsSync(filePath)) {
     console.warn(`  ⚠ Resume not found: ${filePath}`);
@@ -120,7 +127,7 @@ function parseResumeYaml(filename: string): Record<string, any> | null {
   }
 
   const content = fs.readFileSync(filePath, "utf-8");
-  return yaml.load(content) as Record<string, any>;
+  return ResumeSchema.parse(yaml.load(content));
 }
 
 function extractContentExcerpt(content: string, maxLength = 500): string {
@@ -137,9 +144,7 @@ function extractContentExcerpt(content: string, maxLength = 500): string {
     .replace(/\n{2,}/g, "\n") // multiple newlines
     .trim();
 
-  return plain.length > maxLength
-    ? plain.slice(0, maxLength) + "..."
-    : plain;
+  return plain.length > maxLength ? plain.slice(0, maxLength) + "..." : plain;
 }
 
 // --- Builders ---
@@ -155,9 +160,7 @@ function buildProjectEntries(): ProjectEntry[] {
       summary: frontmatter.summary || "",
       tags: frontmatter.tags || [],
       keywords: frontmatter.keywords || [],
-      date: frontmatter.date
-        ? new Date(frontmatter.date).toISOString().split("T")[0]
-        : "",
+      date: frontmatter.updated || frontmatter.date,
       contentExcerpt: extractContentExcerpt(content)
     }))
     .sort((a, b) => b.date.localeCompare(a.date));
@@ -174,9 +177,7 @@ function buildBlogEntries(): BlogEntry[] {
       summary: frontmatter.summary || "",
       tags: frontmatter.tags || [],
       keywords: frontmatter.keywords || [],
-      date: frontmatter.date
-        ? new Date(frontmatter.date).toISOString().split("T")[0]
-        : ""
+      date: frontmatter.updated || frontmatter.date
     }))
     .sort((a, b) => b.date.localeCompare(a.date));
 }
@@ -184,91 +185,128 @@ function buildBlogEntries(): BlogEntry[] {
 function buildSkillIndex(
   projects: ProjectEntry[],
   blog: BlogEntry[],
-  resumeSkills: Record<string, Array<{ name: string }>>
+  resumeSkills: Record<string, SkillItem[]>
 ): SkillEntry[] {
   const skillMap = new Map<string, SkillEntry>();
+  const aliases = new Map<string, string>();
+
+  const registerAlias = (alias: string, id: string): void => {
+    const key = alias.trim().toLocaleLowerCase("en-US");
+    const existing = aliases.get(key);
+    if (existing && existing !== id) {
+      throw new Error(`Skill alias "${alias}" is assigned to both "${existing}" and "${id}"`);
+    }
+    aliases.set(key, id);
+  };
 
   // Seed from resume skills (authoritative list)
   for (const [category, skills] of Object.entries(resumeSkills)) {
     for (const skill of skills) {
-      const key = skill.name.toLowerCase();
-      if (!skillMap.has(key)) {
-        skillMap.set(key, {
+      if (!skill.id) {
+        throw new Error(`Canonical resume skill "${skill.name}" is missing a stable id`);
+      }
+      if (!skillMap.has(skill.id)) {
+        skillMap.set(skill.id, {
+          id: skill.id,
           name: skill.name,
           category,
           projects: [],
           blog: []
         });
       }
+      registerAlias(skill.id, skill.id);
+      registerAlias(skill.name, skill.id);
+      if (skill.altName) registerAlias(skill.altName, skill.id);
+      for (const alias of skill.aliases || []) registerAlias(alias, skill.id);
     }
   }
 
-  // Match project tags/keywords to skills
-  for (const project of projects) {
-    const allTerms = [
-      ...project.tags.map((t) => t.toLowerCase()),
-      ...project.keywords.map((k) => k.toLowerCase())
-    ];
-
-    for (const [key, skill] of skillMap) {
-      const skillLower = skill.name.toLowerCase();
-      const matches = allTerms.some(
-        (term) =>
-          term === skillLower ||
-          term.includes(skillLower) ||
-          skillLower.includes(term)
-      );
-      if (matches && !skill.projects.includes(project.slug)) {
-        skill.projects.push(project.slug);
-      }
+  const evidenceIds = (entry: ProjectEntry | BlogEntry, explicit?: string[]): string[] => {
+    const terms = explicit || [...entry.tags, ...entry.keywords];
+    const ids = new Set<string>();
+    for (const term of terms) {
+      const id = explicit?.length ? term : aliases.get(term.trim().toLocaleLowerCase("en-US"));
+      if (id && skillMap.has(id)) ids.add(id);
+      else if (explicit?.length)
+        throw new Error(`${entry.slug} references unknown skill id "${term}"`);
     }
-  }
+    return [...ids].sort((a, b) => a.localeCompare(b));
+  };
 
-  // Match blog tags/keywords to skills
-  for (const post of blog) {
-    const allTerms = [
-      ...post.tags.map((t) => t.toLowerCase()),
-      ...post.keywords.map((k) => k.toLowerCase())
-    ];
-
-    for (const [key, skill] of skillMap) {
-      const skillLower = skill.name.toLowerCase();
-      const matches = allTerms.some(
-        (term) =>
-          term === skillLower ||
-          term.includes(skillLower) ||
-          skillLower.includes(term)
-      );
-      if (matches && !skill.blog.includes(post.slug)) {
-        skill.blog.push(post.slug);
-      }
-    }
-  }
-
-  return Array.from(skillMap.values()).sort((a, b) =>
-    a.name.localeCompare(b.name)
+  const projectMetadata = new Map(
+    parseMarkdownFiles(path.join(CONTENT_DIR, "projects")).map(({ slug, frontmatter }) => [
+      slug,
+      frontmatter
+    ])
   );
+  const blogMetadata = new Map(
+    parseMarkdownFiles(path.join(CONTENT_DIR, "blog")).map(({ slug, frontmatter }) => [
+      slug,
+      frontmatter
+    ])
+  );
+
+  // Evidence is either an explicit canonical id or an exact, resume-owned alias.
+  for (const project of projects) {
+    const metadata = projectMetadata.get(project.slug);
+    for (const id of evidenceIds(project, metadata?.skills)) {
+      skillMap.get(id)?.projects.push(project.slug);
+    }
+  }
+
+  for (const post of blog) {
+    const metadata = blogMetadata.get(post.slug);
+    for (const id of evidenceIds(post, metadata?.skills)) {
+      skillMap.get(id)?.blog.push(post.slug);
+    }
+  }
+
+  return Array.from(skillMap.values())
+    .map((skill) => ({
+      ...skill,
+      projects: skill.projects.sort((a, b) => a.localeCompare(b)),
+      blog: skill.blog.sort((a, b) => a.localeCompare(b))
+    }))
+    .sort((a, b) => a.name.localeCompare(b.name));
 }
 
-function buildExperienceEntries(
-  resumeData: Record<string, any>
-): ExperienceEntry[] {
-  const experience = resumeData.experience || [];
-
-  return experience.map((exp: any) => ({
+function buildExperienceEntries(resumeData: Resume): ExperienceEntry[] {
+  return resumeData.experience.map((exp) => ({
     role: exp.role,
     company: exp.company,
     dateRange: `${exp.start_date}${exp.end_date ? " - " + exp.end_date : " - Present"}`,
     location: exp.location || "",
     description: exp.description || "",
-    highlights: exp.highlights || []
+    highlights: exp.highlights.map((highlight) =>
+      typeof highlight === "string" ? highlight : highlight.text
+    )
   }));
+}
+
+function sourceDate(projects: ProjectEntry[], blog: BlogEntry[]): string {
+  const epoch = process.env.SOURCE_DATE_EPOCH;
+  if (epoch) {
+    const seconds = Number(epoch);
+    if (!Number.isInteger(seconds) || seconds < 0) {
+      throw new Error("SOURCE_DATE_EPOCH must be a non-negative integer number of seconds");
+    }
+    return new Date(seconds * 1000).toISOString();
+  }
+  const latest = [...projects, ...blog]
+    .map((entry) => entry.date)
+    .sort()
+    .at(-1);
+  if (!latest) throw new Error("Cannot derive source date without content or SOURCE_DATE_EPOCH");
+  return `${latest}T00:00:00.000Z`;
 }
 
 // --- Main ---
 
 async function buildContentIndex(): Promise<void> {
   console.log("Building content index...");
+
+  // All hashed files except the current index and legacy compatibility fallback are stale.
+  const pointerFile = path.join(STATIC_DIR, "content-index-latest.json");
 
   // Parse resume (leader variant is the canonical one)
   const resumeData = parseResumeYaml("resume.yaml");
@@ -292,9 +330,7 @@ async function buildContentIndex(): Promise<void> {
 
   // Build skill categories for quick reference
   const skillCategories: Record<string, string[]> = {};
-  for (const [category, items] of Object.entries(
-    resumeData.skills as Record<string, Array<{ name: string }>>
-  )) {
+  for (const [category, items] of Object.entries(resumeData.skills)) {
     skillCategories[category] = items.map((s) => s.name);
   }
 
@@ -316,7 +352,7 @@ async function buildContentIndex(): Promise<void> {
         : []
     },
     metadata: {
-      buildDate: new Date().toISOString(),
+      buildDate: sourceDate(projects, blog),
       version: "1.0.0",
       projectCount: projects.length,
       blogCount: blog.length,
@@ -345,7 +381,6 @@ async function buildContentIndex(): Promise<void> {
   console.log(`Versioned index: ${versionedFilename}`);
 
   // Write pointer file (always fresh, short cache TTL)
-  const pointerFile = path.join(STATIC_DIR, "content-index-latest.json");
   fs.writeFileSync(
     pointerFile,
     JSON.stringify(
@@ -361,6 +396,14 @@ async function buildContentIndex(): Promise<void> {
     "utf-8"
   );
   console.log(`Pointer file: content-index-latest.json → ${versionedFilename}`);
+
+  const retainedVersionedFiles = new Set([versionedFilename, LEGACY_VERSIONED_FALLBACK]);
+  for (const filename of fs.readdirSync(STATIC_DIR).sort((a, b) => a.localeCompare(b))) {
+    if (VERSIONED_INDEX_PATTERN.test(filename) && !retainedVersionedFiles.has(filename)) {
+      fs.rmSync(path.join(STATIC_DIR, filename));
+      console.log(`Removed stale versioned index: ${filename}`);
+    }
+  }
 }
 
 buildContentIndex().catch((error) => {

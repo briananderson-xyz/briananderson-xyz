@@ -5,6 +5,8 @@ period: "2017 – 2020"
 summary: "Modernizing the core ordering engine for a $1B+ food distributor."
 tags: ["Architecture", "Ecommerce", "Microservices", "GKE", "Leader"]
 keywords: ["gfs", "gordon-food-service", "ordering-platform", "modernization"]
+outcome: "Platform modernization"
+projectType: "Enterprise transformation"
 showTableOfContents: true
 links:
   - label: "Valtech Case Study"
@@ -40,4 +42,3 @@ I came into this engagement as a **Technical Principal**, leading the product ar
 This work was featured as an official **Google Cloud Customer Story**, highlighting the transformation as a reference architecture for enterprise modernization on GCP.
 
 > "We went from four releases a year to multiple releases a day. That's not just a technology change, that's a culture change."
-

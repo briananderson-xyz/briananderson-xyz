@@ -4,6 +4,7 @@ import fs from "fs";
 import path from "path";
 import yaml from "js-yaml";
 import { createRequire } from "module";
+import { createHash } from "crypto";
 import { spawnSync } from "child_process";
 
 const require = createRequire(import.meta.url);
@@ -12,7 +13,7 @@ const reportPath = process.env.AI_EVAL_REPORT_PATH;
 function commandExists(command) {
   const result = spawnSync("bash", ["-lc", `command -v ${command}`], {
     cwd: process.cwd(),
-    encoding: "utf-8",
+    encoding: "utf-8"
   });
 
   return result.status === 0;
@@ -37,18 +38,14 @@ function detectDefaultJudgeProvider() {
 const judgeProvider = detectDefaultJudgeProvider();
 const judgeModel =
   process.env.AI_EVAL_JUDGE_MODEL ||
-  (judgeProvider === "codex"
-    ? "codex-cli"
-    : judgeProvider === "claude"
-      ? "claude-cli"
-      : null);
+  (judgeProvider === "codex" ? "codex-cli" : judgeProvider === "claude" ? "claude-cli" : null);
 
 const COLORS = {
   reset: "\x1b[0m",
   green: "\x1b[32m",
   red: "\x1b[31m",
   yellow: "\x1b[33m",
-  blue: "\x1b[34m",
+  blue: "\x1b[34m"
 };
 
 function log(message, color = "reset") {
@@ -89,6 +86,14 @@ function renderTemplate(template, vars) {
   return template.replace(/\{\{\s*([\w.-]+)\s*\}\}/g, (_, key) => String(vars[key] ?? ""));
 }
 
+function publicScenarioId(configPath, description) {
+  const digest = createHash("sha256")
+    .update(`${path.basename(configPath)}\0${description}`)
+    .digest("hex")
+    .slice(0, 12);
+  return `scenario-${digest}`;
+}
+
 function extractJsonObject(text) {
   if (!text || typeof text !== "string") {
     return "{}";
@@ -110,13 +115,14 @@ function extractJsonObject(text) {
 
 function parseJudgeOutput(text) {
   const parsed = JSON.parse(extractJsonObject(text));
-  const normalized = parsed?.structured_output && typeof parsed.structured_output === "object"
-    ? parsed.structured_output
-    : parsed;
+  const normalized =
+    parsed?.structured_output && typeof parsed.structured_output === "object"
+      ? parsed.structured_output
+      : parsed;
   return {
     pass: Boolean(normalized.pass),
     score: Number(normalized.score),
-    summary: String(normalized.summary || "").trim(),
+    summary: String(normalized.summary || "").trim()
   };
 }
 
@@ -125,7 +131,7 @@ function evaluateJudgeResult(assertion, judgment) {
   const scoreOk = Number.isFinite(minScore) ? judgment.score >= minScore : true;
   return {
     ok: judgment.pass && scoreOk,
-    minScore,
+    minScore
   };
 }
 
@@ -176,7 +182,7 @@ function resolveJudgeReference(assertion, context) {
     factory({
       vars: context.vars,
       prompt: context.prompt,
-      testCase: context.testCase,
+      testCase: context.testCase
     }) || ""
   ).trim();
 }
@@ -206,11 +212,12 @@ async function runJudgeAssertion(assertion, context) {
     return {
       ok: true,
       skipped: true,
-      reason: "Judge assertion skipped because judge credentials/config are not set.",
+      reason: "Judge assertion skipped because judge credentials/config are not set."
     };
   }
 
-  const rubric = assertion.rubric || "Evaluate the response for quality, groundedness, and usefulness.";
+  const rubric =
+    assertion.rubric || "Evaluate the response for quality, groundedness, and usefulness.";
   const resolvedReference = resolveJudgeReference(assertion, context);
   const reference = resolvedReference ? `Reference facts:\n${resolvedReference}` : null;
   const prompt = [
@@ -219,7 +226,7 @@ async function runJudgeAssertion(assertion, context) {
     `Rubric:\n${rubric}`,
     reference,
     `User prompt:\n${context.prompt}`,
-    `AI response:\n${context.output}`,
+    `AI response:\n${context.output}`
   ]
     .filter(Boolean)
     .join("\n\n");
@@ -231,9 +238,9 @@ async function runJudgeAssertion(assertion, context) {
       properties: {
         pass: { type: "boolean" },
         score: { type: "number" },
-        summary: { type: "string" },
+        summary: { type: "string" }
       },
-      required: ["pass", "score", "summary"],
+      required: ["pass", "score", "summary"]
     });
 
     const result = spawnSync(
@@ -248,11 +255,11 @@ async function runJudgeAssertion(assertion, context) {
         "dontAsk",
         "--system-prompt",
         "You grade AI responses. Return only the requested JSON object.",
-        prompt,
+        prompt
       ],
       {
         cwd: process.cwd(),
-        encoding: "utf-8",
+        encoding: "utf-8"
       }
     );
 
@@ -272,7 +279,7 @@ async function runJudgeAssertion(assertion, context) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`
         },
         body: JSON.stringify({
           model: process.env.AI_EVAL_JUDGE_MODEL,
@@ -287,13 +294,13 @@ async function runJudgeAssertion(assertion, context) {
                 properties: {
                   pass: { type: "boolean" },
                   score: { type: "number" },
-                  summary: { type: "string" },
+                  summary: { type: "string" }
                 },
-                required: ["pass", "score", "summary"],
-              },
-            },
-          },
-        }),
+                required: ["pass", "score", "summary"]
+              }
+            }
+          }
+        })
       }
     );
 
@@ -310,7 +317,7 @@ async function runJudgeAssertion(assertion, context) {
       skipped: false,
       reason: parsed.summary,
       score: parsed.score,
-      minScore: evaluated.minScore,
+      minScore: evaluated.minScore
     };
   }
 
@@ -322,15 +329,14 @@ async function runJudgeAssertion(assertion, context) {
         headers: {
           "Content-Type": "application/json",
           "x-api-key": process.env.ANTHROPIC_API_KEY,
-          "anthropic-version": "2023-06-01",
+          "anthropic-version": "2023-06-01"
         },
         body: JSON.stringify({
           model: process.env.AI_EVAL_JUDGE_MODEL,
           max_tokens: 300,
-          system:
-            "You grade AI responses. Return JSON only with keys pass, score, summary.",
-          messages: [{ role: "user", content: prompt }],
-        }),
+          system: "You grade AI responses. Return JSON only with keys pass, score, summary.",
+          messages: [{ role: "user", content: prompt }]
+        })
       }
     );
 
@@ -347,7 +353,7 @@ async function runJudgeAssertion(assertion, context) {
       skipped: false,
       reason: parsed.summary,
       score: parsed.score,
-      minScore: evaluated.minScore,
+      minScore: evaluated.minScore
     };
   }
 
@@ -362,9 +368,9 @@ async function runJudgeAssertion(assertion, context) {
         properties: {
           pass: { type: "boolean" },
           score: { type: "number" },
-          summary: { type: "string" },
+          summary: { type: "string" }
         },
-        required: ["pass", "score", "summary"],
+        required: ["pass", "score", "summary"]
       })
     );
 
@@ -381,11 +387,11 @@ async function runJudgeAssertion(assertion, context) {
         schemaPath,
         "--output-last-message",
         outputPath,
-        prompt,
+        prompt
       ],
       {
         cwd: process.cwd(),
-        encoding: "utf-8",
+        encoding: "utf-8"
       }
     );
 
@@ -395,9 +401,7 @@ async function runJudgeAssertion(assertion, context) {
       if (/usage limit|purchase more credits|try again/i.test(failureText)) {
         parsed = runClaudeJudge();
       } else {
-        throw new Error(
-          `Codex judge failed with status ${result.status}: ${failureText.trim()}`
-        );
+        throw new Error(`Codex judge failed with status ${result.status}: ${failureText.trim()}`);
       }
     } else {
       const outputText = fs.readFileSync(outputPath, "utf-8");
@@ -410,7 +414,7 @@ async function runJudgeAssertion(assertion, context) {
       skipped: false,
       reason: parsed.summary,
       score: parsed.score,
-      minScore: evaluated.minScore,
+      minScore: evaluated.minScore
     };
   }
 
@@ -422,7 +426,7 @@ async function runJudgeAssertion(assertion, context) {
       skipped: false,
       reason: parsed.summary,
       score: parsed.score,
-      minScore: evaluated.minScore,
+      minScore: evaluated.minScore
     };
   }
 
@@ -460,6 +464,7 @@ async function runConfig(configPath, opts = {}) {
       matchedDescriptions.add(testCase.description);
     }
     total++;
+    const scenarioId = publicScenarioId(configPath, String(testCase.description || ""));
     try {
       const vars = testCase.vars || {};
       const prompt = renderTemplate(promptTemplate, vars);
@@ -492,7 +497,7 @@ async function runConfig(configPath, opts = {}) {
             vars,
             testCase,
             prompt,
-            output,
+            output
           });
           if (judgment.skipped) {
             skipCount++;
@@ -508,7 +513,7 @@ async function runConfig(configPath, opts = {}) {
             ok: judgment.ok,
             reason: judgment.reason,
             score: judgment.score,
-            minScore: judgment.minScore,
+            minScore: judgment.minScore
           });
           if (!judgment.ok) {
             assertionsPassed = false;
@@ -527,28 +532,31 @@ async function runConfig(configPath, opts = {}) {
         }
         passed++;
         tests.push({
+          scenarioId,
           config: path.basename(configPath),
           description: testCase.description,
           passed: true,
-          assertions: assertionDetails,
+          assertions: assertionDetails
         });
       } else {
         error(`${path.basename(configPath)} :: ${testCase.description}`);
         tests.push({
+          scenarioId,
           config: path.basename(configPath),
           description: testCase.description,
           passed: false,
-          assertions: assertionDetails,
+          assertions: assertionDetails
         });
       }
     } catch (err) {
       error(`${path.basename(configPath)} :: ${testCase.description}`);
       error(err instanceof Error ? err.message : String(err));
       tests.push({
+        scenarioId,
         config: path.basename(configPath),
-description: testCase.description,
+        description: testCase.description,
         passed: false,
-        error: err instanceof Error ? err.message : String(err),
+        error: err instanceof Error ? err.message : String(err)
       });
     }
   }
@@ -562,7 +570,7 @@ description: testCase.description,
     judgePassed,
     judgeTotal,
     judgeSkipped,
-    matchedDescriptions,
+    matchedDescriptions
   };
 }
 
@@ -575,12 +583,16 @@ async function main() {
 
   info("Running AI eval configs");
   if (judgeProvider && !hasJudgeConfig()) {
-    warn(`Judge provider "${judgeProvider}" configured without required credentials/model. Judge assertions will be skipped.`);
+    warn(
+      `Judge provider "${judgeProvider}" configured without required credentials/model. Judge assertions will be skipped.`
+    );
   }
 
   const onlyDescriptions = parseOnlyDescriptions();
   if (onlyDescriptions) {
-    info(`Filtering AI evals to ${onlyDescriptions.size} description(s) from AI_EVAL_ONLY_DESCRIPTIONS`);
+    info(
+      `Filtering AI evals to ${onlyDescriptions.size} description(s) from AI_EVAL_ONLY_DESCRIPTIONS`
+    );
   }
 
   let totalPassed = 0;
@@ -597,7 +609,7 @@ async function main() {
     judgeProvider: judgeProvider || null,
     judgeModel,
     judgeEnabled: Boolean(judgeProvider && hasJudgeConfig()),
-    configs: [],
+    configs: []
   };
 
   for (const configPath of configs) {
@@ -621,7 +633,7 @@ async function main() {
       judgePassed: result.judgePassed,
       judgeTotal: result.judgeTotal,
       judgeSkipped: result.judgeSkipped,
-      tests: result.tests,
+      tests: result.tests
     });
   }
 
@@ -678,7 +690,9 @@ async function main() {
   info(`AI eval summary: ${totalPassed}/${totalTests}`);
   info(`Hard checks: ${totalHardPassed}/${totalHardTests}`);
   if (totalJudgeTests > 0 || totalJudgeSkipped > 0) {
-    info(`Judge checks: ${totalJudgePassed}/${totalJudgeTests} passed, ${totalJudgeSkipped} skipped`);
+    info(
+      `Judge checks: ${totalJudgePassed}/${totalJudgeTests} passed, ${totalJudgeSkipped} skipped`
+    );
   }
 
   appendStepSummary([
@@ -688,10 +702,12 @@ async function main() {
     `- Hard checks: \`${totalHardPassed}/${totalHardTests}\``,
     `- Judge checks: \`${totalJudgePassed}/${totalJudgeTests}\` passed, \`${totalJudgeSkipped}\` skipped`,
     ...(retriedTotal > 0
-      ? [`- Retry pass: recovered \`${recoveredTotal}/${retriedTotal}\` flaky case(s) on second attempt`]
+      ? [
+          `- Retry pass: recovered \`${recoveredTotal}/${retriedTotal}\` flaky case(s) on second attempt`
+        ]
       : []),
     `- Judge provider: \`${judgeProvider || "none"}\``,
-    `- Judge model: \`${judgeModel || "none"}\``,
+    `- Judge model: \`${judgeModel || "none"}\``
   ]);
 
   for (const config of report.configs) {
@@ -702,7 +718,9 @@ async function main() {
 
     appendStepSummary([
       `### ${path.basename(config.path)}`,
-      ...failingTests.map((test) => `- Failed: ${test.description}${test.error ? ` — ${test.error}` : ""}`),
+      ...failingTests.map(
+        (test) => `- Failed: ${test.description}${test.error ? ` — ${test.error}` : ""}`
+      )
     ]);
   }
 
@@ -720,8 +738,8 @@ async function main() {
             hardTotal: totalHardTests,
             judgePassed: totalJudgePassed,
             judgeTotal: totalJudgeTests,
-            judgeSkipped: totalJudgeSkipped,
-          },
+            judgeSkipped: totalJudgeSkipped
+          }
         },
         null,
         2
@@ -729,13 +747,35 @@ async function main() {
     );
     info(`Wrote AI eval report to ${reportPath}`);
   }
+
+  // Public history is deliberately opt-in. The publisher receives the private
+  // report over stdin and constructs a strict aggregate allowlist before any
+  // public file is written; it never copies report objects or free-form text.
+  if (process.env.AI_EVAL_PUBLIC_HISTORY_PATH) {
+    const publish = spawnSync("pnpm", ["exec", "tsx", "scripts/publish-ai-eval-history.ts"], {
+      cwd: process.cwd(),
+      input: JSON.stringify(report),
+      encoding: "utf8"
+    });
+    if (publish.status !== 0) {
+      error(
+        `Public eval-history publish failed: ${(publish.stderr || publish.stdout || "").trim()}`
+      );
+      process.exit(1);
+    }
+    info((publish.stdout || "Sanitized public AI eval history written").trim());
+  }
   const passRate = totalTests > 0 ? totalPassed / totalTests : 0;
-  const minPassRate = Number(process.env.AI_EVAL_MIN_PASS_RATE || 1.00);
+  const minPassRate = Number(process.env.AI_EVAL_MIN_PASS_RATE || 1.0);
   if (passRate < minPassRate) {
-    info(`Pass rate ${totalPassed}/${totalTests} (${(passRate * 100).toFixed(1)}%) is below minimum ${(minPassRate * 100).toFixed(1)}%`);
+    info(
+      `Pass rate ${totalPassed}/${totalTests} (${(passRate * 100).toFixed(1)}%) is below minimum ${(minPassRate * 100).toFixed(1)}%`
+    );
     process.exit(1);
   }
-  info(`Pass rate ${totalPassed}/${totalTests} (${(passRate * 100).toFixed(1)}%) meets minimum ${(minPassRate * 100).toFixed(1)}%`);
+  info(
+    `Pass rate ${totalPassed}/${totalTests} (${(passRate * 100).toFixed(1)}%) meets minimum ${(minPassRate * 100).toFixed(1)}%`
+  );
   process.exit(0);
 }
 

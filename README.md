@@ -1,113 +1,64 @@
 # briananderson.xyz
 
-- `site/` — SvelteKit static site with blog + projects, Markdown via mdsvex, dark mode, RSS, sitemap.
+The source for [briananderson.xyz](https://briananderson.xyz): a static-first SvelteKit portfolio with
+schema-validated writing, evidence-linked claims, machine-readable resume/content surfaces, and an
+Express AI API on Cloud Run.
+
+## Repository map
+
+- `site/` — SvelteKit application, content, build scripts, and Cloud Run API
+- `infra/terraform/` — GCP resources, WIF identities, and Terraform state configuration
+- `docs/architecture/` — durable content, theme, and AI architecture documentation
+- `.github/workflows/` — validation, exact-revision infrastructure, evaluation, and delivery workflows
 
 ## Quick start
+
 ```bash
 cd site
-pnpm i
+pnpm install --frozen-lockfile
 pnpm dev
 ```
 
-## Deploy
-Add GitHub repo secrets for WIF authentication:
-- `GCP_PROJECT_ID`
-- `GCP_WIF_PROVIDER`
-- `GCP_WIF_SA_EMAIL`
-- `GCS_BUCKET`
-- `GCP_REGION` (e.g., `us-central1`)
-
-# Infra + CI
-
-This bundle gives you:
-- Terraform **GCS backend**
-- **WIF/OIDC** from GitHub to Google (no long-lived keys)
-- GCP infra: **GCS site bucket**, **WIF pool/provider**, **CI service account**
-- GitHub Actions for **plan/apply** and site deployment
-
-## Required GitHub Secrets
-- `GCP_PROJECT_ID`, `GCP_REGION`
-- `GCP_WIF_PROVIDER` (e.g., projects/NUM/locations/global/workloadIdentityPools/github-pool/providers/github-oidc)
-- `GCP_WIF_SA_EMAIL` (CI SA email created by TF; paste after first apply)
-- `TF_STATE_BUCKET` (pre-created GCS bucket for Terraform state)
-- `SITE_BUCKET_NAME` (e.g., briananderson-xyz-site)
-- `GH_ORG`, `GH_REPO`
-
-## Flow
-1) Create the GCS bucket for Terraform state.
-2) Set repo secrets above.
-3) Open a PR → **plan** runs (WIF, no keys).
-4) Merge to main → **apply** provisions infra and **build-and-deploy** deploys the site.
-5) Point Cloudflare at GCS as origin with host header `<bucket>.storage.googleapis.com` and set cache rules.
-
-## Terraform deploy (two-phase)
-
-We enable required Google APIs first (Phase 1), then provision all resources (Phase 2). This avoids API-disabled errors during creation of resources like Artifact Registry and Cloud Run.
-
-### Prereqs
-- Install: Terraform, gcloud
-- Auth: `gcloud auth application-default login`
-- Ensure `GOOGLE_PROJECT` is set or provide `-var` values.
-
-### Variables
-These are defined in `infra/terraform/variables.tf`.
-
-Required:
-- `project_id` (no default)
-
-Common defaults (override as needed):
-- `region` (default `us-central1`)
-- `bucket_name` (default `briananderson.xyz`)
-- `auth_proxy_domain` (default `auth.briananderson.xyz`)
-- `github_org`, `github_repo`, `github_branch`
-
-Set via environment or `terraform.tfvars`:
-
-Examples:
-```powershell
-# PowerShell (Windows)
-$env:TF_VAR_project_id = "<PROJECT_ID>"
-$env:TF_VAR_region = "us-central1"
-$env:TF_VAR_bucket_name = "briananderson.xyz"
-```
+For Chat, Fit Finder, and MCP development, add `GEMINI_API_KEY` to
+`site/functions/.env.local` and run the API separately:
 
 ```bash
-# bash
-export TF_VAR_project_id=<PROJECT_ID>
-export TF_VAR_region=us-central1
-export TF_VAR_bucket_name=briananderson.xyz
+cd site/functions
+pnpm install --frozen-lockfile
+pnpm run dev
 ```
 
-### Phase 0 (once): init
+The site defaults to port 5173 and the API to port 8080.
+
+## Validate
+
 ```bash
-cd infra/terraform
-terraform init
+cd site
+pnpm run validate
+pnpm run test:e2e
+
+cd functions
+pnpm test
 ```
 
-### Phase 1: enable required services
-Terraform file `infra/terraform/services.tf` manages:
-- artifactregistry.googleapis.com
-- run.googleapis.com
-- iam.googleapis.com
-- iamcredentials.googleapis.com
-- sts.googleapis.com
+## Architecture
 
-Apply only the services first:
-```bash
-terraform apply -target=google_project_service.required
-```
+- [AI features and external security boundaries](docs/architecture/ai-features.md)
+- [Content authoring, proof, and freshness](docs/architecture/content-authoring.md)
+- [Themes and semantic color tokens](docs/architecture/theming.md)
+- [Terraform bootstrap and identity separation](infra/terraform/README.md)
 
-Wait ~1–3 minutes for activation to propagate.
+## Delivery
 
-### Phase 2: full apply
-```bash
-terraform apply
-```
+GitHub Actions build and validate with Node 22, authenticate to Google Cloud through Workload Identity
+Federation, deploy the static output to GCS, and deploy a non-root container to Cloud Run. Production
+deployment is an explicit workflow input.
 
-### Outputs of interest
-- `wif_pool_name`, `wif_provider_name`
-- `ci_service_account` (email for GitHub Actions WIF)
-- `site_bucket` (GCS Website bucket URL)
+Terraform uses separate read-only planning and privileged apply identities. Pull-request plans are
+review evidence only. A main-branch infrastructure run checks out the exact triggering SHA, creates a
+new saved plan from that revision, and applies the same plan behind the protected `production`
+environment.
 
-### Notes
-- WIF provider is restricted to `${var.github_org}/${var.github_repo}` on branch `${var.github_branch}` via `attribute_condition` in `main.tf`.
+Live Cloudflare headers/rate rules, GitHub environment reviewers, WIF bindings, secrets, analytics
+retention, and provider state are external configuration and cannot be proven by this repository
+alone.

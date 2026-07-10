@@ -24,7 +24,7 @@ const COLORS = {
   green: "\x1b[32m",
   red: "\x1b[31m",
   yellow: "\x1b[33m",
-  blue: "\x1b[34m",
+  blue: "\x1b[34m"
 };
 
 function log(message: string, color = "reset") {
@@ -60,9 +60,9 @@ function validateFile(filename: string): boolean {
     success(`${filename} is valid.`);
     return true;
   } catch (e: any) {
-    if (e.errors) {
+    if (Array.isArray(e.issues)) {
       error(`${filename} validation failed:`);
-      e.errors.forEach((err: any) => {
+      e.issues.forEach((err: any) => {
         log(`  - Path: ${err.path.join(".")} : ${err.message}`, "red");
       });
     } else {
@@ -76,9 +76,7 @@ function main() {
   info("\n=== Resume Schema Validation ===\n");
 
   const contentDir = path.resolve("content");
-  const files = fs
-    .readdirSync(contentDir)
-    .filter((f) => f.endsWith(".yaml") || f.endsWith(".yml"));
+  const files = fs.readdirSync(contentDir).filter((f) => f.endsWith(".yaml") || f.endsWith(".yml"));
 
   let allValid = true;
 

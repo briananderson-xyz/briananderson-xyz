@@ -5,6 +5,8 @@ period: "2026"
 summary: "A Rust command-line tool for recording, replaying, and mirroring MQTT message streams, with an embedded broker, an interactive terminal dashboard, and independent verification of mirrored traffic."
 tags: ["Rust", "SystemsEngineering", "IoT", "Builder", "SideProject", "OpenSource"]
 keywords: ["mqtt", "mqtt-recorder", "rust", "iot", "message-broker", "record-replay", "tui"]
+outcome: "Systems reliability"
+projectType: "Open-source tool"
 showTableOfContents: true
 links:
   - label: "GitHub Repository"

@@ -1,785 +1,349 @@
-name: Build and Deploy
+name: Build and Deploy Dev
 
-permissions:
-  contents: read
-  id-token: write
+permissions: {}
 
 on:
   push:
     branches: [main]
-  workflow_dispatch:
-    inputs:
-      deploy_prod:
-        description: 'Deploy to production (default: dev only)'
-        required: false
-        default: false
-        type: boolean
-      rollback:
-        description: 'Rollback to previous successful deployment'
-        required: false
-        default: false
-        type: boolean
-      target_env:
-        description: 'Target environment for rollback (dev or prod)'
-        required: false
-        default: 'prod'
-        type: choice
-        options:
-          - dev
-          - prod
 
 jobs:
   validate:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
-      - uses: actions/checkout@v5
-      - uses: pnpm/action-setup@v6
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6
         with:
-          version: 9
-      - uses: actions/setup-node@v6
+          version: 10.33.0
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
-          node-version: 20
-          cache: 'pnpm'
+          node-version: 22
+          cache: "pnpm"
           cache-dependency-path: site/pnpm-lock.yaml
-      - name: Install deps
+      - name: Install dependencies
         working-directory: site
-        run: pnpm i --frozen-lockfile
-      - name: Create .env file (Prod for validation)
-        working-directory: site
-        run: |
-          echo "PUBLIC_SITE_URL=https://briananderson.xyz" > .env
-          echo "PUBLIC_ENV=prod" >> .env
-          echo "PUBLIC_POSTHOG_KEY=${{ secrets.PUBLIC_POSTHOG_KEY }}" >> .env
-          echo "PUBLIC_POSTHOG_HOST=${{ secrets.PUBLIC_POSTHOG_HOST }}" >> .env
-      - name: Debug .env creation
-        working-directory: site
-        run: |
-          ls -la .env
-          echo "Content of .env (sanitized):"
-          grep "PUBLIC_SITE_URL" .env || echo "PUBLIC_SITE_URL not found in .env"
-      - name: Lint
-        working-directory: site
-        run: pnpm run lint
-      - name: Run validation
+        run: pnpm install --frozen-lockfile
+      - name: Validate site
         working-directory: site
         env:
-          PUBLIC_POSTHOG_KEY: ${{ secrets.PUBLIC_POSTHOG_KEY }}
-          PUBLIC_POSTHOG_HOST: ${{ secrets.PUBLIC_POSTHOG_HOST }}
-          PUBLIC_SITE_URL: https://briananderson.xyz
+          PUBLIC_SITE_URL: https://dev.briananderson.xyz
+          PUBLIC_ENV: dev
         run: pnpm run validate
-      - name: Debug Build Output
-        working-directory: site
-        run: |
-          echo "Checking sitemap.xml..."
-          if [ -f "build/sitemap.xml" ]; then
-            head -n 5 build/sitemap.xml
-          else
-            echo "sitemap.xml not found!"
-          fi
-          
-          echo "Checking robots.txt..."
-          if [ -f "build/robots.txt" ]; then
-            cat build/robots.txt
-          else
-            echo "robots.txt not found!"
-          fi
 
   build-functions:
     runs-on: ubuntu-latest
     needs: validate
-    if: github.event.inputs.rollback != 'true'
-    outputs:
-      image: ${{ steps.build.outputs.image }}
+    permissions:
+      contents: read
     steps:
-      - uses: actions/checkout@v5
-      - uses: pnpm/action-setup@v6
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6
         with:
-          version: 9
-      - uses: actions/setup-node@v6
+          version: 10.33.0
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
-          node-version: 20
-          cache: 'pnpm'
-          cache-dependency-path: site/pnpm-lock.yaml
-      - name: Install functions deps
+          node-version: 22
+          cache: "pnpm"
+          cache-dependency-path: site/functions/pnpm-lock.yaml
+      - name: Install functions dependencies
         working-directory: site/functions
-        run: pnpm i --frozen-lockfile
+        run: pnpm install --frozen-lockfile
       - name: Build functions
         working-directory: site/functions
         run: pnpm run build
       - name: Test functions
         working-directory: site/functions
         run: pnpm test
-      - uses: google-github-actions/auth@v3
+      - name: Build container without cloud credentials
+        working-directory: site/functions
+        run: docker build --tag site-functions:validation .
+
+  publish-functions:
+    runs-on: ubuntu-latest
+    needs: build-functions
+    if: vars.DEV_DEPLOY_ENABLED == 'true'
+    permissions:
+      contents: read
+      id-token: write
+    outputs:
+      image_ref: ${{ steps.publish.outputs.image_ref }}
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+      - name: Check publisher configuration
+        id: config
+        env:
+          PROVIDER: ${{ secrets.GCP_WIF_PUBLISHER_PROVIDER }}
+          SERVICE_ACCOUNT: ${{ secrets.GCP_WIF_PUBLISHER_SA_EMAIL }}
+          REGION: ${{ vars.GCP_REGION }}
+          PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+        run: |
+          if [ -n "$PROVIDER" ] && [ -n "$SERVICE_ACCOUNT" ] && [ -n "$REGION" ] && [ -n "$PROJECT_ID" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "Publisher bootstrap is incomplete; container publication is safely skipped." >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3
+        if: steps.config.outputs.ready == 'true'
         with:
-          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
-          service_account: ${{ secrets.GCP_WIF_SA_EMAIL }}
-      - uses: google-github-actions/setup-gcloud@v3
-      - name: Docker auth
-        run: gcloud auth configure-docker ${{ secrets.GCP_REGION }}-docker.pkg.dev
-      - name: Build and push container
-        id: build
+          workload_identity_provider: ${{ secrets.GCP_WIF_PUBLISHER_PROVIDER }}
+          service_account: ${{ secrets.GCP_WIF_PUBLISHER_SA_EMAIL }}
+      - uses: google-github-actions/setup-gcloud@aa5489c8933f4cc7a4f7d45035b3b1440c9c10db # v3
+        if: steps.config.outputs.ready == 'true'
+      - name: Configure Artifact Registry authentication
+        if: steps.config.outputs.ready == 'true'
+        env:
+          REGION: ${{ vars.GCP_REGION }}
+        run: gcloud auth configure-docker "${REGION}-docker.pkg.dev" --quiet
+      - name: Build, push, and confirm immutable image
+        id: publish
+        if: steps.config.outputs.ready == 'true'
         working-directory: site/functions
         env:
-          REGION: ${{ secrets.GCP_REGION }}
-          PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+          REGION: ${{ vars.GCP_REGION }}
+          PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
         run: |
-          IMAGE="${REGION}-docker.pkg.dev/${PROJECT_ID}/site-functions/api:${GITHUB_SHA:0:8}"
-          docker build -t "$IMAGE" .
-          PUSH_OUTPUT=$(docker push "$IMAGE" 2>&1)
-          DIGEST=$(echo "$PUSH_OUTPUT" | grep -oP 'sha256:[a-f0-9]+' | tail -1)
-          echo "image=$IMAGE" >> $GITHUB_OUTPUT
-          echo "digest=$DIGEST" >> $GITHUB_OUTPUT
+          set -euo pipefail
+          IMAGE_NAME="${REGION}-docker.pkg.dev/${PROJECT_ID}/site-functions/api"
+          IMAGE_TAG="${IMAGE_NAME}:${GITHUB_SHA}"
+          METADATA_FILE="${RUNNER_TEMP}/build-metadata.json"
+
+          docker buildx build --push --metadata-file "$METADATA_FILE" --tag "$IMAGE_TAG" .
+          DIGEST=$(jq -r '."containerimage.digest" // empty' "$METADATA_FILE")
+          if [[ ! "$DIGEST" =~ ^sha256:[0-9a-f]{64}$ ]]; then
+            echo "Artifact Registry did not return an immutable digest" >&2
+            exit 1
+          fi
+
+          IMAGE_REF="${IMAGE_NAME}@${DIGEST}"
+          docker buildx imagetools inspect "$IMAGE_REF" >/dev/null
+          echo "image_ref=$IMAGE_REF" >> "$GITHUB_OUTPUT"
+          echo "Published $IMAGE_REF"
 
   deploy-functions-dev:
     runs-on: ubuntu-latest
-    needs: build-functions
+    needs: publish-functions
+    if: vars.DEV_DEPLOY_ENABLED == 'true'
     environment: dev
+    permissions:
+      contents: read
+      id-token: write
     steps:
-      - uses: google-github-actions/auth@v3
-        with:
-          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
-          service_account: ${{ secrets.GCP_WIF_SA_EMAIL }}
-      - uses: google-github-actions/setup-gcloud@v3
-      - name: Deploy chat-dev
+      - name: Check dev deployment configuration
+        id: config
         env:
-          REGION: ${{ secrets.GCP_REGION }}
-          PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-          IMAGE: ${{ needs.build-functions.outputs.image }}
+          PROVIDER: ${{ secrets.GCP_WIF_DEV_PROVIDER }}
+          SERVICE_ACCOUNT: ${{ secrets.GCP_WIF_DEV_SA_EMAIL }}
+          REGION: ${{ vars.GCP_REGION }}
+          PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+          IMAGE_REF: ${{ needs.publish-functions.outputs.image_ref }}
         run: |
-          IMAGE="${IMAGE:-${REGION}-docker.pkg.dev/${PROJECT_ID}/site-functions/api:${GITHUB_SHA:0:8}}"
-          gcloud run deploy chat-dev \
-            --image "$IMAGE" \
-            --region "$REGION" \
-            --platform managed \
-            --allow-unauthenticated \
-            --set-env-vars "NODE_ENV=production" \
-            --set-env-vars "FUNCTION_TARGET=chat" \
-            --set-env-vars "SITE_URL=https://dev.briananderson.xyz" \
-            --set-secrets "GEMINI_API_KEY=gemini-api-key:latest,ORIGIN_VERIFY_TOKEN=origin-verify-token-dev:latest" \
-            --service-account "cloud-run-runtime-dev@${PROJECT_ID}.iam.gserviceaccount.com" \
-            --max-instances 5 \
-            --concurrency 20 \
-            --timeout 120 \
-            --memory 512Mi
-      - name: Deploy fitfinder-dev
-        env:
-          REGION: ${{ secrets.GCP_REGION }}
-          PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-          IMAGE: ${{ needs.build-functions.outputs.image }}
-        run: |
-          IMAGE="${IMAGE:-${REGION}-docker.pkg.dev/${PROJECT_ID}/site-functions/api:${GITHUB_SHA:0:8}}"
-          gcloud run deploy fitfinder-dev \
-            --image "$IMAGE" \
-            --region "$REGION" \
-            --platform managed \
-            --allow-unauthenticated \
-            --set-env-vars "NODE_ENV=production" \
-            --set-env-vars "FUNCTION_TARGET=fitfinder" \
-            --set-env-vars "SITE_URL=https://dev.briananderson.xyz" \
-            --set-secrets "GEMINI_API_KEY=gemini-api-key:latest,ORIGIN_VERIFY_TOKEN=origin-verify-token-dev:latest" \
-            --service-account "cloud-run-runtime-dev@${PROJECT_ID}.iam.gserviceaccount.com" \
-            --max-instances 5 \
-            --concurrency 20 \
-            --timeout 120 \
-            --memory 512Mi
-      - name: Smoke test dev Cloud Run services
-        id: smoke
-        run: |
-          echo "Warming up dev Cloud Run services..."
-          CHAT_OK=false
-          for i in 1 2 3 4 5; do
-            STATUS=$(curl -sf -o /dev/null -w "%{http_code}" https://api-dev.briananderson.xyz/chat -X POST -H "Content-Type: application/json" -d '{"message":"ping"}') && echo "chat: $STATUS" && CHAT_OK=true && break || echo "chat: attempt $i failed, retrying..."
-            sleep 5
-          done
-          FIT_OK=false
-          for i in 1 2 3 4 5; do
-            STATUS=$(curl -sf -o /dev/null -w "%{http_code}" https://api-dev.briananderson.xyz/fit-finder -X POST -H "Content-Type: application/json" -d '{"jobDescription":"Senior TypeScript developer with React and Node experience"}') && echo "fit-finder: $STATUS" && FIT_OK=true && break || echo "fit-finder: attempt $i failed, retrying..."
-            sleep 5
-          done
-          if [ "$CHAT_OK" != "true" ] || [ "$FIT_OK" != "true" ]; then
-            echo "smoke_failed=true" >> $GITHUB_OUTPUT
-            exit 1
-          fi
-      - name: Rollback dev Cloud Run on failure
-        if: failure() && steps.smoke.outcome == 'failure'
-        env:
-          REGION: ${{ secrets.GCP_REGION }}
-          PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-        run: |
-          STABLE_IMAGE="${REGION}-docker.pkg.dev/${PROJECT_ID}/site-functions/api:dev-stable"
-          echo "Rolling back dev Cloud Run to dev-stable..."
-          gcloud run deploy chat-dev --image "$STABLE_IMAGE" --region "$REGION" --platform managed --allow-unauthenticated || true
-          gcloud run deploy fitfinder-dev --image "$STABLE_IMAGE" --region "$REGION" --platform managed --allow-unauthenticated || true
-          echo "Cloud Run rollback complete."
-          exit 1
-
-  # Blocking AI-behavior smoke gate on the manual prod promotion. Runs a small
-  # hard-assertion suite against the just-deployed api-dev (same artifacts about
-  # to be promoted to prod), using the deployed service's own Gemini key — no CI
-  # secret and no rate-limit bypass. The larger behavior suite remains available
-  # in the manual AI Evals workflow, outside the deploy pipeline.
-  ai-evals-prod-gate:
-    name: AI evals (prod promotion gate)
-    runs-on: ubuntu-latest
-    needs: [deploy-dev]
-    if: github.event_name == 'workflow_dispatch' && github.event.inputs.deploy_prod == 'true'
-    steps:
-      - uses: actions/checkout@v5
-      - uses: pnpm/action-setup@v6
-        with:
-          version: 9
-      - uses: actions/setup-node@v6
-        with:
-          node-version: 20
-          cache: 'pnpm'
-          cache-dependency-path: site/pnpm-lock.yaml
-      - name: Install deps
-        working-directory: site
-        run: pnpm i --frozen-lockfile
-      - name: Run AI behavior smoke evals against dev (blocking)
-        working-directory: site
-        env:
-          AI_EVAL_BASE_URL: https://api-dev.briananderson.xyz
-          AI_EVAL_MIN_PASS_RATE: '1.00'
-          AI_EVAL_REPORT_PATH: artifacts/ai-smoke-prod-gate.json
-        run: pnpm run test:ai:evals:smoke
-      - name: Upload eval report
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: ai-smoke-report-prod-gate
-          path: site/artifacts/ai-smoke-prod-gate.json
-          if-no-files-found: ignore
-          retention-days: 14
-
-  deploy-functions-prod:
-    runs-on: ubuntu-latest
-    needs: [build-functions, deploy-dev, ai-evals-prod-gate]
-    environment: prod
-    if: github.event_name == 'workflow_dispatch' && github.event.inputs.deploy_prod == 'true'
-    steps:
-      - uses: google-github-actions/auth@v3
-        with:
-          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
-          service_account: ${{ secrets.GCP_WIF_SA_EMAIL }}
-      - uses: google-github-actions/setup-gcloud@v3
-      - name: Deploy chat (prod)
-        env:
-          REGION: ${{ secrets.GCP_REGION }}
-          PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-          IMAGE: ${{ needs.build-functions.outputs.image }}
-        run: |
-          IMAGE="${IMAGE:-${REGION}-docker.pkg.dev/${PROJECT_ID}/site-functions/api:${GITHUB_SHA:0:8}}"
-          gcloud run deploy chat \
-            --image "$IMAGE" \
-            --region "$REGION" \
-            --platform managed \
-            --allow-unauthenticated \
-            --set-env-vars "NODE_ENV=production" \
-            --set-env-vars "FUNCTION_TARGET=chat" \
-            --set-env-vars "SITE_URL=https://briananderson.xyz" \
-            --set-secrets "GEMINI_API_KEY=gemini-api-key:latest,ORIGIN_VERIFY_TOKEN=origin-verify-token-prod:latest" \
-            --service-account "cloud-run-runtime-prod@${PROJECT_ID}.iam.gserviceaccount.com" \
-            --max-instances 10 \
-            --concurrency 20 \
-            --timeout 120 \
-            --memory 512Mi
-      - name: Deploy fitfinder (prod)
-        env:
-          REGION: ${{ secrets.GCP_REGION }}
-          PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-          IMAGE: ${{ needs.build-functions.outputs.image }}
-        run: |
-          IMAGE="${IMAGE:-${REGION}-docker.pkg.dev/${PROJECT_ID}/site-functions/api:${GITHUB_SHA:0:8}}"
-          gcloud run deploy fitfinder \
-            --image "$IMAGE" \
-            --region "$REGION" \
-            --platform managed \
-            --allow-unauthenticated \
-            --set-env-vars "NODE_ENV=production" \
-            --set-env-vars "FUNCTION_TARGET=fitfinder" \
-            --set-env-vars "SITE_URL=https://briananderson.xyz" \
-            --set-secrets "GEMINI_API_KEY=gemini-api-key:latest,ORIGIN_VERIFY_TOKEN=origin-verify-token-prod:latest" \
-            --service-account "cloud-run-runtime-prod@${PROJECT_ID}.iam.gserviceaccount.com" \
-            --max-instances 10 \
-            --concurrency 20 \
-            --timeout 120 \
-            --memory 512Mi
-      - name: Smoke test prod Cloud Run services
-        id: smoke
-        run: |
-          echo "Warming up prod Cloud Run services..."
-          CHAT_OK=false
-          for i in 1 2 3 4 5; do
-            STATUS=$(curl -sf -o /dev/null -w "%{http_code}" https://api.briananderson.xyz/chat -X POST -H "Content-Type: application/json" -d '{"message":"ping"}') && echo "chat: $STATUS" && CHAT_OK=true && break || echo "chat: attempt $i failed, retrying..."
-            sleep 5
-          done
-          FIT_OK=false
-          for i in 1 2 3 4 5; do
-            STATUS=$(curl -sf -o /dev/null -w "%{http_code}" https://api.briananderson.xyz/fit-finder -X POST -H "Content-Type: application/json" -d '{"jobDescription":"Senior TypeScript developer with React and Node experience"}') && echo "fit-finder: $STATUS" && FIT_OK=true && break || echo "fit-finder: attempt $i failed, retrying..."
-            sleep 5
-          done
-          if [ "$CHAT_OK" != "true" ] || [ "$FIT_OK" != "true" ]; then
-            echo "smoke_failed=true" >> $GITHUB_OUTPUT
-            exit 1
-          fi
-      - name: Rollback prod Cloud Run on failure
-        if: failure() && steps.smoke.outcome == 'failure'
-        env:
-          REGION: ${{ secrets.GCP_REGION }}
-          PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-        run: |
-          STABLE_IMAGE="${REGION}-docker.pkg.dev/${PROJECT_ID}/site-functions/api:prod-stable"
-          echo "Rolling back prod Cloud Run to prod-stable..."
-          gcloud run deploy chat --image "$STABLE_IMAGE" --region "$REGION" --platform managed --allow-unauthenticated || true
-          gcloud run deploy fitfinder --image "$STABLE_IMAGE" --region "$REGION" --platform managed --allow-unauthenticated || true
-          echo "Cloud Run rollback complete."
-          exit 1
-
-  deploy-dev:
-    runs-on: ubuntu-latest
-    needs: [validate, build-functions, deploy-functions-dev]
-    environment: dev
-    outputs:
-      image_digest: ${{ needs.build-functions.outputs.digest }}
-    if: github.event.inputs.rollback != 'true'
-    steps:
-      - uses: actions/checkout@v5
-      - uses: pnpm/action-setup@v6
-        with:
-          version: 9
-      - uses: actions/setup-node@v6
-        with:
-          node-version: 20
-          cache: 'pnpm'
-          cache-dependency-path: site/pnpm-lock.yaml
-      - name: Install deps
-        working-directory: site
-        run: pnpm i --frozen-lockfile
-      - name: Install Playwright browsers
-        working-directory: site
-        run: pnpm exec playwright install chromium
-      - name: Create .env file (Dev)
-        working-directory: site
-        run: |
-          echo "PUBLIC_SITE_URL=https://dev.briananderson.xyz" > .env
-          echo "PUBLIC_ENV=dev" >> .env
-          echo "PUBLIC_POSTHOG_KEY=${{ secrets.PUBLIC_POSTHOG_KEY }}" >> .env
-          echo "PUBLIC_POSTHOG_HOST=${{ secrets.PUBLIC_POSTHOG_HOST }}" >> .env
-      - name: Build for Dev
-        working-directory: site
-        run: pnpm run build
-      - uses: google-github-actions/auth@v3
-        with:
-          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
-          service_account: ${{ secrets.GCP_WIF_SA_EMAIL }}
-      - uses: google-github-actions/setup-gcloud@v3
-      - name: Get last successful dev deployment
-        id: last_successful
-        run: |
-          LAST_SUCCESSFUL=$(gh run list --workflow=build-and-deploy.yml --branch=main --limit=100 --json databaseId --jq '.[].databaseId' | while read run_id; do
-            if gh run view $run_id --json jobs --jq '.jobs[] | select(.name == "deploy-dev" and .conclusion == "success")' | grep -q .; then
-              echo $run_id
-              break
-            fi
-          done || echo "none")
-          if [ "$LAST_SUCCESSFUL" == "none" ] || [ -z "$LAST_SUCCESSFUL" ]; then
-            echo "No previous successful dev deployment found"
-            echo "run_id=none" >> $GITHUB_OUTPUT
+          if [ -n "$PROVIDER" ] && [ -n "$SERVICE_ACCOUNT" ] && [ -n "$REGION" ] && [ -n "$PROJECT_ID" ] && [ -n "$IMAGE_REF" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
           else
-            echo "run_id=$LAST_SUCCESSFUL" >> $GITHUB_OUTPUT
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "Dev bootstrap or immutable image output is incomplete; service deployment is safely skipped." >> "$GITHUB_STEP_SUMMARY"
           fi
+      - uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3
+        if: steps.config.outputs.ready == 'true'
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WIF_DEV_PROVIDER }}
+          service_account: ${{ secrets.GCP_WIF_DEV_SA_EMAIL }}
+      - uses: google-github-actions/setup-gcloud@aa5489c8933f4cc7a4f7d45035b3b1440c9c10db # v3
+        if: steps.config.outputs.ready == 'true'
+      - name: Validate immutable release input
+        if: steps.config.outputs.ready == 'true'
         env:
-          GH_TOKEN: ${{ github.token }}
-      - name: Upload to dev bucket
+          IMAGE_REF: ${{ needs.publish-functions.outputs.image_ref }}
         run: |
-          # Upload hashed assets (long cache)
-          gcloud storage rsync site/build/_app gs://dev.briananderson.xyz/_app --recursive --cache-control="public, max-age=31536000, immutable"
+          if [[ ! "$IMAGE_REF" =~ ^[^[:space:]]+-docker\.pkg\.dev/[^[:space:]]+@sha256:[0-9a-f]{64}$ ]]; then
+            echo "Missing registry-confirmed immutable image reference" >&2
+            exit 1
+          fi
+      - name: Capture current dev image digests
+        if: steps.config.outputs.ready == 'true'
+        env:
+          REGION: ${{ vars.GCP_REGION }}
+        run: |
+          set -euo pipefail
+          previous_image() {
+            local service="$1"
+            local revision
+            revision=$(gcloud run services describe "$service" --region "$REGION" --format='value(status.latestReadyRevisionName)')
+            gcloud run revisions describe "$revision" --region "$REGION" --format='value(spec.containers[0].image)'
+          }
 
-          # Upload versioned content index (long cache, immutable)
-          if compgen -G "site/build/content-index.*.json" > /dev/null; then
+          PREVIOUS_CHAT_IMAGE=$(previous_image chat-dev)
+          PREVIOUS_FIT_IMAGE=$(previous_image fitfinder-dev)
+          for image in "$PREVIOUS_CHAT_IMAGE" "$PREVIOUS_FIT_IMAGE"; do
+            if [[ ! "$image" =~ @sha256:[0-9a-f]{64}$ ]]; then
+              echo "Cannot deploy safely without an immutable previous dev image" >&2
+              exit 1
+            fi
+          done
+          echo "PREVIOUS_CHAT_IMAGE=$PREVIOUS_CHAT_IMAGE" >> "$GITHUB_ENV"
+          echo "PREVIOUS_FIT_IMAGE=$PREVIOUS_FIT_IMAGE" >> "$GITHUB_ENV"
+      - name: Deploy dev services by digest
+        id: deploy
+        if: steps.config.outputs.ready == 'true'
+        env:
+          IMAGE_REF: ${{ needs.publish-functions.outputs.image_ref }}
+          REGION: ${{ vars.GCP_REGION }}
+          PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+        run: |
+          set -euo pipefail
+          deploy_service() {
+            local service="$1"
+            local target="$2"
+            gcloud run deploy "$service" \
+              --image "$IMAGE_REF" \
+              --region "$REGION" \
+              --platform managed \
+              --set-env-vars "NODE_ENV=production,FUNCTION_TARGET=${target},SITE_URL=https://dev.briananderson.xyz" \
+              --set-secrets "GEMINI_API_KEY=gemini-api-key:latest,ORIGIN_VERIFY_TOKEN=origin-verify-token-dev:latest" \
+              --service-account "cloud-run-runtime-dev@${PROJECT_ID}.iam.gserviceaccount.com" \
+              --max-instances 5 \
+              --concurrency 20 \
+              --timeout 120 \
+              --memory 512Mi \
+              --quiet
+          }
+          deploy_service chat-dev chat
+          deploy_service fitfinder-dev fitfinder
+      - name: Verify deployed dev image digests
+        id: verify
+        if: steps.config.outputs.ready == 'true'
+        env:
+          EXPECTED_IMAGE: ${{ needs.publish-functions.outputs.image_ref }}
+          REGION: ${{ vars.GCP_REGION }}
+        run: |
+          set -euo pipefail
+          deployed_image() {
+            local service="$1"
+            local revision
+            revision=$(gcloud run services describe "$service" --region "$REGION" --format='value(status.latestReadyRevisionName)')
+            gcloud run revisions describe "$revision" --region "$REGION" --format='value(spec.containers[0].image)'
+          }
+          for service in chat-dev fitfinder-dev; do
+            ACTUAL_IMAGE=$(deployed_image "$service")
+            if [ "$ACTUAL_IMAGE" != "$EXPECTED_IMAGE" ]; then
+              echo "$service resolved to $ACTUAL_IMAGE, expected $EXPECTED_IMAGE" >&2
+              exit 1
+            fi
+          done
+          echo "Both dev services report $EXPECTED_IMAGE" >> "$GITHUB_STEP_SUMMARY"
+      - name: Smoke test dev services
+        id: smoke
+        if: steps.config.outputs.ready == 'true'
+        run: |
+          set -euo pipefail
+          curl --fail-with-body --retry 4 --retry-all-errors --retry-delay 5 \
+            --header "Content-Type: application/json" \
+            --data '{"message":"ping"}' \
+            https://api-dev.briananderson.xyz/chat >/dev/null
+          curl --fail-with-body --retry 4 --retry-all-errors --retry-delay 5 \
+            --header "Content-Type: application/json" \
+            --data '{"jobDescription":"Senior TypeScript developer with React and Node experience"}' \
+            https://api-dev.briananderson.xyz/fit-finder >/dev/null
+      - name: Roll back dev services to captured digests
+        if: steps.config.outputs.ready == 'true' && failure() && (steps.deploy.outcome == 'failure' || steps.verify.outcome == 'failure' || steps.smoke.outcome == 'failure')
+        env:
+          REGION: ${{ vars.GCP_REGION }}
+        run: |
+          set -euo pipefail
+          gcloud run deploy chat-dev --image "$PREVIOUS_CHAT_IMAGE" --region "$REGION" --platform managed --quiet
+          gcloud run deploy fitfinder-dev --image "$PREVIOUS_FIT_IMAGE" --region "$REGION" --platform managed --quiet
+          echo "Dev services restored to their captured immutable digests" >&2
+          exit 1
+
+  deploy-site-dev:
+    runs-on: ubuntu-latest
+    needs: [validate, deploy-functions-dev]
+    if: vars.DEV_DEPLOY_ENABLED == 'true'
+    environment: dev
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6
+        with:
+          version: 10.33.0
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        with:
+          node-version: 22
+          cache: "pnpm"
+          cache-dependency-path: site/pnpm-lock.yaml
+      - name: Install dependencies
+        working-directory: site
+        run: pnpm install --frozen-lockfile
+      - name: Build dev site
+        working-directory: site
+        env:
+          PUBLIC_SITE_URL: https://dev.briananderson.xyz
+          PUBLIC_ENV: dev
+          PUBLIC_POSTHOG_KEY: ${{ secrets.PUBLIC_POSTHOG_KEY }}
+          PUBLIC_POSTHOG_HOST: ${{ secrets.PUBLIC_POSTHOG_HOST }}
+        run: pnpm run build
+      - name: Install Playwright browser
+        working-directory: site
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Check dev static deployment configuration
+        id: config
+        env:
+          PROVIDER: ${{ secrets.GCP_WIF_DEV_PROVIDER }}
+          SERVICE_ACCOUNT: ${{ secrets.GCP_WIF_DEV_SA_EMAIL }}
+        run: |
+          if [ -n "$PROVIDER" ] && [ -n "$SERVICE_ACCOUNT" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "Dev identity bootstrap is incomplete; static deployment is safely skipped." >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3
+        if: steps.config.outputs.ready == 'true'
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WIF_DEV_PROVIDER }}
+          service_account: ${{ secrets.GCP_WIF_DEV_SA_EMAIL }}
+      - uses: google-github-actions/setup-gcloud@aa5489c8933f4cc7a4f7d45035b3b1440c9c10db # v3
+        if: steps.config.outputs.ready == 'true'
+      - name: Upload static site to dev bucket
+        if: steps.config.outputs.ready == 'true'
+        run: |
+          set -euo pipefail
+          gcloud storage rsync site/build/_app gs://dev.briananderson.xyz/_app --recursive --cache-control="public, max-age=31536000, immutable"
+          if compgen -G "site/build/content-index.*.json" >/dev/null; then
             gcloud storage cp site/build/content-index.*.json gs://dev.briananderson.xyz/ --cache-control="public, max-age=31536000, immutable"
           fi
-
-          # Upload content index pointer (short cache)
-          if [ -f "site/build/content-index-latest.json" ]; then
+          if [ -f site/build/content-index-latest.json ]; then
             gcloud storage cp site/build/content-index-latest.json gs://dev.briananderson.xyz/ --cache-control="public, max-age=60, must-revalidate"
           fi
-
-          # Upload main content index fallback (medium cache)
-          if [ -f "site/build/content-index.json" ]; then
+          if [ -f site/build/content-index.json ]; then
             gcloud storage cp site/build/content-index.json gs://dev.briananderson.xyz/ --cache-control="public, max-age=300, must-revalidate"
           fi
-
-          # Upload everything else (standard cache)
           gcloud storage rsync site/build/ gs://dev.briananderson.xyz/ --recursive --delete-unmatched-destination-objects --cache-control="public, max-age=60, must-revalidate"
-      - name: Warm up dev API services
-        run: |
-          echo "Warming up dev Cloud Run services..."
-          for i in 1 2 3 4 5; do
-            STATUS=$(curl -sf -o /dev/null -w "%{http_code}" https://api-dev.briananderson.xyz/chat -X POST -H "Content-Type: application/json" -d '{"message":"ping"}') && echo "chat: $STATUS" && break || echo "chat: attempt $i failed, retrying..."
-            sleep 5
-          done
-          for i in 1 2 3 4 5; do
-            STATUS=$(curl -sf -o /dev/null -w "%{http_code}" https://api-dev.briananderson.xyz/fit-finder -X POST -H "Content-Type: application/json" -d '{"jobDescription":"Senior TypeScript developer with React and Node experience"}') && echo "fit-finder: $STATUS" && break || echo "fit-finder: attempt $i failed, retrying..."
-            sleep 5
-          done
-          sleep 3
-      - name: Run E2E tests
-        id: smoke
+      - name: Verify dev site
+        if: steps.config.outputs.ready == 'true'
+        run: curl --fail-with-body --retry 4 --retry-all-errors --retry-delay 5 https://dev.briananderson.xyz/ >/dev/null
+      - name: Run dev end-to-end checks
+        if: steps.config.outputs.ready == 'true'
         working-directory: site
         env:
           PLAYWRIGHT_TEST_BASE_URL: https://dev.briananderson.xyz
-        continue-on-error: true
         run: pnpm run test:e2e
-      - name: Run API smoke tests
-        id: smoke_api
+      - name: Run dev API smoke checks
+        if: steps.config.outputs.ready == 'true'
         working-directory: site
         env:
           SITE_URL: https://api-dev.briananderson.xyz
-          SMOKE_TEST: 'true'
-        continue-on-error: true
+          SMOKE_TEST: "true"
         run: pnpm run test:api
-      - name: Run AI behavior smoke evals
-        id: ai_evals
+      - name: Run dev AI behavior smoke gate
+        if: steps.config.outputs.ready == 'true'
         working-directory: site
         env:
           AI_EVAL_BASE_URL: https://api-dev.briananderson.xyz
           AI_EVAL_MIN_PASS_RATE: "1.00"
           AI_EVAL_REPORT_PATH: artifacts/ai-smoke-dev-post-deploy.json
-        continue-on-error: true
         run: pnpm run test:ai:evals:smoke
-      - name: Post-deploy check summary
-        if: always()
-        run: |
-          {
-            echo "### Dev post-deploy checks"
-            echo ""
-            echo "| Check | Gate | Result |"
-            echo "|---|---|---|"
-            echo "| Frontend E2E | blocking (rolls back on failure) | ${{ steps.smoke.outcome }} |"
-            echo "| API smoke | report-only | ${{ steps.smoke_api.outcome }} |"
-            echo "| AI behavior smoke evals | report-only | ${{ steps.ai_evals.outcome }} |"
-            echo ""
-            echo "_API health is independently gated + rolled back by the deploy-functions-dev job. Report-only checks surface regressions without rolling back a working frontend._"
-          } >> "$GITHUB_STEP_SUMMARY"
-      - name: Upload dev build artifact (Verified)
-        if: steps.smoke.outcome == 'success'
-        uses: actions/upload-artifact@v7
-        with:
-          name: build-artifact-dev
-          path: site/build/
-          retention-days: 14
-      - name: Tag image as dev-stable
-        if: steps.smoke.outcome == 'success'
-        env:
-          REGION: ${{ secrets.GCP_REGION }}
-          PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-          IMAGE: ${{ needs.build-functions.outputs.image }}
-        run: |
-          IMAGE="${IMAGE:-${REGION}-docker.pkg.dev/${PROJECT_ID}/site-functions/api:${GITHUB_SHA:0:8}}"
-          gcloud artifacts docker tags add "$IMAGE" "${REGION}-docker.pkg.dev/${PROJECT_ID}/site-functions/api:dev-stable"
-      - name: Rollback on failure
-        if: steps.smoke.outcome == 'failure' && steps.last_successful.outputs.run_id != 'none'
-        env:
-          LAST_RUN_ID: ${{ steps.last_successful.outputs.run_id }}
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          echo "❌ Frontend E2E tests failed, rolling back dev to run $LAST_RUN_ID..."
-          rm -rf site/build && gh run download $LAST_RUN_ID -n build-artifact-dev --dir site/build/
-
-          # Upload with proper cache headers
-          gcloud storage rsync site/build/_app gs://dev.briananderson.xyz/_app --recursive --cache-control="public, max-age=31536000, immutable"
-
-          if compgen -G "site/build/content-index.*.json" > /dev/null; then
-            gcloud storage cp site/build/content-index.*.json gs://dev.briananderson.xyz/ --cache-control="public, max-age=31536000, immutable"
-          fi
-          if [ -f "site/build/content-index-latest.json" ]; then
-            gcloud storage cp site/build/content-index-latest.json gs://dev.briananderson.xyz/ --cache-control="public, max-age=60, must-revalidate"
-          fi
-          if [ -f "site/build/content-index.json" ]; then
-            gcloud storage cp site/build/content-index.json gs://dev.briananderson.xyz/ --cache-control="public, max-age=300, must-revalidate"
-          fi
-
-          gcloud storage rsync site/build/ gs://dev.briananderson.xyz/ --recursive --delete-unmatched-destination-objects --cache-control="public, max-age=60, must-revalidate"
-          echo "Rollback complete."
-          exit 1
-      - name: Fail if frontend E2E tests failed
-        if: steps.smoke.outcome == 'failure'
-        run: exit 1
-
-  deploy-prod:
-    runs-on: ubuntu-latest
-    needs: [validate, build-functions, deploy-functions-prod]
-    environment: prod
-    if: github.event_name == 'workflow_dispatch' && github.event.inputs.deploy_prod == 'true'
-    steps:
-      - uses: actions/checkout@v5
-      - uses: pnpm/action-setup@v6
-        with:
-          version: 9
-      - uses: actions/setup-node@v6
-        with:
-          node-version: 20
-          cache: 'pnpm'
-          cache-dependency-path: site/pnpm-lock.yaml
-      - name: Install deps
-        working-directory: site
-        run: pnpm i --frozen-lockfile
-      - name: Install Playwright browsers
-        working-directory: site
-        run: pnpm exec playwright install chromium
-      - name: Create .env file (Prod)
-        working-directory: site
-        run: |
-          echo "PUBLIC_SITE_URL=https://briananderson.xyz" > .env
-          echo "PUBLIC_ENV=prod" >> .env
-          echo "PUBLIC_POSTHOG_KEY=${{ secrets.PUBLIC_POSTHOG_KEY }}" >> .env
-          echo "PUBLIC_POSTHOG_HOST=${{ secrets.PUBLIC_POSTHOG_HOST }}" >> .env
-      - name: Build for Prod
-        working-directory: site
-        run: |
-          rm -rf .svelte-kit .vite
-          touch src/routes/+layout.svelte
-          pnpm run build
-      - uses: google-github-actions/auth@v3
-        with:
-          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
-          service_account: ${{ secrets.GCP_WIF_SA_EMAIL }}
-      - uses: google-github-actions/setup-gcloud@v3
-      - name: Get last successful prod deployment
-        id: last_successful
-        run: |
-          LAST_SUCCESSFUL=$(gh run list --workflow=build-and-deploy.yml --branch=main --limit=100 --json databaseId --jq '.[].databaseId' | while read run_id; do
-            if gh run view $run_id --json jobs --jq '.jobs[] | select(.name == "deploy-prod" and .conclusion == "success")' | grep -q .; then
-              echo $run_id
-              break
-            fi
-          done || echo "none")
-          if [ "$LAST_SUCCESSFUL" == "none" ] || [ -z "$LAST_SUCCESSFUL" ]; then
-            echo "No previous successful prod deployment found"
-            echo "run_id=none" >> $GITHUB_OUTPUT
-          else
-            echo "run_id=$LAST_SUCCESSFUL" >> $GITHUB_OUTPUT
-          fi
-        env:
-          GH_TOKEN: ${{ github.token }}
-      - name: Upload to prod bucket
-        id: deploy
-        run: |
-          # Upload hashed assets (long cache)
-          gcloud storage rsync site/build/_app gs://briananderson.xyz/_app --recursive --cache-control="public, max-age=31536000, immutable"
-
-          # Upload versioned content index (long cache, immutable)
-          if compgen -G "site/build/content-index.*.json" > /dev/null; then
-            gcloud storage cp site/build/content-index.*.json gs://briananderson.xyz/ --cache-control="public, max-age=31536000, immutable"
-          fi
-
-          # Upload content index pointer (short cache)
-          if [ -f "site/build/content-index-latest.json" ]; then
-            gcloud storage cp site/build/content-index-latest.json gs://briananderson.xyz/ --cache-control="public, max-age=60, must-revalidate"
-          fi
-
-          # Upload main content index fallback (medium cache)
-          if [ -f "site/build/content-index.json" ]; then
-            gcloud storage cp site/build/content-index.json gs://briananderson.xyz/ --cache-control="public, max-age=300, must-revalidate"
-          fi
-
-          # Upload everything else (standard cache)
-          gcloud storage rsync site/build/ gs://briananderson.xyz/ --recursive --delete-unmatched-destination-objects --cache-control="public, max-age=3600, must-revalidate"
-      - name: Warm up prod API services
-        run: |
-          echo "Warming up prod Cloud Run services..."
-          for i in 1 2 3 4 5; do
-            STATUS=$(curl -sf -o /dev/null -w "%{http_code}" https://api.briananderson.xyz/chat -X POST -H "Content-Type: application/json" -d '{"message":"ping"}') && echo "chat: $STATUS" && break || echo "chat: attempt $i failed, retrying..."
-            sleep 5
-          done
-          for i in 1 2 3 4 5; do
-            STATUS=$(curl -sf -o /dev/null -w "%{http_code}" https://api.briananderson.xyz/fit-finder -X POST -H "Content-Type: application/json" -d '{"jobDescription":"Senior TypeScript developer with React and Node experience"}') && echo "fit-finder: $STATUS" && break || echo "fit-finder: attempt $i failed, retrying..."
-            sleep 5
-          done
-          sleep 3
-      - name: Run smoke tests
-        id: smoke
-        working-directory: site
-        env:
-          PLAYWRIGHT_TEST_BASE_URL: https://briananderson.xyz
-        continue-on-error: true
-        run: pnpm run test:e2e
-      - name: Run API smoke tests
-        id: smoke_api
-        working-directory: site
-        env:
-          SITE_URL: https://api.briananderson.xyz
-          SMOKE_TEST: 'true'
-        continue-on-error: true
-        run: pnpm run test:api
-      - name: Post-deploy check summary
-        if: always()
-        run: |
-          {
-            echo "### Prod post-deploy checks"
-            echo ""
-            echo "| Check | Gate | Result |"
-            echo "|---|---|---|"
-            echo "| Frontend E2E | blocking (rolls back on failure) | ${{ steps.smoke.outcome }} |"
-            echo "| API smoke | report-only | ${{ steps.smoke_api.outcome }} |"
-            echo ""
-            echo "_API health is independently gated + rolled back by the deploy-functions-prod job._"
-          } >> "$GITHUB_STEP_SUMMARY"
-      - name: Upload prod build artifact (Verified)
-        if: steps.smoke.outcome == 'success'
-        uses: actions/upload-artifact@v7
-        with:
-          name: build-artifact-prod
-          path: site/build/
-          retention-days: 30
-      - name: Tag image as prod-stable
-        if: steps.smoke.outcome == 'success'
-        env:
-          REGION: ${{ secrets.GCP_REGION }}
-          PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-          IMAGE: ${{ needs.build-functions.outputs.image }}
-        run: |
-          IMAGE="${IMAGE:-${REGION}-docker.pkg.dev/${PROJECT_ID}/site-functions/api:${GITHUB_SHA:0:8}}"
-          gcloud artifacts docker tags add "$IMAGE" "${REGION}-docker.pkg.dev/${PROJECT_ID}/site-functions/api:prod-stable"
-      - name: Rollback on failure
-        if: steps.smoke.outcome == 'failure' && steps.last_successful.outputs.run_id != 'none'
-        env:
-          LAST_RUN_ID: ${{ steps.last_successful.outputs.run_id }}
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          echo "❌ Frontend E2E tests failed, rolling back prod to run $LAST_RUN_ID..."
-          rm -rf site/build && gh run download $LAST_RUN_ID -n build-artifact-prod --dir site/build/
-
-          # Upload with proper cache headers
-          gcloud storage rsync site/build/_app gs://briananderson.xyz/_app --recursive --cache-control="public, max-age=31536000, immutable"
-
-          if compgen -G "site/build/content-index.*.json" > /dev/null; then
-            gcloud storage cp site/build/content-index.*.json gs://briananderson.xyz/ --cache-control="public, max-age=31536000, immutable"
-          fi
-          if [ -f "site/build/content-index-latest.json" ]; then
-            gcloud storage cp site/build/content-index-latest.json gs://briananderson.xyz/ --cache-control="public, max-age=60, must-revalidate"
-          fi
-          if [ -f "site/build/content-index.json" ]; then
-            gcloud storage cp site/build/content-index.json gs://briananderson.xyz/ --cache-control="public, max-age=300, must-revalidate"
-          fi
-
-          gcloud storage rsync site/build/ gs://briananderson.xyz/ --recursive --delete-unmatched-destination-objects --cache-control="public, max-age=3600, must-revalidate"
-          echo "Rollback complete."
-          exit 1
-      - name: Fail if frontend E2E tests failed
-        if: steps.smoke.outcome == 'failure'
-        run: exit 1
-      - name: Warn if no rollback target
-        if: steps.smoke.outcome == 'failure' && steps.last_successful.outputs.run_id == 'none'
-        run: |
-          echo "⚠️  Smoke tests failed but no previous successful prod deployment found for rollback."
-          echo "This is the first prod deployment - manual intervention may be required."
-          exit 1
-
-  rollback-manual:
-    runs-on: ubuntu-latest
-    if: github.event.inputs.rollback == 'true'
-    environment: ${{ github.event.inputs.target_env }}
-    steps:
-      - uses: google-github-actions/auth@v3
-        with:
-          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
-          service_account: ${{ secrets.GCP_WIF_SA_EMAIL }}
-      - uses: google-github-actions/setup-gcloud@v3
-      - name: Rollback Cloud Run services
-        env:
-          REGION: ${{ secrets.GCP_REGION }}
-          PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-          TARGET_ENV: ${{ github.event.inputs.target_env }}
-        run: |
-          STABLE_TAG="dev-stable"
-          CHAT_SERVICE="chat-dev"
-          FIT_SERVICE="fitfinder-dev"
-          if [ "$TARGET_ENV" == "prod" ]; then
-            STABLE_TAG="prod-stable"
-            CHAT_SERVICE="chat"
-            FIT_SERVICE="fitfinder"
-          fi
-          STABLE_IMAGE="${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/site-functions/api:${STABLE_TAG}"
-          echo "Rolling back $CHAT_SERVICE and $FIT_SERVICE to $STABLE_TAG image..."
-          gcloud run deploy $CHAT_SERVICE \
-            --image "$STABLE_IMAGE" \
-            --region "$REGION" \
-            --platform managed \
-            --allow-unauthenticated \
-            --no-traffic
-          gcloud run services update-traffic $CHAT_SERVICE --region "$REGION" --to-latest
-          gcloud run deploy $FIT_SERVICE \
-            --image "$STABLE_IMAGE" \
-            --region "$REGION" \
-            --platform managed \
-            --allow-unauthenticated \
-            --no-traffic
-          gcloud run services update-traffic $FIT_SERVICE --region "$REGION" --to-latest
-          echo "Cloud Run rollback complete."
-      - uses: actions/checkout@v5
-      - name: Get last successful deployment
-        id: last_successful
-        run: |
-          TARGET_ENV="${{ github.event.inputs.target_env }}"
-          LAST_SUCCESSFUL=$(gh run list --workflow=build-and-deploy.yml --branch=main --limit=100 --json databaseId --jq '.[].databaseId' | while read run_id; do
-            if gh run view $run_id --json jobs --jq '.jobs[] | select(.name == "deploy-'$TARGET_ENV'" and .conclusion == "success")' | grep -q .; then
-              echo $run_id
-              break
-            fi
-          done || echo "none")
-          if [ "$LAST_SUCCESSFUL" == "none" ] || [ -z "$LAST_SUCCESSFUL" ]; then
-            echo "No previous successful deployment found for $TARGET_ENV"
-            echo "run_id=none" >> $GITHUB_OUTPUT
-          else
-            echo "run_id=$LAST_SUCCESSFUL" >> $GITHUB_OUTPUT
-          fi
-        env:
-          GH_TOKEN: ${{ github.token }}
-      - name: Check if rollback target exists
-        if: steps.last_successful.outputs.run_id == 'none'
-        run: |
-          echo "❌ No previous successful deployment found for rollback."
-          exit 1
-      - name: Download artifact
-        env:
-          GH_TOKEN: ${{ github.token }}
-          TARGET_ENV: ${{ github.event.inputs.target_env }}
-        run: |
-          RUN_ID=${{ steps.last_successful.outputs.run_id }}
-          ARTIFACT_NAME="build-artifact-$TARGET_ENV"
-          echo "Downloading $ARTIFACT_NAME from run $RUN_ID..."
-          gh run download $RUN_ID -n $ARTIFACT_NAME --dir site/build/
-      - name: Verify artifact download
-        run: |
-          echo "Files in site/build/:"
-          find site/build -type f | wc -l
-      - uses: google-github-actions/auth@v3
-        with:
-          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
-          service_account: ${{ secrets.GCP_WIF_SA_EMAIL }}
-      - uses: google-github-actions/setup-gcloud@v3
-      - name: Rollback to ${{ github.event.inputs.target_env }}
-        run: |
-          BUCKET="dev.briananderson.xyz"
-          if [ "${{ github.event.inputs.target_env }}" == "prod" ]; then
-            BUCKET="briananderson.xyz"
-          fi
-
-          # Upload with proper cache headers
-          gcloud storage rsync site/build/_app gs://$BUCKET/_app --recursive --cache-control="public, max-age=31536000, immutable"
-
-          if compgen -G "site/build/content-index.*.json" > /dev/null; then
-            gcloud storage cp site/build/content-index.*.json gs://$BUCKET/ --cache-control="public, max-age=31536000, immutable"
-          fi
-          if [ -f "site/build/content-index-latest.json" ]; then
-            gcloud storage cp site/build/content-index-latest.json gs://$BUCKET/ --cache-control="public, max-age=60, must-revalidate"
-          fi
-          if [ -f "site/build/content-index.json" ]; then
-            gcloud storage cp site/build/content-index.json gs://$BUCKET/ --cache-control="public, max-age=300, must-revalidate"
-          fi
-
-          gcloud storage rsync site/build/ gs://$BUCKET/ --recursive --delete-unmatched-destination-objects --cache-control="public, max-age=3600, must-revalidate"
-          echo "✅ Rollback to ${{ github.event.inputs.target_env }} complete"

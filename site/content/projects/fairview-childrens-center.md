@@ -5,6 +5,8 @@ period: "2026"
 summary: "Complete WordPress overhaul for a children's center, transforming their digital presence to better reach prospective parents."
 tags: ["WordPress", "CustomTheme", "PHP", "JavaScript", "Modernization", "Consulting", "Builder"]
 keywords: ["fairview", "childcare", "website-redesign", "ux"]
+outcome: "Digital modernization"
+projectType: "Client website"
 featuredImage: "/projects/fairview/desktop_home_dark.png"
 featuredImageAlt: "Fairview Children's Center - Desktop Home Dark Theme"
 visualArchive:
@@ -36,6 +38,7 @@ The existing site had the basics: information about programs, contact details, h
 I've always been interested in working on a WordPress theme but hadn't spent much time in that ecosystem before. Given my history with front-end development, I embraced the challenge. I love learning new tech.
 
 ### Timeline
+
 **January 2026 - February 2026**
 
 ## What I Built
@@ -43,6 +46,7 @@ I've always been interested in working on a WordPress theme but hadn't spent muc
 The overhaul went beyond the updates Melissa originally asked for. Once we identified the opportunities, the scope expanded to a full rebuild with the goal of making the site something she could manage confidently on her own.
 
 ### Technical Specs
+
 - **Platform:** WordPress
 - **Theme:** Brand new custom theme, page hierarchy, and menus (including mobile)
 - **Design:** Strategic UI overhaul focusing on clear Call to Actions rather than "walls of text"
@@ -51,6 +55,7 @@ The overhaul went beyond the updates Melissa originally asked for. Once we ident
 - **Tooling:** Leveraged Gemini 3 for the redesign process
 
 ### New Functionality
+
 - **FAQ & News:** Added a dedicated FAQ page and a News section where Melissa can create and categorize posts herself.
 - **Meet Our Team:** A new page featuring staff pictures to help parents get to know the center.
 - **Custom Navigation:** A complete restructure of the menus to make the site easier to navigate on any device.
@@ -58,6 +63,7 @@ The overhaul went beyond the updates Melissa originally asked for. Once we ident
 ## Under the Hood
 
 I also handled a lot of the technical debt that had piled up over the years:
+
 - **Infrastructure:** Upgraded the site to the latest PHP version.
 - **Security:** Cleaned up security gaps by removing many old, unused user accounts.
 - **Optimization:** Sunsetted problematic plugins to reduce the overhead for future upgrades.
@@ -70,4 +76,3 @@ I didn't want to just finish the site and leave Melissa hanging. I took the time
 ## Why This Matters
 
 Not every project needs to be enterprise-scale to be meaningful. Fairview serves families in a local community, and a good website can be the difference between a parent enrolling their child or moving on to the next search result. This project reminded me why I got into building things in the first place.
-

@@ -35,7 +35,7 @@ Withholding and the downstream analysis are then computed only from verified inp
 
 The part I am most happy with is the provenance graph. A derived tax position carries **derivation edges** back to the exact source facts it depends on. Change one of those source facts, say a corrected W-2 supersedes the original, and the system can emit a recompute signal for everything downstream, while keeping the superseded fact in the graph rather than pretending it never existed.
 
-I gave the tax *rules* the same treatment. Standard deductions, brackets, and thresholds are parsed from the official IRS and Colorado source documents, and each value carries citations, a verification status, and a changelog. When a new year's numbers conflict with what is on file, it flags the conflict for review instead of silently overwriting. The rules that decide your taxes should be as auditable as the documents you feed in.
+I gave the tax _rules_ the same treatment. Standard deductions, brackets, and thresholds are parsed from the official IRS and Colorado source documents, and each value carries citations, a verification status, and a changelog. When a new year's numbers conflict with what is on file, it flags the conflict for review instead of silently overwriting. The rules that decide your taxes should be as auditable as the documents you feed in.
 
 None of this uses an LLM to read your forms, on purpose. Guessing is the one thing you do not want near a tax return. The parsing is deterministic. Where AI comes in is that the whole workspace is exposed as [MCP](https://modelcontextprotocol.io/) tools, so an agent can drive the workflow, and when it does, it operates inside the exact same verification gates a human does. An agent can move things forward. It cannot skip the part where a number has to be verified.
 
@@ -44,3 +44,5 @@ None of this uses an LLM to read your forms, on purpose. Guessing is the one thi
 This is a personal, local-first tool. It covers US federal and Colorado, it runs on my own machine against my own documents, and it is nobody's product. I am not going to pretend it saved me a quantified number of hours.
 
 But it runs on the same trust-and-provenance machinery as [CampFit](/projects/campfit/), and it is built on the same conviction as the guardrails work I do at enterprise scale: you do not trust a system because it is confident, you build it so that every number can show its work. A camp directory, a factory floor, a tax return. Different stakes, identical spine.
+
+The [Tax Workspace project case study](/projects/tax-workspace/) maps the architecture, trust boundary, and constraints in a more structured format.

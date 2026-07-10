@@ -20,92 +20,139 @@ summary: >
   foundations required to scale these systems into production.
 skills:
   Cloud & Infrastructure:
-    - name: AWS
+    - id: aws
+      name: AWS
       url: https://aws.amazon.com/
-    - name: Google Cloud
+    - id: google-cloud
+      name: Google Cloud
+      aliases: [GCP]
       url: https://cloud.google.com/
-    - name: Kubernetes (EKS/GKE/OCP)
+    - id: kubernetes
+      name: Kubernetes (EKS/GKE/OCP)
+      aliases: [Kubernetes, GKE]
       url: https://kubernetes.io/
-    - name: Terraform
+    - id: terraform
+      name: Terraform
       url: https://www.terraform.io
-    - name: AWS CDK / CloudFormation
+    - id: aws-iac
+      name: AWS CDK / CloudFormation
       url: https://aws.amazon.com/cdk/
   DevOps & CI/CD:
-    - name: GitHub Actions
+    - id: github-actions
+      name: GitHub Actions
       url: https://github.com/actions
-    - name: GitLab CI
+    - id: gitlab-ci
+      name: GitLab CI
       url: https://docs.gitlab.com/ci/
-    - name: Jenkins
+    - id: jenkins
+      name: Jenkins
       url: https://www.jenkins.io/
-    - name: Helm
+    - id: helm
+      name: Helm
       url: https://helm.sh/
-    - name: Spinnaker
+    - id: spinnaker
+      name: Spinnaker
       url: https://spinnaker.io/
   Languages & Frameworks:
-    - name: TypeScript
+    - id: typescript
+      name: TypeScript
       url: https://www.typescriptlang.org/
-    - name: Java (Spring Boot)
+    - id: java-spring-boot
+      name: Java (Spring Boot)
+      aliases: [Java, Spring Boot]
       url: https://spring.io/projects/spring-boot
-    - name: Python
+    - id: python
+      name: Python
       url: https://www.python.org/
-    - name: React
+    - id: react
+      name: React
       url: https://react.dev/
-    - name: SvelteKit
+    - id: sveltekit
+      name: SvelteKit
       url: https://kit.svelte.dev/
   Data & Messaging:
-    - name: PostgreSQL
+    - id: postgresql
+      name: PostgreSQL
       url: https://www.postgresql.org/
-    - name: Firestore
+    - id: firestore
+      name: Firestore
       url: https://cloud.google.com/products/firestore/
-    - name: Redis
+    - id: redis
+      name: Redis
       url: https://redis.io/
-    - name: Apache Kafka
+    - id: apache-kafka
+      name: Apache Kafka
+      aliases: [Kafka]
       url: https://kafka.apache.org/
-    - name: Pub/Sub
+    - id: pub-sub
+      name: Pub/Sub
       url: https://cloud.google.com/products/pubsub/
   Observability & Monitoring:
-    - name: Instana
+    - id: instana
+      name: Instana
       url: https://www.ibm.com/products/instana
-    - name: Datadog
+    - id: datadog
+      name: Datadog
       url: https://www.datadoghq.com/
-    - name: Dynatrace
+    - id: dynatrace
+      name: Dynatrace
       url: https://www.dynatrace.com/
-    - name: Elasticsearch
+    - id: elasticsearch
+      name: Elasticsearch
       url: https://www.elastic.co/elasticsearch
-    - name: OpenTelemetry
+    - id: opentelemetry
+      name: OpenTelemetry
       url: https://opentelemetry.io/
-    - name: Prometheus
+    - id: prometheus
+      name: Prometheus
       url: https://prometheus.io/
-    - name: Grafana
+    - id: grafana
+      name: Grafana
       url: https://grafana.com/
   AI Systems and Concepts:
-    - name: Amazon Bedrock
+    - id: amazon-bedrock
+      name: Amazon Bedrock
+      aliases: [Bedrock]
       url: https://docs.aws.amazon.com/bedrock/
-    - name: Agentcore
+    - id: agentcore
+      name: Agentcore
       url: https://aws.amazon.com/bedrock/agentcore/
-    - name: Ollama
+    - id: ollama
+      name: Ollama
       url: https://ollama.com/
-    - name: Model Context Protocol (MCP)
+    - id: model-context-protocol
+      name: Model Context Protocol (MCP)
+      aliases: [MCP]
       url: https://modelcontextprotocol.io/
-    - name: Context Engineering
+    - id: context-engineering
+      name: Context Engineering
       url: https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents
-    - name: Multi-Agent Orchestration
+    - id: multi-agent-orchestration
+      name: Multi-Agent Orchestration
       url: https://aws.amazon.com/solutions/guidance/multi-agent-orchestration-on-aws/
   AI Development Tools & Frameworks:
-    - name: Kiro
+    - id: kiro
+      name: Kiro
+      aliases: [kiro-cli]
       altName: Amazon Q Developer
       url: https://kiro.dev/
-    - name: Claude Code
+    - id: claude-code
+      name: Claude Code
       url: https://www.anthropic.com/
-    - name: Codex
+    - id: codex
+      name: Codex
       url: https://openai.com/codex/
-    - name: OpenSpec
+    - id: openspec
+      name: OpenSpec
       url: https://github.com/Fission-AI/OpenSpec
-    - name: Strands SDK
+    - id: strands-sdk
+      name: Strands SDK
       url: https://strandsagents.com/
-    - name: VoltAgent SDK
+    - id: voltagent-sdk
+      name: VoltAgent SDK
       url: https://voltagent.dev/
-    - name: promptfoo
+    - id: promptfoo
+      name: promptfoo
       url: https://www.promptfoo.dev/
 experience:
   - role: Enterprise Solutions Architect

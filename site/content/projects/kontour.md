@@ -4,7 +4,20 @@ date: 2026-04-24
 period: "2026 – Present"
 summary: "The company I started to make AI-assisted work inspectable. A suite of small, open, local-first tools that capture what an agent claimed, what evidence backs it, which gates it passed, and what is still uncertain, so people and systems can decide what to trust before acting on it."
 tags: ["AgenticAI", "DataProvenance", "DeveloperTooling", "Trust", "Builder", "OpenSource"]
-keywords: ["kontour", "kontourai", "show-the-work", "trust", "provenance", "evals", "verification", "agent-tooling", "open-trust-format"]
+keywords:
+  [
+    "kontour",
+    "kontourai",
+    "show-the-work",
+    "trust",
+    "provenance",
+    "evals",
+    "verification",
+    "agent-tooling",
+    "open-trust-format"
+  ]
+outcome: "AI trust"
+projectType: "Developer platform"
 showTableOfContents: true
 links:
   - label: "kontourai.io"
@@ -33,12 +46,12 @@ Everything is built on one shared trust format, so the pieces interoperate throu
 
 Kontour is a suite of small, standalone, mostly open-source tools under the `@kontourai/*` npm scope. Each does one job, and they compose:
 
-- **Surface** is the foundation: a portable trust-state format and kernel that turns claims, evidence, and policies into a derived status (verified, stale, disputed, missing). It is the shared transparency layer any product can build on.
-- **Survey** is the producer side of provenance. It carries evidence from raw source through extraction, candidate, and review into a claim, and ships a review workbench for the human-in-the-loop step. It deliberately does not decide truth. It preserves the chain so something downstream can.
-- **Flow** makes a process transparent: the required path, what evidence each gate expected, what was collected, and which exceptions a human accepted. Proof, not promises.
-- **Veritas** brings the same idea to code, turning a repo's standards into an executable merge-readiness report so teams can earn autonomy for AI-authored changes.
-- **Flow Agents** distributes that discipline into the tools where agents actually run, installing a consistent build-and-verify workflow and policy guardrails.
-- **Console** is the local-first operating plane that reads across all of it: claim status, process state, proof, and next actions in one place.
+- **[Surface](/projects/kontour-surface/)** is the foundation: a portable trust-state format and kernel that turns claims, evidence, and policies into a derived status (verified, stale, disputed, missing). It is the shared transparency layer any product can build on.
+- **[Survey](/projects/kontour-survey/)** is the producer side of provenance. It carries evidence from raw source through extraction, candidate, and review into a claim, and ships a review workbench for the human-in-the-loop step. It deliberately does not decide truth. It preserves the chain so something downstream can.
+- **[Flow](/projects/kontour-flow/)** makes a process transparent: the required path, what evidence each gate expected, what was collected, and which exceptions a human accepted. Proof, not promises.
+- **[Veritas](/projects/kontour-veritas/)** brings the same idea to code, turning a repo's standards into an executable merge-readiness report so teams can earn autonomy for AI-authored changes.
+- **[Flow Agents](/projects/kontour-flow-agents/)** distributes that discipline into the tools where agents actually run, installing a consistent build-and-verify workflow and policy guardrails.
+- **[Console](/projects/kontour-console/)** is the local-first operating plane that reads across all of it: claim status, process state, proof, and next actions in one place.
 
 Underneath the headline products sit a few foundational libraries: an extraction proposer that enforces verbatim provenance on everything it pulls, a freshness scheduler that re-checks trust when it goes stale, and a shared design-system layer for the console UIs.
 

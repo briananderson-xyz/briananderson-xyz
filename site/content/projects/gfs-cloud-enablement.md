@@ -5,6 +5,8 @@ period: "2020 – 2024"
 summary: "Standardizing GCP infrastructure, CI/CD pipelines, and data consolidation at scale."
 tags: ["Terraform", "IaC", "GCP", "DevOps", "PlatformEngineering", "Ops"]
 keywords: ["gfs", "gordon-food-service", "icds", "cloud-enablement"]
+outcome: "Platform modernization"
+projectType: "Enterprise transformation"
 showTableOfContents: true
 links:
   - label: "Valtech Case Study"

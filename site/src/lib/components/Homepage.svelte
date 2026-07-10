@@ -1,7 +1,7 @@
 <script lang="ts">
   import Button from "$lib/components/ui/button.svelte";
   import { slide } from "svelte/transition";
-  import type { Resume } from "$lib/types";
+  import type { ProofClaim, Resume } from "$lib/types";
   import ExperienceItem from "$lib/components/ExperienceItem.svelte";
   import { formatJobTitles } from "$lib/utils/formatters";
   import { addVariant } from "$lib/utils/variantLink";
@@ -9,74 +9,53 @@
 
   interface Props {
     resume: Resume;
+    proofClaims: ProofClaim[];
     variant?: string | null;
     links?: Record<string, string> | null;
   }
 
-  let { resume, variant = null, links = null }: Props = $props();
+  let { resume, proofClaims, variant = null, links = null }: Props = $props();
 
   const currentJob = $derived(resume.experience[0]);
 
   const jsonLd = $derived({
     "@context": "https://schema.org",
     "@type": "Person",
-    "name": resume.name,
-    "jobTitle": formatJobTitles(resume.jobTitles),
-    "description": resume.tagline,
-    "url": "https://briananderson.xyz",
-    "sameAs": [
+    name: resume.name,
+    jobTitle: formatJobTitles(resume.jobTitles),
+    description: resume.tagline,
+    url: "https://briananderson.xyz",
+    sameAs: [
       "https://github.com/briananderson1222",
       "https://www.linkedin.com/in/brian--anderson/"
     ],
-    "address": {
+    address: {
       "@type": "PostalAddress",
-      "addressLocality": resume.location.split(", ")[0],
-      "addressRegion": resume.location.split(", ")[1]
+      addressLocality: resume.location.split(", ")[0],
+      addressRegion: resume.location.split(", ")[1]
     },
-    "contactPoint": {
+    contactPoint: {
       "@type": "ContactPoint",
-      "email": resume.email,
-      "contactType": "work"
+      email: resume.email,
+      contactType: "work"
     },
-    "worksFor": {
+    worksFor: {
       "@type": "Organization",
-      "name": currentJob.company
+      name: currentJob.company
     },
-    "hasOccupation": {
+    hasOccupation: {
       "@type": "Occupation",
-      "name": currentJob.role,
-      "description": currentJob.description
+      name: currentJob.role,
+      description: currentJob.description
     }
   });
 
-  const generatedLinks = $derived(links || {
-    resume: addVariant('/resume/', variant),
-    projects: addVariant('/projects/', variant),
-    blog: addVariant('/blog/', variant)
-  });
-
-  // Each proof point links to the case study that substantiates it.
-  const proofPoints = $derived(
-    variant === "ops"
-      ? [
-          { text: "14 mission-critical apps migrated with zero downtime", href: "/projects/discover-trident/" },
-          { text: "90% deployment lead-time reduction", href: "/projects/gfs-cloud-enablement/" },
-          { text: "8-9 production deployments per day", href: "/projects/gfs-ordering-platform/" },
-          { text: "Agent runs traced end-to-end: OTel + Grafana", href: "/projects/stallion-agent-platform/" }
-        ]
-      : variant === "builder"
-        ? [
-            { text: "Top 0.03% of 280k+ Amazon Kiro CLI users", href: "/projects/kiro-agent-workflows/" },
-            { text: "Reusable Kiro agent workflows, gated by promptfoo evals", href: "/projects/kiro-agent-workflows/" },
-            { text: "Agent platform: MCP orchestration + prompt evals + OTel tracing", href: "/projects/stallion-agent-platform/" },
-            { text: "16+ years shipping mobile, web, and cloud apps", href: "/resume/" }
-          ]
-        : [
-            { text: "CI/CD standardization across 5,000+ enterprise apps", href: "/projects/gfs-cloud-enablement/" },
-            { text: "New features and responses to customer feedback shipped in 8-9 production deployments per day", href: "/projects/gfs-ordering-platform/" },
-            { text: "90% deployment lead-time reduction & $30M estimated savings", href: "/projects/gfs-cloud-enablement/" },
-            { text: "Top 0.03% of 280k+ Amazon Kiro CLI users", href: "/projects/kiro-agent-workflows/" }
-          ]
+  const generatedLinks = $derived(
+    links || {
+      resume: addVariant("/resume/", variant),
+      projects: addVariant("/projects/", variant),
+      blog: addVariant("/blog/", variant)
+    }
   );
 
   let openCategories = $state<Record<string, boolean>>({});
@@ -85,7 +64,7 @@
   function toggleCategory(category: string) {
     openCategories = {
       ...openCategories,
-      [category]: !openCategories[category],
+      [category]: !openCategories[category]
     };
   }
 
@@ -121,97 +100,90 @@
         </div>
 
         <!-- Window Content -->
-        <div
-          class="p-6 md:p-8 font-mono text-sm md:text-base leading-relaxed text-terminal-text"
-        >
+        <div class="p-6 md:p-8 font-mono text-sm md:text-base leading-relaxed text-terminal-text">
           <div class="min-h-[300px] flex flex-col md:flex-row gap-8">
             <div class="flex-1">
-          <div class="mb-4 text-terminal-green">$ whoami</div>
-          <h1 class="text-2xl md:text-3xl font-bold text-terminal-text mb-4 block">
-            {formattedTitle}
-          </h1>
-            <p class="mb-6 opacity-80">
-              {resume.tagline}
-            </p>
+              <div class="mb-4 text-terminal-green">$ whoami</div>
+              <h1 class="text-2xl md:text-3xl font-bold text-terminal-text mb-4 block">
+                {formattedTitle}
+              </h1>
+              <p class="mb-6 opacity-80">
+                {resume.tagline}
+              </p>
 
-            <div class="mb-4 text-terminal-green">$ cat mission.txt</div>
-            <p class="mb-6 border-l-2 border-terminal-border pl-4 italic opacity-80">
-              "{resume.mission}"
-            </p>
+              <div class="mb-4 text-terminal-green">$ cat mission.txt</div>
+              <p class="mb-6 border-l-2 border-terminal-border pl-4 italic opacity-80">
+                "{resume.mission}"
+              </p>
 
-            <div class="mb-4 text-terminal-green">$ list-actions</div>
-            <div class="flex flex-wrap gap-4 mt-2">
-              <Button
-                href={generatedLinks.resume}
-                class="bg-terminal-green text-terminal-black border-terminal-green hover:bg-terminal-green/90 shadow-[0_0_10px_rgba(var(--color-terminal-accent),0.3)]"
-                >./view_resume.pdf</Button
-              >
-              <Button
-                href={generatedLinks.projects}
-                variant="outline"
-                class="text-terminal-green border-terminal-green hover:bg-terminal-green hover:text-terminal-black"
-                >./view_projects.sh</Button
-              >
-              <Button
-                href={generatedLinks.blog}
-                variant="outline"
-                class="text-terminal-green border-terminal-green hover:bg-terminal-green hover:text-terminal-black"
-                >./read_blog.md</Button
-              >
-            </div>
-
-          </div>
-
-          <!-- Headshot -->
-          <div
-            class="flex-shrink-0 flex flex-col items-center justify-start pt-2"
-          >
-            <div class="relative group w-32 h-32 md:w-48 md:h-48">
-              <!-- Decorative Corners -->
-              <div
-                class="absolute -top-1 -left-1 w-3 h-3 border-t-2 border-l-2 border-terminal-green"
-              ></div>
-              <div
-                class="absolute -top-1 -right-1 w-3 h-3 border-t-2 border-r-2 border-terminal-green"
-              ></div>
-              <div
-                class="absolute -bottom-1 -left-1 w-3 h-3 border-b-2 border-l-2 border-terminal-green"
-              ></div>
-              <div
-                class="absolute -bottom-1 -right-1 w-3 h-3 border-b-2 border-r-2 border-terminal-green"
-              ></div>
-
-              <!-- Image Container -->
-              <div
-                class="w-full h-full overflow-hidden border border-terminal-border bg-terminal-dark grayscale group-hover:grayscale-0 transition-all duration-500"
-              >
-                <img
-                  src="/headshot.jpg"
-                  alt="Brian Anderson"
-                  class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
-                />
-                <!-- Scanline Overlay -->
-                <div
-                  class="absolute inset-0 bg-gradient-to-b from-transparent to-black/20 pointer-events-none bg-[length:100%_4px]"
-                ></div>
+              <div class="mb-4 text-terminal-green">$ list-actions</div>
+              <div class="flex flex-wrap gap-4 mt-2">
+                <Button
+                  href={generatedLinks.resume}
+                  class="bg-terminal-green text-terminal-black border-terminal-green hover:bg-terminal-green/90 shadow-[0_0_10px_rgba(var(--color-terminal-accent),0.3)]"
+                  >./view_resume.html</Button
+                >
+                <Button
+                  href={generatedLinks.projects}
+                  variant="outline"
+                  class="text-terminal-green border-terminal-green hover:bg-terminal-green hover:text-terminal-black"
+                  >./view_projects.sh</Button
+                >
+                <Button
+                  href={generatedLinks.blog}
+                  variant="outline"
+                  class="text-terminal-green border-terminal-green hover:bg-terminal-green hover:text-terminal-black"
+                  >./read_blog.md</Button
+                >
               </div>
             </div>
-            <span class="mt-3 text-xs text-skin-muted font-mono"
-              >[IMG_ID: B_ANDERSON]</span
-            >
-          </div>
+
+            <!-- Headshot -->
+            <div class="flex-shrink-0 flex flex-col items-center justify-start pt-2">
+              <div class="relative group w-32 h-32 md:w-48 md:h-48">
+                <!-- Decorative Corners -->
+                <div
+                  class="absolute -top-1 -left-1 w-3 h-3 border-t-2 border-l-2 border-terminal-green"
+                ></div>
+                <div
+                  class="absolute -top-1 -right-1 w-3 h-3 border-t-2 border-r-2 border-terminal-green"
+                ></div>
+                <div
+                  class="absolute -bottom-1 -left-1 w-3 h-3 border-b-2 border-l-2 border-terminal-green"
+                ></div>
+                <div
+                  class="absolute -bottom-1 -right-1 w-3 h-3 border-b-2 border-r-2 border-terminal-green"
+                ></div>
+
+                <!-- Image Container -->
+                <div
+                  class="w-full h-full overflow-hidden border border-terminal-border bg-terminal-dark grayscale group-hover:grayscale-0 transition-all duration-500"
+                >
+                  <img
+                    src="/headshot.jpg"
+                    alt="Brian Anderson"
+                    class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
+                  />
+                  <!-- Scanline Overlay -->
+                  <div
+                    class="absolute inset-0 bg-gradient-to-b from-transparent to-black/20 pointer-events-none bg-[length:100%_4px]"
+                  ></div>
+                </div>
+              </div>
+              <span class="mt-3 text-xs text-skin-muted font-mono">[IMG_ID: B_ANDERSON]</span>
+            </div>
           </div>
 
           <div class="mt-8">
             <div class="mb-4 text-terminal-green">$ cat selected-proof.log</div>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 text-sm">
-              {#each proofPoints as proofPoint, i (proofPoint.text)}
+              {#each proofClaims as proofClaim, i (proofClaim.id)}
                 <div use:reveal={{ delay: i * 80 }} class="h-full">
                   <a
-                    href={addVariant(proofPoint.href, variant)}
+                    href={addVariant(proofClaim.caseStudyRoute, variant)}
                     class="group h-full flex items-start justify-between gap-2 border border-terminal-border px-3 py-2 text-terminal-text/90 rounded hover:border-terminal-green hover:bg-terminal-green/5 hover:text-terminal-text hover:shadow-[0_0_12px_rgba(var(--color-terminal-accent),0.15)] transition-colors duration-200"
                   >
-                    <span>{proofPoint.text}</span>
+                    <span>{proofClaim.text}</span>
                     <span
                       class="shrink-0 text-terminal-green opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200"
                       aria-hidden="true">↗</span
@@ -231,14 +203,15 @@
 <section id="skills" class="py-12 border-t border-dashed border-skin-border">
   <div class="max-w-4xl mx-auto px-4">
     <article>
-      <div use:reveal class="flex items-center gap-2 mb-6 text-skin-accent font-mono">
+      <div use:reveal class="flex items-start gap-2 mb-6 text-skin-accent font-mono">
         <span>></span>
-        <h2 class="text-xl font-bold">SYSTEM_MODULES_LOADED</h2>
+        <div>
+          <h2 class="text-xl font-bold">SYSTEM_MODULES_LOADED</h2>
+          <p class="text-sm font-normal text-skin-muted">Skills and capabilities</p>
+        </div>
       </div>
 
-      <div
-        class="grid grid-cols-1 md:grid-cols-2 gap-4 items-start font-mono text-sm"
-      >
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-start font-mono text-sm">
         {#each Object.entries(resume.skills) as [category, items], i (category)}
           <div
             use:reveal={{ delay: i * 60 }}
@@ -251,9 +224,7 @@
             >
               {category}
               <span
-                class="text-skin-muted transition-transform {openCategories[
-                  category
-                ]
+                class="text-skin-muted transition-transform {openCategories[category]
                   ? 'rotate-180'
                   : ''}">▼</span
               >
@@ -265,9 +236,7 @@
                   {#each items as skill}
                     <div class="flex items-center gap-2 text-skin-muted">
                       <span class="text-skin-accent">[OK]</span>
-                      {typeof skill === "string"
-                        ? skill
-                        : skill.altName || skill.name}
+                      {typeof skill === "string" ? skill : skill.altName || skill.name}
                     </div>
                   {/each}
                 </div>
@@ -281,14 +250,14 @@
 </section>
 
 <!-- Work History Log -->
-<section
-  id="experience"
-  class="py-12 border-t border-dashed border-skin-border"
->
+<section id="experience" class="py-12 border-t border-dashed border-skin-border">
   <div class="max-w-4xl mx-auto px-4">
-    <div use:reveal class="flex items-center gap-2 mb-6 text-skin-accent font-mono">
+    <div use:reveal class="flex items-start gap-2 mb-6 text-skin-accent font-mono">
       <span>></span>
-      <h2 class="text-xl font-bold">WORK_HISTORY_LOG</h2>
+      <div>
+        <h2 class="text-xl font-bold">WORK_HISTORY_LOG</h2>
+        <p class="text-sm font-normal text-skin-muted">Selected work experience</p>
+      </div>
     </div>
 
     <div
@@ -304,9 +273,7 @@
             onclick={() => (showAllExperience = !showAllExperience)}
             class="text-sm text-skin-accent hover:underline font-mono"
           >
-            {showAllExperience
-              ? "Show less"
-              : `Show ${resume.experience.length - 3} more`} ->
+            {showAllExperience ? "Show less" : `Show ${resume.experience.length - 3} more`} ->
           </button>
         {/if}
         <a
@@ -322,9 +289,12 @@
 <!-- Contact/Footer Section -->
 <section id="contact" class="py-12 border-t border-dashed border-skin-border">
   <div class="max-w-4xl mx-auto px-4">
-    <div use:reveal class="flex items-center gap-2 mb-6 text-skin-accent font-mono">
+    <div use:reveal class="flex items-start gap-2 mb-6 text-skin-accent font-mono">
       <span>></span>
-      <h2 class="text-xl font-bold">INITIATE_CONTACT</h2>
+      <div>
+        <h2 class="text-xl font-bold">INITIATE_CONTACT</h2>
+        <p class="text-sm font-normal text-skin-muted">Get in touch</p>
+      </div>
     </div>
     <p class="text-skin-base font-mono text-sm">
       To establish connection, please route traffic to:

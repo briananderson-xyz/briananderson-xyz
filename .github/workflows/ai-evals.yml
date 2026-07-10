@@ -1,5 +1,7 @@
 name: AI Evals
 
+permissions: {}
+
 on:
   workflow_dispatch:
     inputs:
@@ -34,19 +36,21 @@ on:
 jobs:
   run-ai-evals:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v6
+        uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6
         with:
-          version: 9
+          version: 10.33.0
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
-          node-version: 20
+          node-version: 22
           cache: "pnpm"
           cache-dependency-path: site/pnpm-lock.yaml
 
@@ -86,7 +90,13 @@ jobs:
           }
 
           fs.appendFileSync(process.env.GITHUB_OUTPUT, `base_url=${baseUrl}\n`);
+          const publicEnvironment = target === 'production' ? 'production' : target === 'dev' ? 'staging' : 'ci';
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, `public_environment=${publicEnvironment}\n`);
           NODE
+
+      - name: Record public eval date
+        id: public-eval-date
+        run: echo "run_date=$(date -u +%F)" >> "$GITHUB_OUTPUT"
 
       - name: Run full AI eval suite
         working-directory: site
@@ -95,15 +105,20 @@ jobs:
           AI_EVAL_REPORT_PATH: artifacts/ai-evals-manual.json
           AI_EVAL_JUDGE_PROVIDER: ${{ github.event.inputs.judge_provider != 'none' && github.event.inputs.judge_provider || '' }}
           AI_EVAL_JUDGE_MODEL: ${{ github.event.inputs.judge_model }}
+          AI_EVAL_PUBLIC_HISTORY_PATH: artifacts/ai-eval-history-public.json
+          AI_EVAL_PUBLIC_RUN_ID: github-${{ github.run_id }}-${{ github.run_attempt }}
+          AI_EVAL_PUBLIC_RUN_DATE: ${{ steps.public-eval-date.outputs.run_date }}
+          AI_EVAL_PUBLIC_COMMIT: ${{ github.sha }}
+          AI_EVAL_PUBLIC_ENVIRONMENT: ${{ steps.target.outputs.public_environment }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: pnpm run test:ai:evals
 
-      - name: Upload AI eval report
+      - name: Upload sanitized aggregate AI eval history
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
-          name: ai-eval-report-manual
-          path: site/artifacts/ai-evals-manual.json
+          name: ai-eval-history-public
+          path: site/artifacts/ai-eval-history-public.json
           if-no-files-found: ignore
           retention-days: 14

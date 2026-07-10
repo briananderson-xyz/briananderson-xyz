@@ -3,7 +3,17 @@ title: Agents on the factory floor (ProveIT)
 date: 2026-05-20
 summary: How we turned raw plant telemetry into an agent that flags anomalies, walks operators through fixes, and files the work order. Built for glass and pharma manufacturing, shown in a partner keynote, and then torn apart in a workshop the next day.
 tags: ["AgenticAI", "AWS", "Bedrock", "Manufacturing", "IoT", "Builder"]
-keywords: ["proveit", "industrial-ai", "agentcore", "bedrock", "unified-namespace", "mqtt", "uns", "concept-reply"]
+keywords:
+  [
+    "proveit",
+    "industrial-ai",
+    "agentcore",
+    "bedrock",
+    "unified-namespace",
+    "mqtt",
+    "uns",
+    "concept-reply"
+  ]
 showTableOfContents: true
 ---
 
@@ -46,3 +56,5 @@ A few things stuck with me:
 - **Grounding beats fluency.** On a factory floor, a confident wrong answer is worse than no answer. Tying the agent to real procedures mattered more than making it sound smart.
 
 ProveIT was a prototype, not a product. But it was the clearest version I have built of the thing I keep coming back to: an agent earns its place not by being impressive, but by doing the next real step and being right about it.
+
+The [ProveIT project case study](/projects/proveit-industrial-ai/) maps the architecture, trust model, constraints, and outcome in a more structured format.

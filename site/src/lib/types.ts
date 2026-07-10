@@ -1,31 +1,7 @@
-export interface ProjectLink {
-  label: string;
-  url: string;
-  type?: "case-study" | "github" | "live" | "article" | "docs";
-}
+export type { ContentMetadata, ProjectLink, VisualArchiveImage } from "$lib/schemas/content";
+export type { ProofClaim, ProofVariant } from "$lib/schemas/proofLedger";
 
-export interface VisualArchiveImage {
-  path: string;
-  alt: string;
-  caption?: string;
-}
-
-export interface ContentMetadata {
-  title: string;
-  date: string;
-  period?: string;
-  summary?: string;
-  tags?: string[];
-  keywords?: string[];
-  featuredImage?: string;
-  featuredImageAlt?: string;
-  featuredImageCaption?: string;
-  readingTime?: string;
-  visualArchive?: {
-    images: VisualArchiveImage[];
-  };
-  links?: ProjectLink[];
-}
+import type { ContentMetadata } from "$lib/schemas/content";
 
 export interface ContentItem {
   metadata: ContentMetadata;
@@ -42,7 +18,7 @@ export type {
   ResumeEducation,
   ResumeCertificate,
   ResumeEarlyCareer
-} from '$lib/schemas/resume';
+} from "$lib/schemas/resume";
 
 export interface QuickAction {
   id: string;

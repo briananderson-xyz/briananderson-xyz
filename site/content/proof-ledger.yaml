@@ -1,0 +1,99 @@
+- id: discover-platform-scale-and-savings
+  homepageOrder:
+    leader: 1
+  text: "CI/CD standardization across 5,000+ enterprise apps, with an estimated $30M in savings"
+  caseStudyRoute: /projects/discover-trident/
+  source:
+    path: projects/discover-trident.md
+    excerpt: "At peak, the engagement involved over 300 dedicated staff working to transition 5,000+ applications onto the new framework, with an estimated $30M in savings through reduced operational overhead and standardized tooling."
+  evidenceState: documented
+  freshness:
+    reviewedAt: 2026-07-09
+
+- id: gfs-deployment-velocity
+  homepageOrder:
+    leader: 2
+    ops: 2
+  text: "From 4 releases per year to 2,920; multiple deployments per day became routine"
+  caseStudyRoute: /projects/gfs-ordering-platform/
+  source:
+    path: projects/gfs-ordering-platform.md
+    excerpt: "Deployment velocity: From 4 releases per year to 2,920. Multiple deployments per day became routine."
+  evidenceState: documented
+  freshness:
+    reviewedAt: 2026-07-09
+
+- id: discover-deployment-lead-time
+  homepageOrder:
+    leader: 3
+    ops: 1
+  text: "90% deployment lead-time reduction for teams adopting the Trident pipeline"
+  caseStudyRoute: /projects/discover-trident/
+  source:
+    path: projects/discover-trident.md
+    excerpt: "Velocity: Reduced deployment lead time by 90% for teams adopting the new pipeline."
+  evidenceState: documented
+  freshness:
+    reviewedAt: 2026-07-09
+
+- id: kiro-activity-ranking
+  homepageOrder:
+    leader: 4
+    builder: 1
+  text: "Top 0.03% of 280k+ Amazon Kiro CLI users by activity"
+  caseStudyRoute: /projects/kiro-agent-workflows/
+  source:
+    path: projects/kiro-agent-workflows.md
+    excerpt: "Ranked in the top 0.03% of 280k+ Amazon Kiro CLI users by activity."
+  evidenceState: self-reported
+  freshness:
+    reviewedAt: 2026-07-09
+
+- id: gfs-zero-downtime
+  homepageOrder:
+    ops: 3
+  text: "Zero customer-facing downtime through the ordering-platform migration and beyond"
+  caseStudyRoute: /projects/gfs-ordering-platform/
+  source:
+    path: projects/gfs-ordering-platform.md
+    excerpt: "Reliability: Zero customer-facing downtime through the entire migration and beyond."
+  evidenceState: documented
+  freshness:
+    reviewedAt: 2026-07-09
+
+- id: stallion-observability
+  homepageOrder:
+    ops: 4
+    builder: 4
+  text: "Agent runs instrumented with OpenTelemetry plus Prometheus/Grafana"
+  caseStudyRoute: /projects/stallion-agent-platform/
+  source:
+    path: projects/stallion-agent-platform.md
+    excerpt: "Tracing and metrics: Instrumented the platform with OpenTelemetry plus Prometheus/Grafana so agent runs exposed latency, cost, tool usage, and failure patterns."
+  evidenceState: documented
+  freshness:
+    reviewedAt: 2026-07-09
+
+- id: kiro-prompt-evaluation
+  homepageOrder:
+    builder: 2
+  text: "Reusable agent workflows evaluated with promptfoo before release"
+  caseStudyRoute: /projects/kiro-agent-workflows/
+  source:
+    path: projects/kiro-agent-workflows.md
+    excerpt: "Evaluation before release: Used promptfoo to test prompts and workflow behavior before publishing changes, specifically looking for contradictions, weak instructions, and brittle behavior."
+  evidenceState: documented
+  freshness:
+    reviewedAt: 2026-07-09
+
+- id: stallion-mcp-orchestration
+  homepageOrder:
+    builder: 3
+  text: "MCP tool orchestration with automatic server lifecycle management"
+  caseStudyRoute: /projects/stallion-agent-platform/
+  source:
+    path: projects/stallion-agent-platform.md
+    excerpt: "MCP orchestration: Integrated Model Context Protocol (MCP) servers with automatic lifecycle management so tools could be attached and swapped cleanly."
+  evidenceState: documented
+  freshness:
+    reviewedAt: 2026-07-09

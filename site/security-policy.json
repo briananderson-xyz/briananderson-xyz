@@ -1,0 +1,67 @@
+{
+  "version": 1,
+  "hosts": {
+    "site": ["briananderson.xyz", "www.briananderson.xyz", "dev.briananderson.xyz"],
+    "api": ["api.briananderson.xyz", "api-dev.briananderson.xyz"]
+  },
+  "csp": {
+    "directives": {
+      "default-src": ["'self'"],
+      "base-uri": ["'self'"],
+      "object-src": ["'none'"],
+      "frame-ancestors": ["'none'"],
+      "form-action": ["'self'"],
+      "script-src": [
+        "'self'",
+        "'unsafe-inline'",
+        "https://app.posthog.com",
+        "https://*.posthog.com"
+      ],
+      "style-src": ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      "font-src": ["'self'", "data:", "https://fonts.gstatic.com"],
+      "img-src": ["'self'", "data:", "blob:", "https:"],
+      "connect-src": [
+        "'self'",
+        "https://api.briananderson.xyz",
+        "https://api-dev.briananderson.xyz",
+        "https://app.posthog.com",
+        "https://*.posthog.com",
+        "wss://*.posthog.com"
+      ],
+      "worker-src": ["'self'", "blob:"],
+      "manifest-src": ["'self'"],
+      "media-src": ["'self'"]
+    },
+    "metaDirectives": [
+      "default-src",
+      "base-uri",
+      "object-src",
+      "form-action",
+      "script-src",
+      "style-src",
+      "font-src",
+      "img-src",
+      "connect-src",
+      "worker-src",
+      "manifest-src",
+      "media-src"
+    ],
+    "unsafeInlineReason": "SvelteKit prerendered pages currently emit inline hydration bootstrap and JSON-LD scripts, and app.html contains a pre-hydration theme script. Remove unsafe-inline only after those are externalized or nonce/hash support covers every generated page."
+  },
+  "httpHeaders": {
+    "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
+    "X-Content-Type-Options": "nosniff",
+    "Referrer-Policy": "strict-origin-when-cross-origin",
+    "Permissions-Policy": "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
+  },
+  "rateLimit": {
+    "description": "Shared edge limit for public AI POST endpoints; origin memory limits remain defense in depth and are not global.",
+    "paths": ["/chat", "/fit-finder", "/mcp"],
+    "methods": ["POST"],
+    "characteristics": ["cf.colo.id", "ip.src"],
+    "periodSeconds": 900,
+    "requestsPerPeriod": 20,
+    "mitigationTimeoutSeconds": 900,
+    "action": "block"
+  }
+}
