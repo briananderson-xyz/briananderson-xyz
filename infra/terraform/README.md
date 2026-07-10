@@ -64,6 +64,12 @@ uses resource-level `roles/run.developer` and preserves service IAM. A trusted a
 separately grant `allUsers` `roles/run.invoker` for an intended public service. Both PR and apply
 pass `manage_deployment_service_iam=true` so they plan with identical, verified service-IAM inputs.
 
+Static-site deployers receive `roles/storage.objectAdmin` only on their own environment bucket.
+Because `gcloud storage rsync` also reads bucket metadata, each receives bucket-scoped
+`roles/storage.legacyBucketReader` on that same bucket. That predefined role includes
+`storage.buckets.get` plus list/read-metadata permissions and no bucket-IAM or object write/delete
+permissions. Dev has no production-bucket grant; production has no dev-bucket grant.
+
 ## Credential-free validation
 
 Run from this directory:

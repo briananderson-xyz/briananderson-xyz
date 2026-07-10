@@ -406,6 +406,75 @@ for identity in dev prod; do
   contains_fixed "member     = \"serviceAccount:\${google_service_account.${identity}.email}\"" <(printf '%s\n' "$block")
 done
 
+assert_deployer_bucket_binding() {
+  local resource_name="$1"
+  local expected_bucket="$2"
+  local expected_role="$3"
+  local identity="$4"
+  local block
+
+  block="$(awk -v resource_name="$resource_name" '
+    $0 == "resource \"google_storage_bucket_iam_member\" \"" resource_name "\" {" { capture = 1 }
+    capture { print }
+    /^}/ && capture { exit }
+  ' "$root/infra/terraform/cloud-run.tf")"
+  contains_fixed "bucket = $expected_bucket" <(printf '%s\n' "$block")
+  contains_fixed "role   = \"$expected_role\"" <(printf '%s\n' "$block")
+  contains_fixed "member = \"serviceAccount:\${google_service_account.${identity}.email}\"" <(printf '%s\n' "$block")
+}
+
+assert_deployer_bucket_binding dev_deployer google_storage_bucket.site_dev.name roles/storage.objectAdmin dev
+assert_deployer_bucket_binding prod_deployer google_storage_bucket.site.name roles/storage.objectAdmin prod
+assert_deployer_bucket_binding dev_bucket_metadata_reader google_storage_bucket.site_dev.name roles/storage.legacyBucketReader dev
+assert_deployer_bucket_binding prod_bucket_metadata_reader google_storage_bucket.site.name roles/storage.legacyBucketReader prod
+
+deployer_iam_inventory="$(awk '
+  function brace_delta(line, copy, opens, closes) {
+    copy = line
+    opens = gsub(/{/, "{", copy)
+    copy = line
+    closes = gsub(/}/, "}", copy)
+    return opens - closes
+  }
+  function finish_block() {
+    if (block ~ /google_service_account\.(dev|prod)\.email/) print header
+    capture = 0
+    depth = 0
+    header = ""
+    block = ""
+  }
+  /^resource "/ {
+    if (capture) finish_block()
+    capture = 1
+    header = $0
+    block = $0 ORS
+    depth = brace_delta($0)
+    if (depth == 0) finish_block()
+    next
+  }
+  capture {
+    block = block $0 ORS
+    depth += brace_delta($0)
+    if (depth == 0) finish_block()
+  }
+  END { if (capture) finish_block() }
+' "$root/infra/terraform"/*.tf | LC_ALL=C sort)"
+expected_deployer_iam_inventory='resource "google_artifact_registry_repository_iam_member" "dev_reader" {
+resource "google_artifact_registry_repository_iam_member" "prod_reader" {
+resource "google_cloud_run_v2_service_iam_member" "dev_deployer" {
+resource "google_cloud_run_v2_service_iam_member" "prod_deployer" {
+resource "google_service_account_iam_member" "dev_act_as_run" {
+resource "google_service_account_iam_member" "prod_act_as_run" {
+resource "google_storage_bucket_iam_member" "dev_bucket_metadata_reader" {
+resource "google_storage_bucket_iam_member" "dev_deployer" {
+resource "google_storage_bucket_iam_member" "prod_bucket_metadata_reader" {
+resource "google_storage_bucket_iam_member" "prod_deployer" {'
+if [ "$deployer_iam_inventory" != "$expected_deployer_iam_inventory" ]; then
+  echo "Dev/prod IAM inventory differs from the exact environment-scoped allowlist." >&2
+  printf 'Observed deployer IAM resources:\n%s\n' "$deployer_iam_inventory" >&2
+  exit 1
+fi
+
 if awk '
   /^resource / { capture = 1; block = $0 ORS; header = $0; next }
   capture { block = block $0 ORS }

@@ -80,5 +80,9 @@ expect_policy_failure implicit-service-iam \
   "sed -i.bak 's/manage_deployment_service_iam=true/manage_deployment_service_iam=false/g' \"\$1/.github/workflows/terraform-pr.yml\""
 expect_policy_failure terraform-job-name-shadowed-by-step \
   "sed -i.bak 's/^    name: Terraform Validate$/    name: UI Validate/' \"\$1/.github/workflows/terraform-pr.yml\""
+expect_policy_failure deployer-bucket-metadata-writer \
+  "sed -i.bak 's/roles\/storage.legacyBucketReader/roles\/storage.legacyBucketOwner/g' \"\$1/infra/terraform/cloud-run.tf\""
+expect_policy_failure additive-deployer-storage-role \
+  "printf '\nresource \"google_storage_bucket_iam_member\" \"rogue_dev_bucket_reader\" {\n  bucket = google_storage_bucket.site.name\n  role = \"roles/storage.objectViewer\"\n  member = \"serviceAccount:\${google_service_account.dev.email}\"\n}\n' >> \"\$1/infra/terraform/services.tf\""
 
 echo "Terraform policy search portability tests passed."
