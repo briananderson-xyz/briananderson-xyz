@@ -1,5 +1,8 @@
 import { expect, test } from "@playwright/test";
 
+const expectedSiteOrigin = new URL(process.env.PUBLIC_SITE_URL || "https://briananderson.xyz")
+  .origin;
+
 const publicSurfaces = [
   { path: "/proof/", heading: "./proof-ledger" },
   { path: "/ai-evals/", heading: "./ai-evals" },
@@ -33,9 +36,9 @@ test.describe("public evidence surfaces", () => {
     const llmsFull = await (await request.get("/llms-full.txt")).text();
 
     for (const surface of publicSurfaces) {
-      expect(sitemap).toContain(`https://briananderson.xyz${surface.path}`);
-      expect(llms).toContain(`https://briananderson.xyz${surface.path}`);
-      expect(llmsFull).toContain(`https://briananderson.xyz${surface.path}`);
+      expect(sitemap).toContain(`${expectedSiteOrigin}${surface.path}`);
+      expect(llms).toContain(`${expectedSiteOrigin}${surface.path}`);
+      expect(llmsFull).toContain(`${expectedSiteOrigin}${surface.path}`);
     }
   });
 
