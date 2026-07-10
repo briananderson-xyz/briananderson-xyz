@@ -55,6 +55,10 @@ remote plan. The planner therefore receives a custom role containing only
 The state bucket separately grants `roles/storage.objectViewer` so the backend can read state
 objects at the exact backend bucket only.
 
+The apply identity alone receives `roles/iam.roleAdmin` because Terraform manages the planner's
+custom bucket-IAM reader role and must read, create, update, or retire that role after a reviewed
+merge. Planner, publisher, dev, and production deployment identities never receive Role Admin.
+
 Dev/prod may read images only from `site-functions`; publisher alone writes them. Cloud Run rollout
 uses resource-level `roles/run.developer` and preserves service IAM. A trusted administrator must
 separately grant `allUsers` `roles/run.invoker` for an intended public service. Both PR and apply

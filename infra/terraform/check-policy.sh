@@ -365,6 +365,24 @@ done
 # Project-wide Cloud Run administration is reserved for the manual Terraform
 # applier. Automatic publisher/dev/prod identities receive only narrow grants.
 contains_fixed '"roles/run.admin"' "$root/infra/terraform/main.tf"
+terraform_apply_roles_block="$(awk '
+  /terraform_apply_roles = toset\(\[/ { capture = 1 }
+  capture { print }
+  /^[[:space:]]*\]\)$/ && capture { exit }
+' "$root/infra/terraform/main.tf")"
+contains_fixed 'terraform_apply_roles = toset([' <(printf '%s\n' "$terraform_apply_roles_block")
+contains_fixed '"roles/iam.roleAdmin"' <(printf '%s\n' "$terraform_apply_roles_block")
+terraform_apply_block="$(awk '
+  /^resource "google_project_iam_member" "terraform_apply"/ { capture = 1 }
+  capture { print }
+  /^}/ && capture { exit }
+' "$root/infra/terraform/main.tf")"
+contains_fixed 'for_each = local.terraform_apply_roles' <(printf '%s\n' "$terraform_apply_block")
+contains_fixed 'member  = "serviceAccount:${google_service_account.apply.email}"' <(printf '%s\n' "$terraform_apply_block")
+if [ "$(awk '/roles\/iam\.roleAdmin/ { count++ } END { print count + 0 }' "$root/infra/terraform"/*.tf)" -ne 1 ]; then
+  echo "roles/iam.roleAdmin must appear exactly once in Terraform source and remain apply-only." >&2
+  exit 1
+fi
 if report_regex 'roles/run\.admin' "$root/infra/terraform/cloud-run.tf"; then
   echo "Application delivery identities cannot receive project-wide Cloud Run admin." >&2
   exit 1
