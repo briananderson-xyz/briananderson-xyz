@@ -80,6 +80,19 @@ for (const jobName of ["publish-functions", "deploy-functions-dev", "deploy-site
   );
 }
 
+const devE2eStep = automatic.workflow.jobs?.["deploy-site-dev"]?.steps?.find(
+  (step) => step?.name === "Run dev end-to-end checks"
+);
+expect(Boolean(devE2eStep), "dev static deployment must retain its end-to-end gate");
+expect(
+  devE2eStep?.env?.PLAYWRIGHT_TEST_BASE_URL === "https://dev.briananderson.xyz",
+  "dev E2E browser requests must target the dev site"
+);
+expect(
+  devE2eStep?.env?.PUBLIC_SITE_URL === "https://dev.briananderson.xyz",
+  "dev E2E machine-readable expectations must use the dev public origin"
+);
+
 expect(
   automatic.workflow.jobs?.["publish-functions"]?.environment === undefined,
   "publisher identity must remain scoped to the exact main-ref subject, not an environment subject"

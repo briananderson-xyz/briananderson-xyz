@@ -333,6 +333,7 @@ jobs:
         working-directory: site
         env:
           PLAYWRIGHT_TEST_BASE_URL: https://dev.briananderson.xyz
+          PUBLIC_SITE_URL: https://dev.briananderson.xyz
         run: pnpm run test:e2e
       - name: Run dev API smoke checks
         if: steps.config.outputs.ready == 'true'
