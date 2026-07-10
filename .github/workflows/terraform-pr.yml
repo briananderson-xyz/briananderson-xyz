@@ -1,12 +1,9 @@
-name: Terraform Validate (PR)
+name: Terraform PR Gate
 
 on:
   pull_request:
     types: [opened, synchronize, reopened]
     branches: ["main"]
-    paths:
-      - "infra/terraform/**"
-      - ".github/workflows/terraform-*.yml"
 
 permissions: {}
 
@@ -14,14 +11,52 @@ concurrency:
   group: terraform-pr-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
+env:
+  TF_IN_AUTOMATION: "true"
+  TF_INPUT: "false"
+
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      terraform: ${{ steps.diff.outputs.terraform }}
+      same_repository: ${{ steps.diff.outputs.same_repository }}
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Detect Terraform trust-boundary changes from immutable revisions
+        id: diff
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          HEAD_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$HEAD_SHA"
+          git cat-file -e "${BASE_SHA}^{commit}"
+          changed="$(git diff --name-only "$BASE_SHA" "$HEAD_SHA")"
+          if grep -Eq '^(infra/terraform/|\.github/workflows/terraform-(pr|apply)\.yml$|site/scripts/(validate-workflow-policy|validate-delivery-workflows)\.mjs$)' <<<"$changed"; then
+            echo "terraform=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "terraform=false" >> "$GITHUB_OUTPUT"
+          fi
+          if [ "$HEAD_REPOSITORY" = "$REPOSITORY" ]; then
+            echo "same_repository=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "same_repository=false" >> "$GITHUB_OUTPUT"
+          fi
+
   validate:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-    env:
-      TF_IN_AUTOMATION: "true"
-      TF_INPUT: "false"
     steps:
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
         with:
@@ -45,5 +80,128 @@ jobs:
       - name: Terraform Validate
         run: terraform -chdir=infra/terraform validate -no-color
 
-      - name: Trust-boundary policy
-        run: infra/terraform/check-policy.sh
+      - name: Trust-boundary policy and hostile-path tests
+        run: infra/terraform/test-check-policy.sh
+
+  plan:
+    needs: changes
+    if: needs.changes.outputs.terraform == 'true' && needs.changes.outputs.same_repository == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+
+      - name: Verify checked out revision
+        run: test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha }}"
+
+      - name: Authenticate as read-only Terraform planner
+        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WIF_PLAN_PROVIDER }}
+          service_account: ${{ secrets.GCP_WIF_PLAN_SA_EMAIL }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+        with:
+          terraform_version: 1.15.8
+
+      - name: Initialize exact remote backend
+        run: >-
+          terraform -chdir=infra/terraform init
+          -backend-config="bucket=${{ secrets.TF_STATE_BUCKET }}"
+          -backend-config="prefix=gcp/infra"
+
+      - name: Create read-only saved plan
+        run: |
+          set -euo pipefail
+          terraform -chdir=infra/terraform plan \
+            -lock=false \
+            -input=false \
+            -var="project_id=${{ vars.GCP_PROJECT_ID }}" \
+            -var="region=${{ vars.GCP_REGION }}" \
+            -var="github_org=${{ github.repository_owner }}" \
+            -var="github_repo=${{ github.event.repository.name }}" \
+            -var="bucket_name=${{ vars.SITE_BUCKET_NAME }}" \
+            -var="terraform_state_bucket=${{ secrets.TF_STATE_BUCKET }}" \
+            -var="manage_deployment_service_iam=true" \
+            -out=tfplan.out >/dev/null
+
+      - name: Produce sanitized plan evidence
+        env:
+          SOURCE_SHA: ${{ github.event.pull_request.head.sha }}
+          BACKEND_PREFIX: gcp/infra
+        run: |
+          set -euo pipefail
+          terraform -chdir=infra/terraform show -json tfplan.out > infra/terraform/tfplan.json
+          infra/terraform/sanitize-plan-evidence.sh \
+            infra/terraform/tfplan.json \
+            infra/terraform/plan-evidence.txt
+          {
+            echo '<!-- terraform-pr-gate -->'
+            echo '### Terraform remote-state plan'
+            echo
+            printf -- '- Source SHA: `%s`\n' "$SOURCE_SHA"
+            printf -- '- Backend prefix: `%s`\n' "$BACKEND_PREFIX"
+            printf -- '- Change counts: `%s`\n' "$(head -n 1 infra/terraform/plan-evidence.txt)"
+            echo
+            echo '| Resource address | Actions |'
+            echo '| --- | --- |'
+            tail -n +2 infra/terraform/plan-evidence.txt | while IFS=$'\t' read -r address actions; do
+              printf '| `%s` | `%s` |\n' "$address" "$actions"
+            done
+          } > infra/terraform/plan-comment.md
+          cat infra/terraform/plan-comment.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Update sanitized pull-request comment
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          comment_id="$(gh api "repos/$REPOSITORY/issues/$PR_NUMBER/comments" --paginate \
+            --jq '.[] | select(.user.type == "Bot" and (.body | startswith("<!-- terraform-pr-gate -->"))) | .id' \
+            | head -n 1)"
+          if [ -n "$comment_id" ]; then
+            gh api --method PATCH "repos/$REPOSITORY/issues/comments/$comment_id" \
+              --raw-field body="$(cat infra/terraform/plan-comment.md)" >/dev/null
+          else
+            gh api --method POST "repos/$REPOSITORY/issues/$PR_NUMBER/comments" \
+              --raw-field body="$(cat infra/terraform/plan-comment.md)" >/dev/null
+          fi
+
+      - name: Delete all plan material
+        if: always()
+        run: rm -f infra/terraform/tfplan.out infra/terraform/tfplan.json infra/terraform/plan-evidence.txt infra/terraform/plan-comment.md
+
+  gate:
+    name: Terraform Gate
+    if: always()
+    needs: [changes, validate, plan]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Enforce validation, eligibility, and remote plan
+        env:
+          CHANGES_RESULT: ${{ needs.changes.result }}
+          VALIDATE_RESULT: ${{ needs.validate.result }}
+          PLAN_RESULT: ${{ needs.plan.result }}
+          TERRAFORM_CHANGED: ${{ needs.changes.outputs.terraform }}
+          SAME_REPOSITORY: ${{ needs.changes.outputs.same_repository }}
+        run: |
+          set -euo pipefail
+          test "$CHANGES_RESULT" = "success"
+          test "$VALIDATE_RESULT" = "success"
+          if [ "$TERRAFORM_CHANGED" = "true" ]; then
+            test "$SAME_REPOSITORY" = "true"
+            test "$PLAN_RESULT" = "success"
+          else
+            test "$PLAN_RESULT" = "skipped"
+          fi

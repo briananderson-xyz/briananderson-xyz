@@ -39,6 +39,11 @@ variable "wif_plan_sa_name" {
   type    = string
   default = "github-terraform-planner"
 }
+variable "terraform_state_bucket" {
+  description = "Exact GCS bucket containing the Terraform backend state"
+  type        = string
+  default     = "briananderson-xyz-tf-state"
+}
 variable "wif_publisher_pool_id" {
   type    = string
   default = "github-publisher-pool"

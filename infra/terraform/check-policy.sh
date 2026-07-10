@@ -197,8 +197,7 @@ if report_regex "${legacy_identity}|${legacy_writer}|${legacy_run_admin}" \
   exit 1
 fi
 
-if report_regex 'run .?terraform apply|terraform apply[[:space:]]+-auto-approve' \
-  "$root/infra/terraform/README.md"; then
+if report_regex 'terraform apply[[:space:]]+-auto-approve' "$root/infra/terraform/README.md"; then
   echo "Bootstrap guidance cannot recommend an unreviewed direct apply." >&2
   exit 1
 fi
@@ -221,13 +220,38 @@ if awk '
   exit 1
 fi
 
+contains_fixed 'variable "terraform_state_bucket"' "$root/infra/terraform/variables.tf"
+contains_fixed 'default     = "briananderson-xyz-tf-state"' "$root/infra/terraform/variables.tf"
+state_reader_block="$(awk '
+  /^resource "google_storage_bucket_iam_member" "plan_state_reader"/ { capture = 1 }
+  capture { print }
+  /^}/ && capture { exit }
+' "$root/infra/terraform/main.tf")"
+contains_fixed 'bucket = var.terraform_state_bucket' <(printf '%s\n' "$state_reader_block")
+contains_fixed 'role   = "roles/storage.objectViewer"' <(printf '%s\n' "$state_reader_block")
+contains_fixed 'member = "serviceAccount:${google_service_account.plan.email}"' <(printf '%s\n' "$state_reader_block")
+
+for identity_event in \
+  'plan:pull_request' \
+  'publisher:push' \
+  'dev:push' \
+  'prod:workflow_dispatch' \
+  'apply:push'; do
+  identity="${identity_event%%:*}"
+  event="${identity_event#*:}"
+  contains_regex "attribute_condition.*local\\.wif_subjects\\.${identity}.*assertion\\.repository ==.*assertion\\.event_name == '${event}'" "$root/infra/terraform/main.tf"
+done
+for identity in publisher dev prod apply; do
+  contains_regex "attribute_condition.*local\\.wif_subjects\\.${identity}.*assertion\\.ref == 'refs/heads/" "$root/infra/terraform/main.tf"
+done
+
 for required in \
-  'external bootstrap' \
+  'create-only targeted saved plan' \
   'roles/storage.objectViewer' \
-  'At that bucket only' \
-  'Terraform state can' \
-  'contain secrets' \
-  'externally `NOT_VERIFIED`'; do
+  'exact backend bucket only' \
+  'Terraform state can contain secrets' \
+  'sanitized evidence' \
+  'automatic apply'; do
   contains_fixed "$required" "$root/infra/terraform/README.md"
 done
 
@@ -301,13 +325,75 @@ contains_regex '^    environment: dev$' "$workflows/build-and-deploy.yml"
 contains_regex '^    environment: prod$' "$workflows/deploy-production.yml"
 contains_regex '^    environment: terraform-apply$' "$workflows/terraform-apply.yml"
 
-if report_regex '^[[:space:]]+(push|pull_request|schedule):' "$workflows/terraform-apply.yml"; then
-  echo "Terraform apply must remain workflow_dispatch-only." >&2
+contains_fixed 'name: Terraform Gate' "$workflows/terraform-pr.yml"
+contains_regex '^  pull_request:$' "$workflows/terraform-pr.yml"
+if report_regex '^[[:space:]]+paths:' "$workflows/terraform-pr.yml"; then
+  echo "The stable Terraform PR gate must run for every pull request to main." >&2
+  exit 1
+fi
+contains_fixed 'same_repository: ${{ steps.diff.outputs.same_repository }}' "$workflows/terraform-pr.yml"
+contains_fixed "HEAD_REPOSITORY: \${{ github.event.pull_request.head.repo.full_name }}" "$workflows/terraform-pr.yml"
+contains_fixed "if: needs.changes.outputs.terraform == 'true' && needs.changes.outputs.same_repository == 'true'" "$workflows/terraform-pr.yml"
+contains_fixed "test \"\$SAME_REPOSITORY\" = \"true\"" "$workflows/terraform-pr.yml"
+
+validate_block="$(awk '
+  /^  validate:/ { capture = 1 }
+  /^  plan:/ { capture = 0 }
+  capture { print }
+' "$workflows/terraform-pr.yml")"
+if report_regex 'id-token|google-github-actions/auth|secrets\.' <(printf '%s\n' "$validate_block"); then
+  echo "The always-running Terraform PR validation job must remain credential-free." >&2
+  exit 1
+fi
+contains_fixed '-lock=false' "$workflows/terraform-pr.yml"
+contains_fixed '-var="manage_deployment_service_iam=true"' "$workflows/terraform-pr.yml"
+contains_fixed '-var="manage_deployment_service_iam=true"' "$workflows/terraform-apply.yml"
+contains_fixed 'terraform -chdir=infra/terraform show -json tfplan.out > infra/terraform/tfplan.json' "$workflows/terraform-pr.yml"
+contains_fixed 'infra/terraform/sanitize-plan-evidence.sh' "$workflows/terraform-pr.yml"
+if report_regex '\.resource_changes|\.change\.actions|sort_by\(\.address\)' "$workflows/terraform-pr.yml"; then
+  echo "The PR workflow must use the behavior-tested sanitizer instead of an inline transformation." >&2
+  exit 1
+fi
+for executable in \
+  "$root/infra/terraform/check-policy.sh" \
+  "$root/infra/terraform/test-check-policy.sh" \
+  "$root/infra/terraform/sanitize-plan-evidence.sh" \
+  "$root/infra/terraform/test-sanitize-plan-evidence.sh"; do
+  if [ ! -x "$executable" ]; then
+    echo "Terraform policy and sanitizer scripts must be executable: $executable" >&2
+    exit 1
+  fi
+done
+contains_fixed 'Resource address | Actions' "$workflows/terraform-pr.yml"
+contains_fixed 'Source SHA:' "$workflows/terraform-pr.yml"
+contains_fixed 'Backend prefix:' "$workflows/terraform-pr.yml"
+contains_fixed 'Change counts:' "$workflows/terraform-pr.yml"
+contains_fixed 'Delete all plan material' "$workflows/terraform-pr.yml" "$workflows/terraform-apply.yml"
+
+if report_regex 'actions/(upload|download)-artifact|\.before|\.after|\.planned_values|\.prior_state' "$workflows/terraform-pr.yml"; then
+  echo "PR planning cannot publish binary plans, raw values, or state-shaped JSON." >&2
   exit 1
 fi
 
-if report_regex 'id-token|google-github-actions/auth|secrets\.' "$workflows/terraform-pr.yml"; then
-  echo "Required Terraform PR validation must remain credential-free." >&2
+contains_regex '^  push:$' "$workflows/terraform-apply.yml"
+if report_regex 'workflow_dispatch|inputs\.|APPLY_TERRAFORM|confirmation' "$workflows/terraform-apply.yml"; then
+  echo "A reviewed main merge must be the only Terraform apply gate." >&2
+  exit 1
+fi
+contains_fixed 'group: terraform-backend-gcp-infra' "$workflows/terraform-apply.yml"
+contains_fixed 'cancel-in-progress: false' "$workflows/terraform-apply.yml"
+contains_fixed 'SOURCE_SHA: ${{ github.sha }}' "$workflows/terraform-apply.yml"
+contains_fixed 'refs/remotes/origin/main' "$workflows/terraform-apply.yml"
+contains_fixed 'Create fresh locked plan for this main SHA' "$workflows/terraform-apply.yml"
+contains_fixed 'Apply the same fresh saved plan' "$workflows/terraform-apply.yml"
+if report_regex 'actions/(upload|download)-artifact|workflow_run' "$workflows/terraform-apply.yml"; then
+  echo "Automatic apply must create and consume its own local saved plan." >&2
+  exit 1
+fi
+
+contains_regex '^  workflow_dispatch:$' "$workflows/deploy-production.yml"
+if report_regex '^[[:space:]]+(push|pull_request|schedule):' "$workflows/deploy-production.yml"; then
+  echo "Production application deployment must remain manual-only." >&2
   exit 1
 fi
 

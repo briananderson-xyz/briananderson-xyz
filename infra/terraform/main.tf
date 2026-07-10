@@ -96,7 +96,7 @@ resource "google_iam_workload_identity_pool_provider" "plan" {
   workload_identity_pool_provider_id = var.wif_plan_provider_id
   display_name                       = "Terraform Plan"
   attribute_mapping                  = { "google.subject" = "assertion.sub" }
-  attribute_condition                = "assertion.sub == '${local.wif_subjects.plan}' && assertion.repository_owner_id in ${jsonencode(var.allowed_repository_owner_ids)}"
+  attribute_condition                = "assertion.sub == '${local.wif_subjects.plan}' && assertion.repository == '${var.github_org}/${var.github_repo}' && assertion.event_name == 'pull_request' && assertion.repository_owner_id in ${jsonencode(var.allowed_repository_owner_ids)}"
   oidc { issuer_uri = "https://token.actions.githubusercontent.com" }
 }
 
@@ -105,7 +105,7 @@ resource "google_iam_workload_identity_pool_provider" "publisher" {
   workload_identity_pool_provider_id = var.wif_publisher_provider_id
   display_name                       = "Artifact Publisher"
   attribute_mapping                  = { "google.subject" = "assertion.sub" }
-  attribute_condition                = "assertion.sub == '${local.wif_subjects.publisher}' && assertion.repository_owner_id in ${jsonencode(var.allowed_repository_owner_ids)}"
+  attribute_condition                = "assertion.sub == '${local.wif_subjects.publisher}' && assertion.repository == '${var.github_org}/${var.github_repo}' && assertion.event_name == 'push' && assertion.ref == 'refs/heads/${var.github_branch}' && assertion.repository_owner_id in ${jsonencode(var.allowed_repository_owner_ids)}"
   oidc { issuer_uri = "https://token.actions.githubusercontent.com" }
 }
 
@@ -114,7 +114,7 @@ resource "google_iam_workload_identity_pool_provider" "dev" {
   workload_identity_pool_provider_id = var.wif_dev_provider_id
   display_name                       = "Dev Deploy"
   attribute_mapping                  = { "google.subject" = "assertion.sub" }
-  attribute_condition                = "assertion.sub == '${local.wif_subjects.dev}' && assertion.repository_owner_id in ${jsonencode(var.allowed_repository_owner_ids)}"
+  attribute_condition                = "assertion.sub == '${local.wif_subjects.dev}' && assertion.repository == '${var.github_org}/${var.github_repo}' && assertion.event_name == 'push' && assertion.ref == 'refs/heads/${var.github_branch}' && assertion.repository_owner_id in ${jsonencode(var.allowed_repository_owner_ids)}"
   oidc { issuer_uri = "https://token.actions.githubusercontent.com" }
 }
 
@@ -123,7 +123,7 @@ resource "google_iam_workload_identity_pool_provider" "prod" {
   workload_identity_pool_provider_id = var.wif_prod_provider_id
   display_name                       = "Prod Deploy"
   attribute_mapping                  = { "google.subject" = "assertion.sub" }
-  attribute_condition                = "assertion.sub == '${local.wif_subjects.prod}' && assertion.repository_owner_id in ${jsonencode(var.allowed_repository_owner_ids)}"
+  attribute_condition                = "assertion.sub == '${local.wif_subjects.prod}' && assertion.repository == '${var.github_org}/${var.github_repo}' && assertion.event_name == 'workflow_dispatch' && assertion.ref == 'refs/heads/${var.github_branch}' && assertion.repository_owner_id in ${jsonencode(var.allowed_repository_owner_ids)}"
   oidc { issuer_uri = "https://token.actions.githubusercontent.com" }
 }
 
@@ -132,7 +132,7 @@ resource "google_iam_workload_identity_pool_provider" "apply" {
   workload_identity_pool_provider_id = var.wif_apply_provider_id
   display_name                       = "Terraform Apply"
   attribute_mapping                  = { "google.subject" = "assertion.sub" }
-  attribute_condition                = "assertion.sub == '${local.wif_subjects.apply}' && assertion.repository_owner_id in ${jsonencode(var.allowed_repository_owner_ids)}"
+  attribute_condition                = "assertion.sub == '${local.wif_subjects.apply}' && assertion.repository == '${var.github_org}/${var.github_repo}' && assertion.event_name == 'push' && assertion.ref == 'refs/heads/${var.github_branch}' && assertion.repository_owner_id in ${jsonencode(var.allowed_repository_owner_ids)}"
   oidc { issuer_uri = "https://token.actions.githubusercontent.com" }
 }
 
@@ -193,8 +193,7 @@ resource "google_service_account_iam_member" "wif_apply" {
   member             = "principal://iam.googleapis.com/${google_iam_workload_identity_pool.apply.name}/subject/${local.wif_subjects.apply}"
 }
 
-# Planning requires resource metadata reads, but no mutation roles. Optional
-# remote-state access is an exact-bucket external bootstrap described in README.
+# Planning requires resource metadata reads, but no mutation roles.
 resource "google_project_iam_member" "plan_viewer" {
   project = var.project_id
   role    = "roles/viewer"
@@ -205,6 +204,14 @@ resource "google_project_iam_member" "plan_secret_viewer" {
   project = var.project_id
   role    = "roles/secretmanager.viewer"
   member  = "serviceAccount:${google_service_account.plan.email}"
+}
+
+# Remote planning can read only the configured backend bucket. This must never
+# become a project-level Storage grant or a write-capable bucket role.
+resource "google_storage_bucket_iam_member" "plan_state_reader" {
+  bucket = var.terraform_state_bucket
+  role   = "roles/storage.objectViewer"
+  member = "serviceAccount:${google_service_account.plan.email}"
 }
 
 # The applier is separate from the application deployer. These roles cover the
