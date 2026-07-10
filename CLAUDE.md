@@ -1,202 +1,149 @@
-# CLAUDE.md
+# Repository Agent Guide
 
-> **Source of truth for AI agents working in this codebase.**
-> **IMPORTANT:** AGENTS.md mirrors this file. When updating CLAUDE.md, make the same changes to AGENTS.md to keep them in sync.
+`AGENTS.md` and `CLAUDE.md` are mirrors. Keep them byte-for-byte identical and under 200 lines.
+Move detailed architecture guidance to `docs/architecture/` and link it here.
 
-## Self-Management
+## Documentation
 
-- **Keep this file under 200 lines.** Move detailed references to `docs/architecture/` and link from here.
-- When you make an architectural decision or discover a pattern worth preserving, update this file (or the relevant doc it links to).
-- When a documented pattern becomes outdated, remove or correct it immediately.
-- Do not duplicate information that already lives in config files (package.json, tailwind.config.cjs, etc.) — reference them instead.
-- Periodically audit linked docs; delete any that no longer reflect the codebase.
+- Do not create random Markdown files for plans, status, or notes.
+- Permanent architecture belongs here or in a focused `docs/architecture/` document.
+- Temporary AI artifacts belong in `.ai-docs/` or `.kontourai/flow-agents/` as appropriate.
+- Update existing documentation in place and remove obsolete guidance promptly.
+- Human-facing files under `docs/` stand alone and must not reference agent instruction files.
 
-## Documentation Rules
+## Project
 
-**Do NOT create random markdown files** for planning, status tracking, or notes.
+**Stack:** SvelteKit 2, Svelte 5, TypeScript, Tailwind CSS 3, and mdsvex.
 
-- **Permanent documentation** goes in this file (CLAUDE.md + AGENTS.md) or `docs/architecture/`
-- **Temporary AI docs** (planning, status, task tracking) go in `.ai-docs/` (gitignored)
-- **When updating existing docs**, update them in place — don't create new files
-- **README updates** should link to centralized documentation (this file or `docs/architecture/`), not create new scattered docs
-- If you need to document a new architectural pattern, add it here or create a focused doc in `docs/architecture/` and link it
+**Output:** static site through `@sveltejs/adapter-static`, hosted in GCS behind Cloudflare.
 
-**Note:** Files in `docs/` are standalone documentation for human developers. They should NOT reference CLAUDE.md or AGENTS.md (those are AI-only instructions).
+**Dynamic API:** Express on Cloud Run behind a Cloudflare Worker.
+**Package manager:** pnpm; run application commands from `site/`
 
-## Project Overview
+| Directory          | Purpose                                                  |
+| ------------------ | -------------------------------------------------------- |
+| `site/src/`        | Application code, components, routes, schemas, utilities |
+| `site/content/`    | Blog, project, proof, evaluation, and resume source data |
+| `site/functions/`  | Cloud Run Express API; the directory name is historical  |
+| `site/scripts/`    | Build and validation scripts                             |
+| `site/static/`     | Static assets and generated content-index files          |
+| `infra/terraform/` | GCP infrastructure and WIF configuration                 |
 
-**Stack:** SvelteKit 2 + Svelte 5 + TypeScript + Tailwind CSS 3 + mdsvex
-**Output:** Static site via `@sveltejs/adapter-static` → GCS Hosting (Cloudflare CDN)
-**Package manager:** pnpm (run commands from `site/`)
+## Architecture rules
 
-| Directory | Purpose |
-|-----------|---------|
-| `site/src/` | Application code (components, routes, utils) |
-| `site/content/` | Markdown content (blog, projects) + YAML (resume variants) |
-| `site/functions/` | Cloud Run API (Express server, excluded from lint) |
-| `site/scripts/` | Standalone Node validation scripts (excluded from lint) |
-| `site/static/` | Static assets served as-is |
+### Static first
 
-## Architecture Decisions
+- Prerender page routes. Every `+page.server.ts` exports `prerender = true`.
+- Build-time load functions may not depend on request cookies, headers, or runtime responses.
+- `src/routes/api/` proxies exist for local development only.
+- Runtime server logic belongs in `site/functions/`, not SvelteKit page routes.
+- Production clients call the Cloudflare-fronted Cloud Run API.
 
-### Why Tailwind CSS
+### Components and styling
 
-Tailwind was chosen for this project because:
+- Prefer Svelte 5 runes: `$state`, `$props`, `$effect`, `$derived`, and snippets.
+- When touching legacy Svelte 4 syntax, migrate only the component in scope.
+- Props use `interface Props` and destructuring from `$props()`.
+- Use individual `lucide-svelte` icon imports.
+- Use scoped styles; reserve `:global()` for rendered HTML such as Markdown.
+- Use theme-aware `skin-*` utilities. Status UI uses semantic success/warning/error pairs.
+- Hardcoded or `terminal-*` colors are only for fixed terminal chrome and documented brand colors.
+- Preserve the terminal identity while pairing opaque labels with plain-language meaning.
 
-1. **Theming via CSS custom properties** — The entire color system is driven by CSS variables (`--color-*`) defined in `src/lib/styles/app.css`. Tailwind's `skin-*` utility classes map to these variables through the `withOpacity()` helper in `tailwind.config.cjs`, enabling three themes (light, dark, catppuccin) without any Tailwind config changes.
-2. **Utility-first consistency** — Eliminates naming debates and keeps styles colocated with markup. No separate CSS files per component.
-3. **Prose plugin** — `@tailwindcss/typography` handles all markdown-rendered content with theme-aware colors. Customized in `tailwind.config.cjs` lines 47–121.
-4. **Small bundle** — PurgeCSS is built in; only used classes ship to production.
+See [`docs/architecture/theming.md`](docs/architecture/theming.md).
 
-**Rule:** Always use `skin-*` classes for theme-aware colors. Never hardcode hex values for themed elements. Use `terminal-*` classes only for the fixed terminal aesthetic (navbar autocomplete, chatbot chrome).
+### Content and evidence
 
-### Theming System
+- Markdown and YAML are validated build inputs, not untyped blobs.
+- Required content metadata and optional fields are defined in `src/lib/schemas/content.ts`.
+- Use canonical resume skill IDs in content. Never infer evidence with substring matching.
+- Quantified/prominent claims belong in `content/proof-ledger.yaml`; homepage and `/proof/` share it.
+- Proof entries require a stable ID, exact source excerpt, evidence state, and review date.
+- Use `updated` only for a verified material revision; freshness is `updated`, then `date`.
+- Keep project `outcome` and `projectType` vocabulary reusable for filtering.
+- Public eval history contains aggregate counts and opaque scenario IDs only—never prompts or output.
+- Run a quarterly freshness pass over claims, links, screenshots, model names, and architecture prose.
 
-> Detail: [`docs/architecture/theming.md`](docs/architecture/theming.md)
+See [`docs/architecture/content-authoring.md`](docs/architecture/content-authoring.md).
 
-- **Three themes:** light (default), dark, catppuccin — defined via CSS custom properties in `src/lib/styles/app.css`
-- **Detection:** Inline script in `src/app.html` runs before hydration (checks localStorage → `prefers-color-scheme`)
-- **Runtime toggle:** `ThemeToggle.svelte` cycles themes and persists to localStorage
-- **Tailwind integration:** `skin-*` color utilities use `withOpacity()` to support opacity modifiers (e.g., `bg-skin-accent/50`)
-- **Dark mode:** `darkMode: ['class']` in Tailwind config — `html.dark` class activates dark/catppuccin styles
+### AI, privacy, and edge boundaries
 
-### Component Conventions
+- Chat, Fit Finder, and MCP share the Cloud Run tools and handlers.
+- The configured Gemini model lives in `site/functions/src/handlers.ts`; verify it before documenting.
+- Chat history uses `sessionStorage`; send the current prompt once, outside prior history.
+- Never send prompts, responses, job descriptions, or model output to analytics.
+- PostHog keeps autocapture and replay disabled and text/attributes masked.
+- The Worker owns the shared rate limit; Express memory limits are per-instance defense only.
+- Verify the Worker-to-origin boundary before trusting Cloudflare IP headers.
+- Source policy does not prove live Cloudflare, PostHog, secret, or provider configuration.
+- Public eval and trace pages must distinguish repository proof from external/runtime assumptions.
 
-- **Svelte 5 syntax** is the standard: `$state()`, `$props()`, `$effect()`, `$derived()`, `{@render children()}`
-- A few components still use Svelte 4 patterns (`export let`, `$:`) — migrate when touching them, but don't refactor unprompted
-- **Props:** Define `interface Props` and destructure via `let { prop } = $props()`
-- **Icons:** Use `lucide-svelte` exclusively. Import individual icons (e.g., `import { Menu } from "lucide-svelte"`)
-- **Scoped styles:** Use `<style>` blocks in components. Use `:global()` only when styling rendered HTML (e.g., markdown output)
+See [`docs/architecture/ai-features.md`](docs/architecture/ai-features.md).
 
-### Content System
+### CI and infrastructure
 
-- **Markdown files** in `content/blog/` and `content/projects/` use YAML frontmatter (see `ContentMetadata` in `src/lib/types.ts`)
-- **Loading:** `import.meta.glob` in `+page.server.ts` files, sorted by date descending
-- **Rendering:** mdsvex preprocessor with `PostLayout.svelte` as the default layout
-- **Resume data:** YAML files (`resume.yaml`, `resume-ops.yaml`, `resume-builder.yaml`) loaded with `js-yaml`
-- **Quick Actions:** Static actions + dynamic content actions loaded via `content-loader.ts`
+- Pin third-party GitHub Actions to full commit SHAs with readable version comments.
+- Use supported Node versions and least job permissions; keep policy validation blocking.
+- PR Terraform plans are review evidence only and are never apply input.
+- Main checks out exact `GITHUB_SHA`, creates a saved plan, and applies that same file.
+- Terraform planning, apply, and application deployment use distinct WIF identities.
+- Apply runs behind the protected `production` GitHub environment.
+- The API image is multi-stage, production-only, digest-pinned, and non-root.
+- Provider settings and production activation require external verification.
 
+## Variants
 
-> Detail: [`docs/architecture/content-authoring.md`](docs/architecture/content-authoring.md)
+Resume variants are leader (default), ops, and builder.
 
-### Variant System
+- Canonical resume paths: `/resume/`, `/ops/resume/`, `/builder/resume/`.
+- Other pages use `?v=ops` or `?v=builder`; use `src/lib/utils/variantLink.ts`.
+- Keep identity, contact, education, certificates, and other shared facts synchronized.
 
-Three resume variants target different audiences: **leader** (default), **ops**, **builder**.
+## SEO and generated outputs
 
-- Canonical paths: `/resume/`, `/ops/resume/`, `/builder/resume/`
-- Other pages: query param `?v=ops`
-- Utility: `src/lib/utils/variantLink.ts` — `addVariant()`, `getVariant()`, `removeVariant()`
-- Keep core info (contact, education, certificates) synced across all variant YAML files
+- Every page uses `SEO.svelte` with title and description.
+- JSON-LD uses the existing script workaround required by the Svelte parser.
+- Generated outputs include content-index variants, sitemap, RSS, resume JSON, and llms views.
+- Keep builds deterministic: sorted input/serialization and source-derived dates, not wall-clock time.
+- Rebuild generated files through scripts; never hand-edit them.
 
-### Static-First / Prerendering
+## Development
 
-This is a **statically generated site**. All pages are prerendered at build time via `@sveltejs/adapter-static`.
-
-- Every `+page.server.ts` should export `export const prerender = true`
-- Server-side logic (load functions) runs at **build time**, not at request time
-- Do not introduce SSR-only patterns (cookies, request headers, dynamic server responses) in page routes
-- API routes under `src/routes/api/` exist for **dev mode only** — they proxy to the local Cloud Run server
-- In production, client components call `https://api.briananderson.xyz` directly (Cloudflare Worker → Cloud Run)
-- `import.meta.glob` with `eager: true` is the standard pattern for loading content at build time
-- If a feature requires runtime server logic, it belongs in Cloud Run (`site/functions/`), not in SvelteKit routes
-
-### SEO & Structured Data
-
-- `SEO.svelte` is required on every page — `title` and `description` are mandatory props
-- JSON-LD uses the `${"script"}` variable workaround to avoid ESLint parser errors
-- Outputs: Open Graph, Twitter Card, canonical link, keywords
-
-## Formatting & Linting
-
-- **Prettier:** 2-space indent, double quotes, no trailing commas, 100 char width (`.prettierrc`)
-- **ESLint:** Flat config (`eslint.config.js`) — TypeScript + Svelte + Prettier compat
-- `@typescript-eslint/no-explicit-any` is `warn` (23 existing warnings — reduce, don't add)
-- `svelte/no-at-html-tags` is `off` (we use `{@html}` intentionally)
-
-## Dev Server
-
-> **Always check for a running dev server before starting a new one.**
-
-- HMR handles code changes — only restart for `vite.config.ts`, `svelte.config.js`, or `.env` changes
-- Run from `site/`: `pnpm dev`
-
-## Testing & Validation
-
-```bash
-pnpm run validate          # Full pipeline: check + build + tests
-pnpm run check             # svelte-check + TypeScript
-pnpm run lint              # ESLint
-pnpm run test:e2e          # Playwright
-pnpm run test:ui           # UI validation script
-pnpm run test:resumes      # Resume YAML validation
-pnpm run test:posthog      # PostHog integration validation
-pnpm run test:ai           # AI feature validation
-pnpm run test:api          # API endpoint validation (chat + fit-finder)
-pnpm run test:content-index # Content index structure validation
-```
-
-## AI Features (Chat & Fit Finder)
-
-> Detail: [`docs/architecture/ai-features.md`](docs/architecture/ai-features.md)
-
-**Architecture:** Tool-based AI using Gemini function calling — both Chat and Fit Finder use the same tools to query Brian's content.
-
-### Content Index System
-
-- **Build time:** `scripts/build-content-index.ts` parses markdown and generates versioned JSON index
-- **Files generated:**
-  - `static/content-index.{hash}.json` — Immutable, long cache (1 year)
-  - `static/content-index-latest.json` — Pointer file, short cache (60s)
-  - `static/content-index.json` — Fallback, medium cache (5min)
-- **Why versioned:** Prevents stale cache issues. New deploy = new hash = fresh data guaranteed
-- **Build integration:** Runs automatically via `prebuild` script before every build
-
-### Available Tools
-
-AI can call these tools to gather information intelligently:
-
-1. `search_skills(keywords)` — Find skills by keywords, returns evidence (projects/blog where used)
-2. `search_projects(keywords)` — Search projects by keywords/tags
-3. `get_project(slug)` — Get full project details
-4. `search_experience(keywords)` — Search work experience by role/company
-5. `get_skills_by_category(category)` — Get all skills in a category
-6. `get_resume_summary()` — Get resume overview
-
-**Tool implementation:** `functions/src/tools.ts`
-
-### Local Testing
-
-**Two terminals required:**
-
-```bash
-# Terminal 1 - Cloud Run (Express)
-cd site/functions
-pnpm run dev                  # Port 8080 (loads .env.local)
-
-# Terminal 2 - SvelteKit
-cd site
-pnpm run build-content-index
-pnpm run dev                  # Port 5173
-```
-
-**Environment:** Create `site/functions/.env.local` with `GEMINI_API_KEY=your-key-here`
-
-**Dev mode detection:** Client components use `/api/chat` and `/api/fit-finder` in dev (SvelteKit proxy → local Express), `https://api.briananderson.xyz/chat` and `/fit-finder` in production (Cloudflare Worker → Cloud Run)
-
-### Deployment
+Always check for an existing dev server before starting one. HMR handles normal source changes; restart
+only for Vite, Svelte config, or environment changes.
 
 ```bash
 cd site
-pnpm run build              # Builds content index + site
-# CI deploys via gcloud (Cloud Run) + gsutil (GCS hosting)
+pnpm dev
 ```
 
-Cache headers are set in `.github/workflows/build-and-deploy.yml` to ensure proper versioning strategy.
+For AI features, also run `pnpm run dev` in `site/functions/` (port 8080) with
+`GEMINI_API_KEY` in `site/functions/.env.local`.
 
-## Known Gotchas
+## Formatting and validation
 
-- **Windows/Playwright:** `gracefulShutdown` needs `SIGINT`, not `SIGTERM`
-- **`<script>` in `{@html}`:** Use `${"script"}` variable workaround
-- **Pre-existing svelte-check warnings:** `@apply` CSS, deprecated `<slot>`, a11y — known, don't chase
-- **Trailing slashes:** All routes use trailing slashes (`strict: false` + `trailingSlash: 'always'`)
-- **PostHog paths:** `paths.relative: false` is required in svelte.config.js for session replay
+- Prettier: 2 spaces, double quotes, no trailing commas, 100 columns.
+- ESLint uses flat TypeScript/Svelte config; reduce rather than add explicit `any` warnings.
+- Intentional rendered HTML means `svelte/no-at-html-tags` is disabled.
+
+| Command (from `site/`)          | Purpose                                                             |
+| ------------------------------- | ------------------------------------------------------------------- |
+| `pnpm run validate`             | Full policy, type, schema, build, theme, UI, and analytics pipeline |
+| `pnpm run lint`                 | ESLint                                                              |
+| `pnpm run check`                | Svelte and TypeScript checks                                        |
+| `pnpm run test:unit`            | Vitest unit suite                                                   |
+| `pnpm run test:e2e`             | Playwright end-to-end suite                                         |
+| `pnpm run test:content`         | Content/frontmatter/link/schema checks                              |
+| `pnpm run test:content-index`   | Index and skill-evidence invariants                                 |
+| `pnpm run test:resumes`         | Resume YAML invariants                                              |
+| `pnpm run test:workflow-policy` | Action pin, Node, and Terraform workflow policy                     |
+
+Run API tests from `site/functions/` with `pnpm test`.
+
+## Known constraints
+
+- Routes use trailing slashes.
+- The `<script>` workaround in rendered HTML/JSON-LD is intentional.
+- `paths.relative: false` is required for current PostHog/SvelteKit behavior.
+- Windows Playwright shutdown uses `SIGINT`, not `SIGTERM`.
+- Do not chase unrelated warnings or broad refactors while working a scoped task.

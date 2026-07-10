@@ -5,6 +5,8 @@ period: "2024 – Present"
 summary: "Structured AI workflows for ideation, implementation, and verification, backed by prompt evaluation before release."
 tags: ["AgenticAI", "DeveloperProductivity", "Evals", "PromptEngineering", "Builder"]
 keywords: ["kiro", "agent-workflows", "promptfoo", "evals", "developer-productivity"]
+outcome: "Developer productivity"
+projectType: "Developer platform"
 showTableOfContents: true
 links:
   - label: "Kiro"

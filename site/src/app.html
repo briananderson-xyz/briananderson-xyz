@@ -6,30 +6,43 @@
       name="viewport"
       content="width=device-width, initial-scale=1, interactive-widget=resizes-content"
     />
-    
+    <!--
+      Defense in depth for the static HTML. The canonical policy lives in
+      security-policy.json and scripts/validate-security-policy.mjs verifies
+      this exact safe meta subset. HTTP-only protections are applied at the
+      Cloudflare edge; meta tags cannot provide HSTS or nosniff.
+    -->
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; script-src 'self' 'unsafe-inline' https://app.posthog.com https://*.posthog.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://api.briananderson.xyz https://api-dev.briananderson.xyz https://app.posthog.com https://*.posthog.com wss://*.posthog.com; worker-src 'self' blob:; manifest-src 'self'; media-src 'self'"
+    />
+
     <!-- AI Content Signals / AI Preferences -->
     <meta name="ai-preferences" content="index, archive, summarize, train" />
     <meta name="ai-crawler" content="allow" />
     <meta name="ai-training" content="allow" />
     <meta name="ai-citation" content="required" />
-    
-    <link rel="preconnect" href="//fonts.googleapis.com">
-    <link rel="preconnect" href="//fonts.gstatic.com" crossorigin>
-    <link href="//fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
     <script>
-      (function() {
-        const saved = localStorage.getItem('theme');
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        
-        if (saved === 'catppuccin' || (!saved && prefersDark)) {
-          document.documentElement.classList.add('dark');
-          document.documentElement.setAttribute('data-theme', 'catppuccin');
-        } else if (saved === 'dark') {
-          document.documentElement.classList.add('dark');
-          document.documentElement.removeAttribute('data-theme');
+      (function () {
+        const saved = localStorage.getItem("theme");
+        const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+
+        if (saved === "catppuccin" || (!saved && prefersDark)) {
+          document.documentElement.classList.add("dark");
+          document.documentElement.setAttribute("data-theme", "catppuccin");
+        } else if (saved === "dark") {
+          document.documentElement.classList.add("dark");
+          document.documentElement.removeAttribute("data-theme");
         } else {
-          document.documentElement.classList.remove('dark');
-          document.documentElement.removeAttribute('data-theme');
+          document.documentElement.classList.remove("dark");
+          document.documentElement.removeAttribute("data-theme");
         }
       })();
     </script>

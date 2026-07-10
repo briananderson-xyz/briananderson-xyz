@@ -7,6 +7,7 @@ build
 .envrc
 .terraform
 .terraform.lock.hcl
+!infra/terraform/.terraform.lock.hcl
 playwright-report
 test-results
 

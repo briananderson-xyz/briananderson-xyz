@@ -1,19 +1,20 @@
-import type { ContentMetadata } from '$lib/types';
+import type { ContentMetadata } from "$lib/types";
+import { parseContentMetadata } from "$lib/schemas/content";
 
 export const prerender = true;
 
 export const load = async () => {
-    const modules = import.meta.glob('../../../content/blog/**/*.md', { eager: true });
+  const modules = import.meta.glob("../../../content/blog/**/*.md", { eager: true });
 
-    const posts = Object.entries(modules).map(([path, mod]) => {
-        const m = mod as { metadata: ContentMetadata };
-        return {
-            metadata: m.metadata,
-            route: path.replace('../../../content', '').replace('.md', '')
-        };
-    });
+  const posts = Object.entries(modules).map(([path, mod]) => {
+    const m = mod as { metadata: ContentMetadata };
+    return {
+      metadata: parseContentMetadata(m.metadata, path),
+      route: path.replace("../../../content", "").replace(".md", "")
+    };
+  });
 
-    posts.sort((a, b) => (a.metadata.date > b.metadata.date ? -1 : 1));
+  posts.sort((a, b) => (a.metadata.date > b.metadata.date ? -1 : 1));
 
-    return { posts };
+  return { posts };
 };

@@ -27,6 +27,7 @@ import {
 	MAX_JOBDESC_BYTES,
 	isValidVariant,
 	aiEnabled,
+	buildUntrustedChatContext,
 	type Variant
 } from './security.js';
 
@@ -600,6 +601,24 @@ Suggest exactly 3 natural follow-up questions the visitor is likely to ask next 
 }
 
 /**
+ * Prepare the one user turn sent to Gemini. Client-supplied history is quoted
+ * inside that turn and never becomes role-bearing model history. Retrieved
+ * evidence is server-owned and is kept outside the untrusted transcript.
+ */
+export function prepareChatModelInput(
+	message: string,
+	history: NonNullable<ChatRequest['history']>,
+	evidenceContext: string | null
+): { history: []; message: string } {
+	const untrustedContext = buildUntrustedChatContext(message, history);
+	const modelMessage = evidenceContext
+		? `${untrustedContext}\n\n--- BEGIN SERVER-RETRIEVED EVIDENCE ---\n${evidenceContext}\n--- END SERVER-RETRIEVED EVIDENCE ---\nUse server-retrieved evidence when answering the current request.`
+		: untrustedContext;
+
+	return { history: [], message: modelMessage };
+}
+
+/**
  * Chat handler — can be called from Firebase Functions or Express/Cloud Run
  */
 export async function handleChat(req: Request, res: Response): Promise<void> {
@@ -687,19 +706,15 @@ export async function handleChat(req: Request, res: Response): Promise<void> {
 
 		const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
 
-		// Convert history to Gemini format. SEC-3 (accepted residual, this wave):
-		// history is entirely client-supplied with no server-side session
-		// binding, so a `role: 'model'` entry only proves shape/size validity
-		// (validateHistory) and passing guardrails, not that the assistant
-		// actually said it; session binding + combined-text semantic guardrails
-		// are out of scope for this wave.
-		const chatHistory = history.map((msg) => ({
-			role: msg.role === 'user' ? ('user' as const) : ('model' as const),
-			parts: [{ text: msg.content }],
-		}));
+		const evidenceContext =
+			contentTools && message.length <= 400
+				? buildChatEvidenceContext(message, contentTools)
+				: null;
+		const modelInput = prepareChatModelInput(message, history, evidenceContext);
 
-		// Start chat with history
-			const chat = ai.chats.create({
+		// Client history is deliberately absent from Gemini's role-bearing
+		// history. It is quoted inside modelInput.message as untrusted user data.
+		const chat = ai.chats.create({
 				model: 'gemini-2.5-flash',
 				config: {
 					systemInstruction: getSystemPrompt(SITE_URL),
@@ -707,16 +722,8 @@ export async function handleChat(req: Request, res: Response): Promise<void> {
 					maxOutputTokens: 1000,
 					temperature: 0.2,
 				},
-				history: chatHistory,
+				history: modelInput.history,
 			});
-
-		const evidenceContext =
-			contentTools && message.length <= 400
-				? buildChatEvidenceContext(message, contentTools)
-				: null;
-		const chatMessage = evidenceContext
-			? `${message}\n\nRelevant retrieved evidence:\n${evidenceContext}\n\nUse this evidence when answering.`
-			: message;
 
 		const deterministicResponse = buildDeterministicChatResponse(message, contentTools);
 		if (deterministicResponse) {
@@ -728,7 +735,7 @@ export async function handleChat(req: Request, res: Response): Promise<void> {
 		}
 
 		// Send message and get response
-		let result = await chat.sendMessage({ message: chatMessage });
+		let result = await chat.sendMessage({ message: modelInput.message });
 
 		// Handle function calls if tools are available
 		if (contentTools) {

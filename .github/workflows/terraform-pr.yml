@@ -1,102 +1,49 @@
-name: Terraform Validate and Plan (PR)
+name: Terraform Validate (PR)
 
 on:
   pull_request:
     types: [opened, synchronize, reopened]
     branches: ["main"]
     paths:
-      - 'infra/terraform/**'
+      - "infra/terraform/**"
+      - ".github/workflows/terraform-*.yml"
 
-permissions:
-  id-token: write
-  contents: read
-  pull-requests: write
+permissions: {}
 
 concurrency:
-  group: terraform-pr
+  group: terraform-pr-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
 jobs:
-  plan:
+  validate:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     env:
       TF_IN_AUTOMATION: "true"
+      TF_INPUT: "false"
     steps:
-      - uses: actions/checkout@v5
-
-      - name: Authenticate to Google Cloud (WIF)
-        uses: google-github-actions/auth@v3
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
         with:
-          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
-          service_account: ${{ secrets.GCP_WIF_SA_EMAIL }}
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+
+      - name: Verify checked out revision
+        run: test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha }}"
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
+        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
         with:
-          terraform_version: 1.7.5
-
-      - name: Terraform Init (GCS backend)
-        working-directory: infra/terraform
-        run: |
-          terraform init \
-            -backend-config="bucket=${{ secrets.TF_STATE_BUCKET }}" \
-            -backend-config="prefix=gcp/infra"
+          terraform_version: 1.15.8
 
       - name: Terraform Format
-        id: format
-        working-directory: infra/terraform
-        run: terraform fmt -check -recursive
-        continue-on-error: true
+        run: terraform -chdir=infra/terraform fmt -check -recursive
+
+      - name: Terraform Init (credential-free)
+        run: terraform -chdir=infra/terraform init -backend=false -lockfile=readonly
 
       - name: Terraform Validate
-        id: validate
-        working-directory: infra/terraform
-        run: terraform validate
-        continue-on-error: true
+        run: terraform -chdir=infra/terraform validate -no-color
 
-      - name: Terraform Plan
-        id: plan
-        working-directory: infra/terraform
-        run: |
-          terraform plan \
-            -var="project_id=${{ secrets.GCP_PROJECT_ID }}" \
-            -var="region=${{ secrets.GCP_REGION }}" \
-            -var="github_org=${{ secrets.GH_ORG }}" \
-            -var="github_repo=${{ secrets.GH_REPO }}" \
-            -var="bucket_name=${{ secrets.SITE_BUCKET_NAME }}" \
-            -out=tfplan.out
-
-      - name: Show Plan
-        working-directory: infra/terraform
-        run: terraform show -no-color tfplan.out
-
-      - name: Upload Plan
-        uses: actions/upload-artifact@v7
-        with:
-          name: terraform-plan
-          path: infra/terraform/tfplan.out
-
-      - name: Comment PR with Plan
-        if: github.event_name == 'pull_request'
-        run: |
-          cd infra/terraform
-          PLAN_OUTPUT=$(terraform show -no-color tfplan.out)
-          
-          echo "## Terraform Plan Results" > comment.md
-          echo "" >> comment.md
-          echo "**Format Check:** ${{ steps.format.outcome == 'success' && '✅ Passed' || '❌ Failed' }}" >> comment.md
-          echo "**Validation:** ${{ steps.validate.outcome == 'success' && '✅ Passed' || '❌ Failed' }}" >> comment.md
-          echo "**Plan:** ${{ steps.plan.outcome == 'success' && '✅ Generated' || '❌ Failed' }}" >> comment.md
-          echo "" >> comment.md
-          echo "<details>" >> comment.md
-          echo "<summary>Show Plan</summary>" >> comment.md
-          echo "" >> comment.md
-          echo '```terraform' >> comment.md
-          echo "$PLAN_OUTPUT" >> comment.md
-          echo '```' >> comment.md
-          echo "" >> comment.md
-          echo "</details>" >> comment.md
-          
-          gh pr comment ${{ github.event.number }} --body-file comment.md
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - name: Trust-boundary policy
+        run: infra/terraform/check-policy.sh

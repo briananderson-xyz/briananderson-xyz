@@ -4,7 +4,18 @@ date: 2024-09-01
 period: "2024 – Present"
 summary: "A local-first agent platform built to make tool orchestration, tracing, and agent reliability observable."
 tags: ["AgenticAI", "Observability", "MCP", "PlatformEngineering", "Builder"]
-keywords: ["stallion", "agent-platform", "mcp", "opentelemetry", "agent-observability", "prometheus", "grafana"]
+keywords:
+  [
+    "stallion",
+    "agent-platform",
+    "mcp",
+    "opentelemetry",
+    "agent-observability",
+    "prometheus",
+    "grafana"
+  ]
+outcome: "Developer productivity"
+projectType: "Developer platform"
 showTableOfContents: true
 links:
   - label: "GitHub Repository"

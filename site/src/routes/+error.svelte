@@ -6,10 +6,7 @@
   import SEO from "$lib/components/SEO.svelte";
 
   const rebootUrl = $derived(
-    getCanonicalVariantPath(
-      "/",
-      browser ? $page.url.searchParams.get("v") : null,
-    ),
+    getCanonicalVariantPath("/", browser ? $page.url.searchParams.get("v") : null)
   );
 </script>
 
@@ -19,19 +16,17 @@
   class="max-w-3xl mx-auto px-4 py-24 flex flex-col items-center justify-center min-h-[60vh] text-center font-mono"
 >
   <div
-    class="border border-red-500/50 bg-red-500/5 p-8 rounded-lg max-w-lg w-full relative overflow-hidden"
+    class="border border-skin-error/50 bg-skin-error/5 p-8 rounded-lg max-w-lg w-full relative overflow-hidden"
   >
     <!-- Decorative scanline for error box -->
-    <div
-      class="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(255,0,0,0.02),rgba(255,0,0,0.06))] z-0 pointer-events-none bg-[length:100%_4px,3px_100%]"
-    ></div>
+    <div class="status-error-scanlines absolute inset-0 z-0 pointer-events-none"></div>
 
     <div class="relative z-10">
-      <div class="text-red-500 text-6xl font-bold mb-2 tracking-tighter">
+      <div class="text-skin-error text-6xl font-bold mb-2 tracking-tighter">
         {$page.status}
       </div>
       <div
-        class="text-red-400/80 text-sm uppercase tracking-widest mb-6 border-b border-red-500/30 pb-4"
+        class="text-skin-error text-sm uppercase tracking-widest mb-6 border-b border-skin-error/30 pb-4"
       >
         CRITICAL_PROCESS_DIED
       </div>
@@ -51,7 +46,7 @@
 
       <Button
         href={rebootUrl}
-        class="bg-red-600 hover:bg-red-700 text-white border-none w-full sm:w-auto"
+        class="bg-skin-error text-skin-error-contrast border-none w-full sm:w-auto hover:opacity-90"
       >
         INITIATE_SYSTEM_REBOOT
       </Button>

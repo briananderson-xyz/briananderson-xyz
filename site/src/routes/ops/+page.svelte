@@ -15,10 +15,11 @@
 
 <Homepage
   resume={data.resume}
+  proofClaims={data.proofClaims}
   variant="ops"
   links={{
     resume: "/ops/resume/",
     projects: "/projects/?v=ops",
-    blog: "/blog/?v=ops",
+    blog: "/blog/?v=ops"
   }}
 />

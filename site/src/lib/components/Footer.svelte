@@ -12,13 +12,11 @@
     class="mx-auto max-w-6xl px-4 py-4 flex flex-col md:flex-row items-center justify-between gap-4 text-skin-muted"
   >
     <div class="flex items-center gap-2 uppercase">
-      <span class={isError ? "text-red-500 animate-pulse" : "text-skin-accent"}
-        >●</span
-      >
+      <span class={isError ? "text-skin-error animate-pulse" : "text-skin-success"}>●</span>
       <span>
         SYSTEM:
         {#if isError}
-          <span class="text-red-500">OFFLINE ({$page.status})</span>
+          <span class="text-skin-error">OFFLINE ({$page.status})</span>
         {:else}
           ONLINE
         {/if}
@@ -28,7 +26,13 @@
       <VariantSwitcher />
     </div>
 
-    <div class="flex items-center gap-4">
+    <nav
+      aria-label="Evidence and contact links"
+      class="flex flex-wrap items-center justify-center gap-4"
+    >
+      <a href="/proof/" class="hover:text-skin-accent transition-colors">[ proof ]</a>
+      <a href="/ai-evals/" class="hover:text-skin-accent transition-colors">[ ai evals ]</a>
+      <a href="/trace-one-answer/" class="hover:text-skin-accent transition-colors">[ ai trace ]</a>
       <a href="/now/" class="hover:text-skin-accent transition-colors">[ now ]</a>
       <a href="/uses/" class="hover:text-skin-accent transition-colors">[ uses ]</a>
       <a
@@ -43,10 +47,9 @@
         rel="noreferrer"
         class="hover:text-skin-accent transition-colors">[ linkedin ]</a
       >
-      <a
-        href="mailto:brian@briananderson.xyz"
-        class="hover:text-skin-accent transition-colors">[ email ]</a
+      <a href="mailto:brian@briananderson.xyz" class="hover:text-skin-accent transition-colors"
+        >[ email ]</a
       >
-    </div>
+    </nav>
   </div>
 </footer>

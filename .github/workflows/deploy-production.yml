@@ -1,0 +1,202 @@
+name: Deploy Production
+
+permissions: {}
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: "Type DEPLOY_PRODUCTION to confirm the protected production deployment"
+        required: true
+        type: string
+      source_sha:
+        description: "Exact 40-character commit SHA to build for the static site"
+        required: true
+        type: string
+      image_ref:
+        description: "Fully qualified Artifact Registry image@sha256 digest"
+        required: true
+        type: string
+
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      source_sha: ${{ steps.inputs.outputs.source_sha }}
+      image_ref: ${{ steps.inputs.outputs.image_ref }}
+    steps:
+      - name: Validate immutable production inputs
+        id: inputs
+        env:
+          CONFIRMATION: ${{ inputs.confirmation }}
+          SOURCE_SHA: ${{ inputs.source_sha }}
+          IMAGE_REF: ${{ inputs.image_ref }}
+        run: |
+          set -euo pipefail
+          [ "$CONFIRMATION" = "DEPLOY_PRODUCTION" ] || { echo "Confirmation did not match" >&2; exit 1; }
+          [[ "$SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]] || { echo "source_sha must be an exact commit SHA" >&2; exit 1; }
+          [[ "$IMAGE_REF" =~ ^[^[:space:]]+-docker\.pkg\.dev/[^[:space:]]+@sha256:[0-9a-f]{64}$ ]] || {
+            echo "image_ref must be a fully qualified immutable Artifact Registry digest" >&2
+            exit 1
+          }
+          echo "source_sha=$SOURCE_SHA" >> "$GITHUB_OUTPUT"
+          echo "image_ref=$IMAGE_REF" >> "$GITHUB_OUTPUT"
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+        with:
+          ref: ${{ steps.inputs.outputs.source_sha }}
+      - name: Confirm selected source is current main
+        env:
+          SOURCE_SHA: ${{ steps.inputs.outputs.source_sha }}
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin refs/heads/main:refs/remotes/origin/main
+          [ "$(git rev-parse HEAD)" = "$SOURCE_SHA" ] || { echo "Checked out source differs from source_sha" >&2; exit 1; }
+          [ "$(git rev-parse refs/remotes/origin/main)" = "$SOURCE_SHA" ] || { echo "source_sha is not the current main commit" >&2; exit 1; }
+
+  deploy-production:
+    runs-on: ubuntu-latest
+    needs: preflight
+    environment: prod
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+        with:
+          ref: ${{ needs.preflight.outputs.source_sha }}
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6
+        with:
+          version: 10.33.0
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        with:
+          node-version: 22
+          cache: "pnpm"
+          cache-dependency-path: site/pnpm-lock.yaml
+      - name: Install dependencies
+        working-directory: site
+        run: pnpm install --frozen-lockfile
+      - name: Build production site from confirmed source
+        working-directory: site
+        env:
+          PUBLIC_SITE_URL: https://briananderson.xyz
+          PUBLIC_ENV: prod
+          PUBLIC_POSTHOG_KEY: ${{ secrets.PUBLIC_POSTHOG_KEY }}
+          PUBLIC_POSTHOG_HOST: ${{ secrets.PUBLIC_POSTHOG_HOST }}
+        run: pnpm run build
+      - uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WIF_PROD_PROVIDER }}
+          service_account: ${{ secrets.GCP_WIF_PROD_SA_EMAIL }}
+      - uses: google-github-actions/setup-gcloud@aa5489c8933f4cc7a4f7d45035b3b1440c9c10db # v3
+      - name: Confirm registry digest and capture current production images
+        env:
+          IMAGE_REF: ${{ needs.preflight.outputs.image_ref }}
+          SOURCE_SHA: ${{ needs.preflight.outputs.source_sha }}
+          REGION: ${{ vars.GCP_REGION }}
+          PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+        run: |
+          set -euo pipefail
+          IMAGE_NAME="${REGION}-docker.pkg.dev/${PROJECT_ID}/site-functions/api"
+          EXPECTED_PREFIX="${IMAGE_NAME}@"
+          [[ "$IMAGE_REF" == "$EXPECTED_PREFIX"* ]] || { echo "Image is outside the configured production registry path" >&2; exit 1; }
+          EXPECTED_DIGEST="${IMAGE_REF##*@}"
+          REGISTRY_DIGEST=$(gcloud artifacts docker images describe "$IMAGE_REF" --format='value(image_summary.digest)')
+          [[ "$REGISTRY_DIGEST" =~ ^sha256:[0-9a-f]{64}$ ]] || { echo "Artifact Registry returned an unreadable image digest" >&2; exit 1; }
+          [ "$REGISTRY_DIGEST" = "$EXPECTED_DIGEST" ] || { echo "Artifact Registry digest mismatch" >&2; exit 1; }
+
+          FULL_SHA_TAG="${IMAGE_NAME}:${SOURCE_SHA}"
+          TAG_DIGEST=$(gcloud artifacts docker images describe "$FULL_SHA_TAG" --format='value(image_summary.digest)')
+          [[ "$TAG_DIGEST" =~ ^sha256:[0-9a-f]{64}$ ]] || { echo "Full source SHA tag is missing or unreadable" >&2; exit 1; }
+          [ "$TAG_DIGEST" = "$EXPECTED_DIGEST" ] || {
+            echo "Full source SHA tag digest does not match image_ref" >&2
+            exit 1
+          }
+          current_image() {
+            local service="$1"
+            local revision
+            revision=$(gcloud run services describe "$service" --region "$REGION" --format='value(status.latestReadyRevisionName)')
+            gcloud run revisions describe "$revision" --region "$REGION" --format='value(spec.containers[0].image)'
+          }
+          PREVIOUS_CHAT_IMAGE=$(current_image chat)
+          PREVIOUS_FIT_IMAGE=$(current_image fitfinder)
+          for image in "$PREVIOUS_CHAT_IMAGE" "$PREVIOUS_FIT_IMAGE"; do
+            [[ "$image" =~ @sha256:[0-9a-f]{64}$ ]] || { echo "Previous production image is not immutable" >&2; exit 1; }
+          done
+          echo "PREVIOUS_CHAT_IMAGE=$PREVIOUS_CHAT_IMAGE" >> "$GITHUB_ENV"
+          echo "PREVIOUS_FIT_IMAGE=$PREVIOUS_FIT_IMAGE" >> "$GITHUB_ENV"
+      - name: Deploy production services by digest
+        id: deploy
+        env:
+          IMAGE_REF: ${{ needs.preflight.outputs.image_ref }}
+          REGION: ${{ vars.GCP_REGION }}
+          PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+        run: |
+          set -euo pipefail
+          deploy_service() {
+            local service="$1"
+            local target="$2"
+            gcloud run deploy "$service" \
+              --image "$IMAGE_REF" \
+              --region "$REGION" \
+              --platform managed \
+              --set-env-vars "NODE_ENV=production,FUNCTION_TARGET=${target},SITE_URL=https://briananderson.xyz" \
+              --set-secrets "GEMINI_API_KEY=gemini-api-key:latest,ORIGIN_VERIFY_TOKEN=origin-verify-token-prod:latest" \
+              --service-account "cloud-run-runtime-prod@${PROJECT_ID}.iam.gserviceaccount.com" \
+              --max-instances 10 \
+              --concurrency 20 \
+              --timeout 120 \
+              --memory 512Mi \
+              --quiet
+          }
+          deploy_service chat chat
+          deploy_service fitfinder fitfinder
+      - name: Verify production services
+        id: verify
+        env:
+          EXPECTED_IMAGE: ${{ needs.preflight.outputs.image_ref }}
+          REGION: ${{ vars.GCP_REGION }}
+        run: |
+          set -euo pipefail
+          deployed_image() {
+            local service="$1"
+            local revision
+            revision=$(gcloud run services describe "$service" --region "$REGION" --format='value(status.latestReadyRevisionName)')
+            gcloud run revisions describe "$revision" --region "$REGION" --format='value(spec.containers[0].image)'
+          }
+          for service in chat fitfinder; do
+            [ "$(deployed_image "$service")" = "$EXPECTED_IMAGE" ] || { echo "$service digest mismatch" >&2; exit 1; }
+          done
+          curl --fail-with-body --retry 4 --retry-all-errors --retry-delay 5 \
+            --header "Content-Type: application/json" \
+            --data '{"message":"ping"}' https://api.briananderson.xyz/chat >/dev/null
+          curl --fail-with-body --retry 4 --retry-all-errors --retry-delay 5 \
+            --header "Content-Type: application/json" \
+            --data '{"jobDescription":"Senior TypeScript developer with React and Node experience"}' \
+            https://api.briananderson.xyz/fit-finder >/dev/null
+      - name: Roll back production services to captured digests
+        if: failure() && (steps.deploy.outcome == 'failure' || steps.verify.outcome == 'failure')
+        env:
+          REGION: ${{ vars.GCP_REGION }}
+        run: |
+          set -euo pipefail
+          gcloud run deploy chat --image "$PREVIOUS_CHAT_IMAGE" --region "$REGION" --platform managed --quiet
+          gcloud run deploy fitfinder --image "$PREVIOUS_FIT_IMAGE" --region "$REGION" --platform managed --quiet
+          echo "Production services restored to their captured immutable digests" >&2
+          exit 1
+      - name: Upload production static site
+        if: steps.verify.outcome == 'success'
+        run: |
+          set -euo pipefail
+          gcloud storage rsync site/build/_app gs://briananderson.xyz/_app --recursive --cache-control="public, max-age=31536000, immutable"
+          if compgen -G "site/build/content-index.*.json" >/dev/null; then
+            gcloud storage cp site/build/content-index.*.json gs://briananderson.xyz/ --cache-control="public, max-age=31536000, immutable"
+          fi
+          if [ -f site/build/content-index-latest.json ]; then
+            gcloud storage cp site/build/content-index-latest.json gs://briananderson.xyz/ --cache-control="public, max-age=60, must-revalidate"
+          fi
+          if [ -f site/build/content-index.json ]; then
+            gcloud storage cp site/build/content-index.json gs://briananderson.xyz/ --cache-control="public, max-age=300, must-revalidate"
+          fi
+          gcloud storage rsync site/build/ gs://briananderson.xyz/ --recursive --delete-unmatched-destination-objects --cache-control="public, max-age=3600, must-revalidate"

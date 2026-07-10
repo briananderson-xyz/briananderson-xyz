@@ -4,9 +4,9 @@
  * Ensures build-content-index.ts produces valid output
  */
 
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -24,6 +24,7 @@ interface ContentIndex {
 }
 
 interface SkillEntry {
+  id: string;
   name: string;
   category: string;
   projects: string[];
@@ -81,23 +82,23 @@ function success(message: string): void {
 }
 
 async function validateContentIndex(): Promise<void> {
-  console.log('\n🔍 Validating Content Index...\n');
+  console.log("\n🔍 Validating Content Index...\n");
 
   // Check if content index exists
-  const indexPath = path.join(__dirname, '../static/content-index.json');
+  const indexPath = path.join(__dirname, "../static/content-index.json");
 
   if (!fs.existsSync(indexPath)) {
-    error('Content index not found at static/content-index.json');
-    error('Run `pnpm run build-content-index` first');
+    error("Content index not found at static/content-index.json");
+    error("Run `pnpm run build-content-index` first");
     return;
   }
 
   // Read and parse index
   let index: ContentIndex;
   try {
-    const indexContent = fs.readFileSync(indexPath, 'utf-8');
+    const indexContent = fs.readFileSync(indexPath, "utf-8");
     index = JSON.parse(indexContent);
-    success('Content index JSON is valid');
+    success("Content index JSON is valid");
   } catch (err) {
     error(`Failed to parse content index: ${err}`);
     return;
@@ -128,9 +129,9 @@ async function validateContentIndex(): Promise<void> {
   validateRelationships(index);
 
   // Summary
-  console.log('\n' + '='.repeat(50));
+  console.log("\n" + "=".repeat(50));
   if (errorCount === 0 && warningCount === 0) {
-    console.log('✅ Content index validation passed!');
+    console.log("✅ Content index validation passed!");
     console.log(`   - ${index.skills.length} skills`);
     console.log(`   - ${index.projects.length} projects`);
     console.log(`   - ${index.blog.length} blog posts`);
@@ -143,31 +144,31 @@ async function validateContentIndex(): Promise<void> {
       process.exit(1);
     }
   }
-  console.log('='.repeat(50) + '\n');
+  console.log("=".repeat(50) + "\n");
 }
 
 function validateStructure(index: ContentIndex): void {
   if (!index.skills || !Array.isArray(index.skills)) {
-    error('Missing or invalid skills array');
+    error("Missing or invalid skills array");
   }
   if (!index.projects || !Array.isArray(index.projects)) {
-    error('Missing or invalid projects array');
+    error("Missing or invalid projects array");
   }
   if (!index.blog || !Array.isArray(index.blog)) {
-    error('Missing or invalid blog array');
+    error("Missing or invalid blog array");
   }
   if (!index.experience || !Array.isArray(index.experience)) {
-    error('Missing or invalid experience array');
+    error("Missing or invalid experience array");
   }
-  if (!index.resume || typeof index.resume !== 'object') {
-    error('Missing or invalid resume object');
+  if (!index.resume || typeof index.resume !== "object") {
+    error("Missing or invalid resume object");
   }
-  if (!index.metadata || typeof index.metadata !== 'object') {
-    error('Missing or invalid metadata object');
+  if (!index.metadata || typeof index.metadata !== "object") {
+    error("Missing or invalid metadata object");
   }
 
   if (errorCount === 0) {
-    success('Content index structure is valid');
+    success("Content index structure is valid");
   }
 }
 
@@ -179,6 +180,10 @@ function validateSkills(index: ContentIndex): void {
   index.skills.forEach((skill, i) => {
     if (!skill.name) {
       error(`Skill ${i} is missing name`);
+      skillErrors++;
+    }
+    if (!skill.id) {
+      error(`Skill ${i} is missing stable id`);
       skillErrors++;
     }
     if (!skill.category) {
@@ -200,13 +205,11 @@ function validateSkills(index: ContentIndex): void {
   }
 
   // Check for skills with evidence
-  const skillsWithEvidence = index.skills.filter(
-    s => s.projects.length > 0 || s.blog.length > 0
-  );
+  const skillsWithEvidence = index.skills.filter((s) => s.projects.length > 0 || s.blog.length > 0);
   success(`${skillsWithEvidence.length} skills have documented evidence`);
 
   if (skillsWithEvidence.length === 0) {
-    warn('No skills have project or blog evidence');
+    warn("No skills have project or blog evidence");
   }
 }
 
@@ -228,7 +231,7 @@ function validateProjects(index: ContentIndex): void {
       error(`Project "${project.slug || i}" is missing url`);
       projectErrors++;
     }
-    if (project.url && !project.url.includes('/projects/')) {
+    if (project.url && !project.url.includes("/projects/")) {
       error(`Project "${project.slug}" has invalid URL: ${project.url}`);
       projectErrors++;
     }
@@ -264,7 +267,7 @@ function validateBlog(index: ContentIndex): void {
       error(`Blog post "${post.slug || i}" is missing url`);
       blogErrors++;
     }
-    if (post.url && !post.url.includes('/blog/')) {
+    if (post.url && !post.url.includes("/blog/")) {
       error(`Blog post "${post.slug}" has invalid URL: ${post.url}`);
       blogErrors++;
     }
@@ -293,11 +296,11 @@ function validateExperience(index: ContentIndex): void {
       expErrors++;
     }
     if (!exp.company) {
-      error(`Experience ${i} (${exp.role || 'unknown'}) is missing company`);
+      error(`Experience ${i} (${exp.role || "unknown"}) is missing company`);
       expErrors++;
     }
     if (!exp.dateRange) {
-      error(`Experience ${i} (${exp.role || 'unknown'}) is missing dateRange`);
+      error(`Experience ${i} (${exp.role || "unknown"}) is missing dateRange`);
       expErrors++;
     }
     if (!exp.description) {
@@ -318,20 +321,20 @@ function validateResume(index: ContentIndex): void {
   if (!index.resume) return;
 
   if (!index.resume.name) {
-    error('Resume is missing name');
+    error("Resume is missing name");
   }
   if (!index.resume.title) {
-    error('Resume is missing title');
+    error("Resume is missing title");
   }
   if (!index.resume.location) {
-    warn('Resume is missing location');
+    warn("Resume is missing location");
   }
   if (!index.resume.summary) {
-    warn('Resume is missing summary');
+    warn("Resume is missing summary");
   }
 
   if (index.resume.name && index.resume.title) {
-    success('Resume data is valid');
+    success("Resume data is valid");
   }
 }
 
@@ -339,24 +342,19 @@ function validateMetadata(index: ContentIndex): void {
   if (!index.metadata) return;
 
   if (!index.metadata.buildDate) {
-    error('Metadata is missing buildDate');
+    error("Metadata is missing buildDate");
   }
   if (!index.metadata.version) {
-    error('Metadata is missing version');
+    error("Metadata is missing version");
   }
 
   if (index.metadata.buildDate && index.metadata.version) {
     success(`Metadata is valid (version: ${index.metadata.version})`);
 
-    // Check if build is fresh
+    // The date is deliberately source-derived, not a wall-clock freshness signal.
     const buildDate = new Date(index.metadata.buildDate);
-    const ageMinutes = (Date.now() - buildDate.getTime()) / 60000;
-
-    if (ageMinutes > 60) {
-      warn(`Content index is ${Math.round(ageMinutes)} minutes old - consider rebuilding`);
-    } else {
-      success(`Content index is ${Math.round(ageMinutes)} minutes old`);
-    }
+    if (Number.isNaN(buildDate.getTime())) error("Metadata buildDate is not a valid source date");
+    else success(`Content index source date is ${buildDate.toISOString()}`);
   }
 }
 
@@ -366,10 +364,10 @@ function validateRelationships(index: ContentIndex): void {
   let relationshipErrors = 0;
 
   // Validate skill -> project references
-  const projectSlugs = new Set(index.projects.map(p => p.slug));
+  const projectSlugs = new Set(index.projects.map((p) => p.slug));
 
-  index.skills.forEach(skill => {
-    skill.projects.forEach(projectSlug => {
+  index.skills.forEach((skill) => {
+    skill.projects.forEach((projectSlug) => {
       if (!projectSlugs.has(projectSlug)) {
         error(`Skill "${skill.name}" references non-existent project: ${projectSlug}`);
         relationshipErrors++;
@@ -378,10 +376,10 @@ function validateRelationships(index: ContentIndex): void {
   });
 
   // Validate skill -> blog references
-  const blogSlugs = new Set(index.blog.map(b => b.slug));
+  const blogSlugs = new Set(index.blog.map((b) => b.slug));
 
-  index.skills.forEach(skill => {
-    skill.blog.forEach(blogSlug => {
+  index.skills.forEach((skill) => {
+    skill.blog.forEach((blogSlug) => {
       if (!blogSlugs.has(blogSlug)) {
         error(`Skill "${skill.name}" references non-existent blog post: ${blogSlug}`);
         relationshipErrors++;
@@ -390,12 +388,29 @@ function validateRelationships(index: ContentIndex): void {
   });
 
   if (relationshipErrors === 0) {
-    success('All skill relationships are valid');
+    success("All skill relationships are valid");
+  }
+
+  const java = index.skills.find((skill) => skill.id === "java-spring-boot");
+  if (!java) {
+    error("Missing canonical java-spring-boot skill fixture");
+  } else {
+    if (java.projects.includes("boo-agent-scheduler")) {
+      error("Boo incorrectly evidences Java through a substring match");
+    }
+    if (!java.projects.includes("fill-in-my-blank")) {
+      error("Exact Java alias did not evidence fill-in-my-blank");
+    }
+  }
+
+  const aws = index.skills.find((skill) => skill.id === "aws");
+  if (!aws?.blog.includes("proveit-industrial-agents")) {
+    error("Exact AWS alias did not evidence proveit-industrial-agents");
   }
 }
 
 // Run validation
-validateContentIndex().catch(err => {
-  console.error('Validation failed:', err);
+validateContentIndex().catch((err) => {
+  console.error("Validation failed:", err);
   process.exit(1);
 });

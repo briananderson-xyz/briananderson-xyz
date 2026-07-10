@@ -22,7 +22,7 @@
       <h3 class="experience-title text-base text-skin-base font-bold leading-snug">{job.role}</h3>
       <div class="text-skin-accent text-sm">@ {job.company}</div>
     </div>
-    <div class="text-xs text-skin-muted whitespace-nowrap text-left sm:text-right shrink-0 mt-1 sm:mt-0.5">
+    <div class="min-w-0 text-xs text-skin-muted text-left sm:text-right sm:shrink-0 mt-1 sm:mt-0.5">
       <div>{job.start_date} {job.end_date ? '- ' + job.end_date : ' - Present'} [{getDuration(job.start_date, job.end_date)}]</div>
     </div>
   </div>

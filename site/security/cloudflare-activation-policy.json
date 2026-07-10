@@ -1,0 +1,58 @@
+{
+  "generatedFrom": "site/security-policy.json",
+  "activationStatus": "EXTERNAL_NOT_VERIFIED",
+  "instructions": "Resolve each phase's entrypoint RULESET_ID, substitute CLOUDFLARE_ZONE_ID and RULESET_ID, then POST the rule with a scoped token. This appends without replacing unrelated rules. Live curl evidence is required before marking active.",
+  "responseHeadersTransform": {
+    "method": "POST",
+    "endpoint": "https://api.cloudflare.com/client/v4/zones/CLOUDFLARE_ZONE_ID/rulesets/RULESET_ID/rules",
+    "body": {
+      "action": "rewrite",
+      "action_parameters": {
+        "headers": {
+          "Content-Security-Policy": {
+            "operation": "set",
+            "value": "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; script-src 'self' 'unsafe-inline' https://app.posthog.com https://*.posthog.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://api.briananderson.xyz https://api-dev.briananderson.xyz https://app.posthog.com https://*.posthog.com wss://*.posthog.com; worker-src 'self' blob:; manifest-src 'self'; media-src 'self'"
+          },
+          "Strict-Transport-Security": {
+            "operation": "set",
+            "value": "max-age=31536000; includeSubDomains"
+          },
+          "X-Content-Type-Options": {
+            "operation": "set",
+            "value": "nosniff"
+          },
+          "Referrer-Policy": {
+            "operation": "set",
+            "value": "strict-origin-when-cross-origin"
+          },
+          "Permissions-Policy": {
+            "operation": "set",
+            "value": "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
+          }
+        }
+      },
+      "description": "Canonical browser security headers for briananderson.xyz",
+      "enabled": true,
+      "expression": "(http.host in {\"briananderson.xyz\" \"www.briananderson.xyz\" \"dev.briananderson.xyz\"})"
+    }
+  },
+  "sharedAiRateLimit": {
+    "method": "POST",
+    "endpoint": "https://api.cloudflare.com/client/v4/zones/CLOUDFLARE_ZONE_ID/rulesets/RULESET_ID/rules",
+    "body": {
+      "action": "block",
+      "description": "Shared edge limit for public AI POST endpoints; origin memory limits remain defense in depth and are not global.",
+      "enabled": true,
+      "expression": "(http.host in {\"api.briananderson.xyz\" \"api-dev.briananderson.xyz\"}) and (http.request.method in {\"POST\"}) and (http.request.uri.path in {\"/chat\" \"/fit-finder\" \"/mcp\"})",
+      "ratelimit": {
+        "characteristics": [
+          "cf.colo.id",
+          "ip.src"
+        ],
+        "period": 900,
+        "requests_per_period": 20,
+        "mitigation_timeout": 900
+      }
+    }
+  }
+}

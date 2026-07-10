@@ -1,10 +1,22 @@
 interface FocusTrapOptions {
-	/** Called when Escape is pressed while focus is inside the trap. */
-	onEscape?: () => void;
+  /** Called when Escape is pressed while focus is inside the trap. */
+  onEscape?: () => void;
 }
 
 const FOCUSABLE =
-	'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
+  'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+function getFocusable(node: HTMLElement) {
+  return Array.from(node.querySelectorAll<HTMLElement>(FOCUSABLE)).filter(
+    (element) => element.offsetParent !== null
+  );
+}
+
+function focusFirst(node: HTMLElement) {
+  const target =
+    node.querySelector<HTMLElement>("[data-autofocus]") ?? getFocusable(node)[0] ?? node;
+  target.focus();
+}
 
 /**
  * Makes an element behave like an accessible modal dialog: on mount it moves
@@ -20,55 +32,57 @@ const FOCUSABLE =
  * already close on Escape (e.g. Lightbox via svelte:window) can opt out.
  */
 export function focusTrap(node: HTMLElement, options: FocusTrapOptions = {}) {
-	let opts = options;
-	const restoreFocus = document.activeElement as HTMLElement | null;
+  let opts = options;
+  const restoreFocus = document.activeElement as HTMLElement | null;
 
-	const raf = requestAnimationFrame(() => {
-		// Respect focus a child already claimed (e.g. an autofocus button).
-		if (node.contains(document.activeElement)) return;
-		const target =
-			node.querySelector<HTMLElement>('[data-autofocus]') ??
-			node.querySelector<HTMLElement>(FOCUSABLE) ??
-			node;
-		target?.focus();
-	});
+  const raf = requestAnimationFrame(() => {
+    // Respect focus a child already claimed (e.g. an autofocus button).
+    if (node.contains(document.activeElement)) return;
+    focusFirst(node);
+  });
 
-	function onKeydown(e: KeyboardEvent) {
-		if (e.key === 'Escape') {
-			opts.onEscape?.();
-			return;
-		}
-		if (e.key !== 'Tab') return;
+  function onKeydown(e: KeyboardEvent) {
+    if (e.key === "Escape") {
+      opts.onEscape?.();
+      return;
+    }
+    if (e.key !== "Tab") return;
 
-		const nodes = Array.from(node.querySelectorAll<HTMLElement>(FOCUSABLE)).filter(
-			(el) => el.offsetParent !== null
-		);
-		if (nodes.length === 0) {
-			e.preventDefault();
-			node.focus();
-			return;
-		}
-		const first = nodes[0];
-		const last = nodes[nodes.length - 1];
-		if (e.shiftKey && document.activeElement === first) {
-			e.preventDefault();
-			last.focus();
-		} else if (!e.shiftKey && document.activeElement === last) {
-			e.preventDefault();
-			first.focus();
-		}
-	}
+    const nodes = getFocusable(node);
+    if (nodes.length === 0) {
+      e.preventDefault();
+      node.focus();
+      return;
+    }
+    const first = nodes[0];
+    const last = nodes[nodes.length - 1];
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  }
 
-	node.addEventListener('keydown', onKeydown);
+  function onFocusIn(e: FocusEvent) {
+    if (e.target instanceof Node && !node.contains(e.target)) {
+      focusFirst(node);
+    }
+  }
 
-	return {
-		update(newOptions: FocusTrapOptions = {}) {
-			opts = newOptions;
-		},
-		destroy() {
-			cancelAnimationFrame(raf);
-			node.removeEventListener('keydown', onKeydown);
-			restoreFocus?.focus?.();
-		}
-	};
+  node.addEventListener("keydown", onKeydown);
+  document.addEventListener("focusin", onFocusIn);
+
+  return {
+    update(newOptions: FocusTrapOptions = {}) {
+      opts = newOptions;
+    },
+    destroy() {
+      cancelAnimationFrame(raf);
+      node.removeEventListener("keydown", onKeydown);
+      document.removeEventListener("focusin", onFocusIn);
+      restoreFocus?.focus?.();
+    }
+  };
 }

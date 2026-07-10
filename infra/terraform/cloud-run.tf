@@ -96,44 +96,79 @@ resource "google_secret_manager_secret_iam_member" "cloud_run_origin_verify_prod
   member    = "serviceAccount:${google_service_account.cloud_run_runtime_prod.email}"
 }
 
-# IAM: CI service account can push images to Artifact Registry
-resource "google_project_iam_member" "ci_artifactregistry_writer" {
-  project = var.project_id
-  role    = "roles/artifactregistry.writer"
-  member  = "serviceAccount:${google_service_account.github_ci.email}"
+# Publishing can write images, but cannot deploy them.
+resource "google_artifact_registry_repository_iam_member" "publisher" {
+  project    = google_artifact_registry_repository.functions.project
+  location   = google_artifact_registry_repository.functions.location
+  repository = google_artifact_registry_repository.functions.repository_id
+  role       = "roles/artifactregistry.writer"
+  member     = "serviceAccount:${google_service_account.publisher.email}"
 }
 
-# IAM: CI service account can view secrets (needed for terraform plan)
-resource "google_project_iam_member" "ci_secretmanager_viewer" {
-  project = var.project_id
-  role    = "roles/secretmanager.viewer"
-  member  = "serviceAccount:${google_service_account.github_ci.email}"
+# Deployment identities can resolve and deploy immutable images from this
+# repository, but cannot publish, retag, or administer them.
+resource "google_artifact_registry_repository_iam_member" "dev_reader" {
+  project    = google_artifact_registry_repository.functions.project
+  location   = google_artifact_registry_repository.functions.location
+  repository = google_artifact_registry_repository.functions.repository_id
+  role       = "roles/artifactregistry.reader"
+  member     = "serviceAccount:${google_service_account.dev.email}"
 }
 
-# IAM: CI service account can deploy Cloud Run services
-resource "google_project_iam_member" "ci_run_admin" {
-  project = var.project_id
-  role    = "roles/run.admin"
-  member  = "serviceAccount:${google_service_account.github_ci.email}"
+resource "google_artifact_registry_repository_iam_member" "prod_reader" {
+  project    = google_artifact_registry_repository.functions.project
+  location   = google_artifact_registry_repository.functions.location
+  repository = google_artifact_registry_repository.functions.repository_id
+  role       = "roles/artifactregistry.reader"
+  member     = "serviceAccount:${google_service_account.prod.email}"
 }
 
-# IAM: CI service account can act as the Cloud Run runtime SA
-resource "google_service_account_iam_member" "ci_act_as_run" {
-  service_account_id = google_service_account.cloud_run_runtime.name
-  role               = "roles/iam.serviceAccountUser"
-  member             = "serviceAccount:${google_service_account.github_ci.email}"
-}
-
-resource "google_service_account_iam_member" "ci_act_as_run_dev" {
+# Deployment identities can act only as their environment's runtime account.
+resource "google_service_account_iam_member" "dev_act_as_run" {
   service_account_id = google_service_account.cloud_run_runtime_dev.name
   role               = "roles/iam.serviceAccountUser"
-  member             = "serviceAccount:${google_service_account.github_ci.email}"
+  member             = "serviceAccount:${google_service_account.dev.email}"
 }
 
-resource "google_service_account_iam_member" "ci_act_as_run_prod" {
+resource "google_service_account_iam_member" "prod_act_as_run" {
   service_account_id = google_service_account.cloud_run_runtime_prod.name
   role               = "roles/iam.serviceAccountUser"
-  member             = "serviceAccount:${google_service_account.github_ci.email}"
+  member             = "serviceAccount:${google_service_account.prod.email}"
+}
+
+resource "google_storage_bucket_iam_member" "dev_deployer" {
+  bucket = google_storage_bucket.site_dev.name
+  role   = "roles/storage.objectAdmin"
+  member = "serviceAccount:${google_service_account.dev.email}"
+}
+
+resource "google_storage_bucket_iam_member" "prod_deployer" {
+  bucket = google_storage_bucket.site.name
+  role   = "roles/storage.objectAdmin"
+  member = "serviceAccount:${google_service_account.prod.email}"
+}
+
+# Cloud Run service-level grants are disabled by default so a trust bootstrap
+# does not require the application services to exist. Enable only after an
+# administrator verifies the named services and reviews the state-backed plan.
+resource "google_cloud_run_v2_service_iam_member" "dev_deployer" {
+  for_each = var.manage_deployment_service_iam ? toset(var.dev_cloud_run_services) : toset([])
+
+  project  = var.project_id
+  location = var.region
+  name     = each.value
+  role     = "roles/run.developer"
+  member   = "serviceAccount:${google_service_account.dev.email}"
+}
+
+resource "google_cloud_run_v2_service_iam_member" "prod_deployer" {
+  for_each = var.manage_deployment_service_iam ? toset(var.prod_cloud_run_services) : toset([])
+
+  project  = var.project_id
+  location = var.region
+  name     = each.value
+  role     = "roles/run.developer"
+  member   = "serviceAccount:${google_service_account.prod.email}"
 }
 
 output "artifact_registry_repo" { value = google_artifact_registry_repository.functions.name }

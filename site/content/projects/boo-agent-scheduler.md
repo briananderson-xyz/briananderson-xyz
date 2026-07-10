@@ -5,6 +5,8 @@ period: "2026 – Present"
 summary: "A cross-platform scheduler daemon, written in Rust, that fires AI agent prompts on cron schedules. Heartbeat-based, it survives sleep/wake cycles and catches up on runs it missed while the machine was off."
 tags: ["AgenticAI", "Rust", "Automation", "Builder", "SideProject", "OpenSource"]
 keywords: ["boo", "agent-scheduler", "cron", "rust", "kiro-cli", "ai-automation", "daemon"]
+outcome: "Developer productivity"
+projectType: "Open-source tool"
 showTableOfContents: true
 links:
   - label: "GitHub Repository"

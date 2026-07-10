@@ -14,7 +14,7 @@
   import { initWebVitals } from "$lib/utils/web-vitals";
   import { browser } from "$app/environment";
   import { beforeNavigate, afterNavigate, onNavigate } from "$app/navigation";
-  import { loadPostHog, withPostHog } from "$lib/utils/posthog-lazy";
+  import { loadPostHog, POSTHOG_PRIVACY_CONFIG, withPostHog } from "$lib/utils/posthog-lazy";
   import { PUBLIC_POSTHOG_KEY, PUBLIC_POSTHOG_HOST } from "$env/static/public";
   import ExternalLinkModal from "$lib/components/ExternalLinkModal.svelte";
 
@@ -36,7 +36,27 @@
       "@type": "Person",
       name: "Brian Anderson",
       url: siteUrl
-    }
+    },
+    hasPart: [
+      {
+        "@type": "WebPage",
+        name: "Proof Ledger",
+        url: `${siteUrl}/proof/`,
+        description: "Selected portfolio claims mapped to published sources and evidence state."
+      },
+      {
+        "@type": "WebPage",
+        name: "AI Evaluation Trends",
+        url: `${siteUrl}/ai-evals/`,
+        description: "Sanitized aggregate quality signals for the site's public AI features."
+      },
+      {
+        "@type": "WebPage",
+        name: "Trace One AI Answer",
+        url: `${siteUrl}/trace-one-answer/`,
+        description: "A repository-grounded trace of the public AI request architecture."
+      }
+    ]
   };
   const websiteJsonLdTag = `<${"script"} type="application/ld+json">${JSON.stringify(websiteJsonLd, null, 2)}</${"script"}>`;
 
@@ -53,7 +73,8 @@
     if (!href || !href.startsWith("http")) return;
     try {
       const url = new URL(href);
-      if (url.hostname === "briananderson.xyz" || url.hostname.endsWith(".briananderson.xyz")) return;
+      if (url.hostname === "briananderson.xyz" || url.hostname.endsWith(".briananderson.xyz"))
+        return;
     } catch {
       return;
     }
@@ -63,7 +84,10 @@
 
   function confirmExternalLink() {
     if (!externalLinkUrl) return;
-    trackEvent("external_link_clicked", { url: externalLinkUrl, host: new URL(externalLinkUrl).hostname });
+    trackEvent("external_link_clicked", {
+      url: externalLinkUrl,
+      host: new URL(externalLinkUrl).hostname
+    });
     window.open(externalLinkUrl, "_blank", "noopener,noreferrer");
     externalLinkUrl = "";
   }
@@ -71,9 +95,9 @@
 
   const shortcuts: KeyboardShortcut[] = [
     {
-      key: 'k',
+      key: "k",
       meta: true,
-      description: 'Open Quick Actions',
+      description: "Open Quick Actions",
       handler: () => {
         // Close other modals first
         chatbotVisible = false;
@@ -81,13 +105,13 @@
         shortcutsHelpVisible = false;
         // Open Quick Actions
         quickActionsVisible = true;
-        trackEvent('keyboard_shortcut_used', { shortcut: 'cmd+k' });
+        trackEvent("keyboard_shortcut_used", { shortcut: "cmd+k" });
       }
     },
     {
-      key: 'i',
+      key: "i",
       meta: true,
-      description: 'Toggle AI Chatbot',
+      description: "Toggle AI Chatbot",
       handler: () => {
         // Close other modals first
         quickActionsVisible = false;
@@ -95,16 +119,16 @@
         shortcutsHelpVisible = false;
         // Toggle chatbot
         chatbotVisible = !chatbotVisible;
-        trackEvent('keyboard_shortcut_used', { shortcut: 'cmd+i' });
+        trackEvent("keyboard_shortcut_used", { shortcut: "cmd+i" });
         if (chatbotVisible) {
-          trackEvent('chat_opened', { source: 'shortcut' });
+          trackEvent("chat_opened", { source: "shortcut" });
         }
       }
     },
     {
-      key: 'f',
+      key: "f",
       meta: true,
-      description: 'Open Fit Finder',
+      description: "Open Fit Finder",
       handler: () => {
         // Close other modals first
         quickActionsVisible = false;
@@ -112,15 +136,15 @@
         shortcutsHelpVisible = false;
         // Open Fit Finder
         fitFinderVisible = true;
-        trackEvent('keyboard_shortcut_used', { shortcut: 'cmd+f' });
-        trackEvent('fit_finder_opened', { source: 'shortcut' });
+        trackEvent("keyboard_shortcut_used", { shortcut: "cmd+f" });
+        trackEvent("fit_finder_opened", { source: "shortcut" });
       }
     },
     {
-      key: '?',
+      key: "?",
       meta: true,
       shift: true,
-      description: 'Show Keyboard Shortcuts',
+      description: "Show Keyboard Shortcuts",
       handler: () => {
         // Close other modals first
         quickActionsVisible = false;
@@ -128,22 +152,22 @@
         fitFinderVisible = false;
         // Open shortcuts help
         shortcutsHelpVisible = true;
-        trackEvent('keyboard_help_opened', { source: 'shortcut' });
+        trackEvent("keyboard_help_opened", { source: "shortcut" });
       }
     },
     {
-      key: 'h',
+      key: "h",
       meta: true,
-      description: 'Go Home',
+      description: "Go Home",
       handler: () => {
         if (browser) {
-          window.location.href = '/';
+          window.location.href = "/";
         }
       }
     },
     {
-      key: 'Escape',
-      description: 'Close All Overlays',
+      key: "Escape",
+      description: "Close All Overlays",
       handler: () => {
         quickActionsVisible = false;
         shortcutsHelpVisible = false;
@@ -162,20 +186,20 @@
         // sets its promise synchronously, so the withPostHog() calls below (and
         // in navigation hooks / analytics) queue until it resolves.
         loadPostHog(PUBLIC_POSTHOG_KEY, {
+          ...POSTHOG_PRIVACY_CONFIG,
           api_host: PUBLIC_POSTHOG_HOST || "https://app.posthog.com",
           capture_pageview: false,
           capture_pageleave: false,
-          capture_exceptions: true,
+          capture_exceptions: false,
           loaded: (ph) => {
             const deploymentEnv =
-              typeof window !== "undefined" &&
-              window.location.hostname.includes("dev.")
+              typeof window !== "undefined" && window.location.hostname.includes("dev.")
                 ? "dev"
                 : "production";
             ph.register({
-              deployment_environment: deploymentEnv,
+              deployment_environment: deploymentEnv
             });
-          },
+          }
         });
         // Force capture initial pageview on mount to be sure
         withPostHog((ph) => ph.capture("$pageview"));
@@ -222,17 +246,15 @@
   {@html websiteJsonLdTag}
 </svelte:head>
 
-<div
-  class="pointer-events-none fixed inset-0 z-30 overflow-hidden print:hidden"
->
+<div class="pointer-events-none fixed inset-0 z-30 overflow-hidden print:hidden">
   <div class="scanlines pointer-events-none"></div>
 </div>
 
 <div
   class="min-h-screen print:min-h-0 flex flex-col bg-skin-page text-skin-base font-sans transition-colors duration-300"
 >
-  <Navbar 
-    onOpenShortcutsHelp={() => shortcutsHelpVisible = true}
+  <Navbar
+    onOpenShortcutsHelp={() => (shortcutsHelpVisible = true)}
     onOpenChat={() => {
       quickActionsVisible = false;
       fitFinderVisible = false;
@@ -252,29 +274,21 @@
       quickActionsVisible = true;
     }}
   />
-  <main
-    class="flex-1 w-full max-w-6xl mx-auto p-4 md:p-6 print:p-0 print:max-w-none"
-  >
+  <main class="flex-1 w-full max-w-6xl mx-auto p-4 md:p-6 print:p-0 print:max-w-none">
     {@render children()}
   </main>
   <Footer />
 </div>
 
-<QuickActions 
-  visible={quickActionsVisible} 
-  onClose={() => quickActionsVisible = false} 
+<QuickActions
+  visible={quickActionsVisible}
+  onClose={() => (quickActionsVisible = false)}
   contentActions={data.contentActions}
 />
 
-<Chatbot
-  visible={chatbotVisible}
-  onClose={() => chatbotVisible = false}
-/>
+<Chatbot visible={chatbotVisible} onClose={() => (chatbotVisible = false)} />
 
-<FitFinder
-  visible={fitFinderVisible}
-  onClose={() => fitFinderVisible = false}
-/>
+<FitFinder visible={fitFinderVisible} onClose={() => (fitFinderVisible = false)} />
 
 <ConnectBanner
   onOpenFitFinder={() => {
@@ -294,7 +308,7 @@
 <KeyboardShortcutsHelp
   {shortcuts}
   visible={shortcutsHelpVisible}
-  onClose={() => shortcutsHelpVisible = false}
+  onClose={() => (shortcutsHelpVisible = false)}
 />
 
 <ScrollToTop />

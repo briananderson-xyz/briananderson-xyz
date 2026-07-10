@@ -4,7 +4,10 @@ date: 2021-01-01
 period: "2021 – 2024"
 summary: "Establishing enterprise platform engineering and CI/CD at financial services scale."
 tags: ["DevOps", "PlatformEngineering", "CICD", "Kubernetes", "Governance", "Leader"]
-keywords: ["discover", "trident", "golden-paths", "financial-services", "datadog", "instana", "jenkins"]
+keywords:
+  ["discover", "trident", "golden-paths", "financial-services", "datadog", "instana", "jenkins"]
+outcome: "Platform modernization"
+projectType: "Enterprise transformation"
 showTableOfContents: true
 links:
   - label: "Valtech Case Study"
@@ -14,7 +17,7 @@ links:
 
 ## The Challenge
 
-**Discover Financial Services** operates at a scale where developer friction has real cost. Thousands of engineers, thousands of microservices, and a regulatory environment where every deployment carries compliance implications. The challenge wasn't just speed. It was building a deployment framework that could move fast *and* satisfy the governance requirements that come with handling financial data at global scale.
+**Discover Financial Services** operates at a scale where developer friction has real cost. Thousands of engineers, thousands of microservices, and a regulatory environment where every deployment carries compliance implications. The challenge wasn't just speed. It was building a deployment framework that could move fast _and_ satisfy the governance requirements that come with handling financial data at global scale.
 
 I joined as a **Technical Director** leading the integration side of the Trident pipeline, the internal platform that would standardize how Discover's engineering teams shipped software. At peak, the engagement involved over **300 dedicated staff** working to transition **5,000+ applications** onto the new framework, with an estimated **$30M in savings** through reduced operational overhead and standardized tooling.
 
@@ -32,5 +35,4 @@ I joined as a **Technical Director** leading the integration side of the Trident
 
 ## Lessons Learned
 
-Financial services taught me that governance isn't the enemy of velocity. It's a design constraint. The best platform engineering work doesn't fight compliance requirements, it encodes them. When security and compliance are built into the pipeline itself, teams actually move faster *because* they don't have to think about it.
-
+Financial services taught me that governance isn't the enemy of velocity. It's a design constraint. The best platform engineering work doesn't fight compliance requirements, it encodes them. When security and compliance are built into the pipeline itself, teams actually move faster _because_ they don't have to think about it.

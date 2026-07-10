@@ -5,14 +5,29 @@
 
   interface Props {
     images: string[];
+    imageAlts?: string[];
     currentIndex: number;
     onClose: () => void;
   }
 
-  let { images, currentIndex = 0, onClose }: Props = $props();
+  let { images, imageAlts = [], currentIndex = 0, onClose }: Props = $props();
   let index = $derived(currentIndex);
   let touchStartX = $state(0);
   let touchEndX = $state(0);
+  let dialogElement: HTMLDivElement;
+  let currentAlt = $derived(imageAlts[index]?.trim() || describeImage(images[index], index));
+
+  function describeImage(src: string | undefined, imageIndex: number) {
+    if (!src) return `Expanded image ${imageIndex + 1}`;
+    const filename =
+      src
+        .split("/")
+        .pop()
+        ?.split("?")[0]
+        ?.replace(/\.[^.]+$/, "") ?? "";
+    const description = decodeURIComponent(filename).replace(/[-_]+/g, " ").trim();
+    return description ? `Expanded image: ${description}` : `Expanded image ${imageIndex + 1}`;
+  }
 
   function handleKeydown(e: KeyboardEvent) {
     if (e.key === "Escape") {
@@ -22,6 +37,12 @@
     } else if (e.key === "ArrowRight") {
       next();
     }
+  }
+
+  // The focus trap moves focus on the next animation frame. Keep Escape and
+  // arrow keys responsive during that small opening window as well.
+  function handleWindowKeydown(e: KeyboardEvent) {
+    if (!dialogElement?.contains(document.activeElement)) handleKeydown(e);
   }
 
   function previous() {
@@ -64,7 +85,10 @@
   }
 </script>
 
+<svelte:window onkeydown={handleWindowKeydown} />
+
 <div
+  bind:this={dialogElement}
   use:focusTrap
   class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/95 backdrop-blur-sm p-4"
   role="dialog"
@@ -111,7 +135,7 @@
   >
     <img
       src={images[index]}
-      alt="Lightbox view"
+      alt={currentAlt}
       class="max-w-full max-h-[calc(100vh-200px)] object-contain rounded border-2 border-skin-accent shadow-2xl"
     />
   </div>
@@ -130,9 +154,9 @@
             class="flex-shrink-0 w-20 h-20 rounded border-2 transition-all {i === index
               ? 'border-skin-accent'
               : 'border-skin-border hover:border-skin-accent/50'}"
-            aria-label="Go to image {i + 1}"
+            aria-label="Show {imageAlts[i]?.trim() || describeImage(image, i)}"
           >
-            <img src={image} alt="Thumbnail {i + 1}" class="w-full h-full object-cover rounded" />
+            <img src={image} alt="" class="w-full h-full object-cover rounded" />
           </button>
         {/each}
       </div>

@@ -1,125 +1,93 @@
 # Theming System
 
-## Overview
+The site has light, dark terminal, and Catppuccin themes. Components use Tailwind `skin-*` utilities
+backed by CSS custom properties in `site/src/lib/styles/app.css`; changing theme never requires a
+second component palette.
 
-The site supports three themes using CSS custom properties. All theme-aware styling flows through Tailwind's `skin-*` utility classes, which resolve to CSS variables at runtime.
+## Semantic tokens
 
-## CSS Custom Properties
+Core tokens cover page, text, border, and accent roles:
 
-Defined in `site/src/lib/styles/app.css`:
+| Tailwind prefix        | CSS variable              | Role                        |
+| ---------------------- | ------------------------- | --------------------------- |
+| `skin-page`            | `--color-bg-page`         | Page and card background    |
+| `skin-base`            | `--color-text-base`       | Primary text                |
+| `skin-muted`           | `--color-text-muted`      | Secondary text and captions |
+| `skin-border`          | `--color-border`          | Dividers and borders        |
+| `skin-accent`          | `--color-accent`          | Links and primary actions   |
+| `skin-accent-contrast` | `--color-accent-contrast` | Text on filled accents      |
 
-### Light Theme (`:root` default)
+Status colors are separate semantic pairs:
 
-| Variable | Value | Description |
-|----------|-------|-------------|
-| `--color-bg-page` | `250, 250, 250` | zinc-50 background |
-| `--color-text-base` | `24, 24, 27` | zinc-900 text |
-| `--color-text-muted` | `63, 63, 70` | zinc-700 secondary text |
-| `--color-border` | `228, 228, 231` | zinc-200 borders |
-| `--color-accent` | `4, 120, 87` | emerald-700 primary action |
-| `--color-accent-contrast` | `255, 255, 255` | text on accent backgrounds |
-| `--color-terminal-accent` | `74, 246, 38` | neon green (terminal effects) |
-| `--color-terminal-black` | `12, 12, 12` | terminal background |
+| Tailwind prefix                          | CSS variables             | Role                       |
+| ---------------------------------------- | ------------------------- | -------------------------- |
+| `skin-success` / `skin-success-contrast` | `--color-status-success*` | Positive or healthy state  |
+| `skin-warning` / `skin-warning-contrast` | `--color-status-warning*` | Caution or partial state   |
+| `skin-error` / `skin-error-contrast`     | `--color-status-error*`   | Error or destructive state |
 
-### Dark Theme (`html.dark`)
+Each base status color must pass WCAG AA as text on the page background and as a filled background
+with its paired contrast token in all three themes. `pnpm run test:theme` enforces the contrast
+contract.
 
-| Variable | Value | Description |
-|----------|-------|-------------|
-| `--color-bg-page` | `12, 12, 12` | near-black background |
-| `--color-text-base` | `204, 204, 204` | light gray text |
-| `--color-text-muted` | `113, 113, 113` | dim gray secondary |
-| `--color-border` | `30, 30, 30` | subtle borders |
-| `--color-accent` | `34, 197, 94` | green-500 |
-| `--color-accent-contrast` | `12, 12, 12` | dark text on accent |
+Tailwind's `withOpacity()` mapping supports modifiers such as `text-skin-error/70` and
+`bg-skin-success/10` without bypassing the theme.
 
-### Catppuccin Theme (`html[data-theme="catppuccin"]`)
+## Terminal tokens are an exception
 
-| Variable | Value | Description |
-|----------|-------|-------------|
-| `--color-bg-page` | `30, 30, 46` | Mocha base |
-| `--color-text-base` | `205, 214, 244` | Mocha text |
-| `--color-text-muted` | `166, 173, 199` | Mocha subtext |
-| `--color-border` | `49, 50, 68` | Mocha surface0 |
-| `--color-accent` | `166, 227, 161` | Mocha green |
-| `--color-accent-contrast` | `30, 30, 46` | Mocha base (for contrast) |
+`terminal-*` tokens define the terminal window treatment: black/dark surfaces, body text, accent,
+chrome, and borders. They are appropriate for terminal chrome and decorative cues, not general
+success/error meaning. Status components must use semantic `skin-*` status tokens.
 
-## Tailwind Mapping
+The small red, yellow, and green window-control circles are intentional terminal chrome. Platform
+brand badges can use documented brand colors. Other hardcoded status colors are a regression.
 
-In `site/tailwind.config.cjs`, the `withOpacity()` helper wraps CSS variables so they work with Tailwind's opacity modifiers:
+## Theme values
 
-```javascript
-// withOpacity('--color-accent') produces:
-// bg-skin-accent     → rgb(var(--color-accent))
-// bg-skin-accent/50  → rgba(var(--color-accent), 0.5)
-```
+The exact RGB triplets live in `site/src/lib/styles/app.css`:
 
-### Available `skin-*` Classes
+- `:root` is the light theme;
+- `html.dark` is the terminal theme;
+- `html[data-theme="catppuccin"]` is Catppuccin Mocha.
 
-| Class prefix | Variable | Usage |
-|-------------|----------|-------|
-| `skin-page` | `--color-bg-page` | Page/card backgrounds |
-| `skin-base` | `--color-text-base` | Primary text |
-| `skin-muted` | `--color-text-muted` | Secondary text, captions |
-| `skin-border` | `--color-border` | Borders, dividers |
-| `skin-accent` | `--color-accent` | Links, buttons, highlights |
-| `skin-accent-contrast` | `--color-accent-contrast` | Text on accent backgrounds |
+Keep the full token set in every block. CSS values use comma-separated RGB triplets so Tailwind can
+apply opacity. Do not duplicate the numbers in components or documentation when a semantic name is
+sufficient.
 
-### Fixed `terminal-*` Classes
+## Detection and persistence
 
-These do **not** change with theme (except `terminal-green` which uses the accent variable):
+The inline script in `site/src/app.html` runs before hydration to avoid a theme flash. It reads the
+theme preference from `localStorage`, otherwise follows `prefers-color-scheme`. `ThemeToggle.svelte`
+cycles light, dark, and Catppuccin and persists the selection.
 
-| Class | Value | Usage |
-|-------|-------|-------|
-| `terminal-black` | `var(--color-terminal-black)` | Terminal backgrounds |
-| `terminal-dark` | `#1e1e1e` | Terminal chrome |
-| `terminal-green` | `var(--color-terminal-accent)` | Terminal text/accents |
-| `terminal-dim` | `#2d2d2d` | Terminal secondary |
-| `terminal-text` | `#cccccc` | Terminal body text |
+The user theme preference is intentionally durable. That does not imply that sensitive AI content
+should use durable browser storage; Chat uses `sessionStorage`.
 
-## Theme Detection Flow
+## Typography and effects
 
-1. **Before hydration** (`app.html` inline script):
-   - Check `localStorage.getItem('theme')`
-   - Fall back to `window.matchMedia('(prefers-color-scheme: dark)')`
-   - Apply `html.dark` class and/or `data-theme` attribute
-2. **Runtime** (`ThemeToggle.svelte`):
-   - Cycles: light → dark → catppuccin → light
-   - Persists choice to localStorage
-   - Manipulates `document.documentElement` classes/attributes
+The Tailwind Typography plugin maps its prose variables to the same page/text/accent tokens. Markdown
+therefore follows the active theme without route-specific prose palettes. Headings and code retain the
+monospaced identity.
 
-## Special Effects
+The scanline overlay is fixed and ignores pointer input. It is lighter in the light theme. Selection,
+focus, prose, and status-specific scanline effects also use semantic tokens. Motion and cross-page
+transitions must respect `prefers-reduced-motion`, and print rules must reveal content that may not
+have entered the viewport.
 
-### Scanlines Overlay (`app.css`)
+## Component rules
 
-Terminal-style horizontal lines across the entire page:
-- Fixed position, `z-index: 30`, `pointer-events: none`
-- Opacity: 0.15 (dark/catppuccin), 0.05 (light)
-- Uses repeating-linear-gradient for the line pattern
+- Use `skin-*` for all theme-aware UI.
+- Use the semantic status pair matching the meaning; do not use accent as a generic success color.
+- When using a filled semantic background, use its matching `*-contrast` text token.
+- Reserve `terminal-*` for fixed terminal surfaces and chrome.
+- Prefer opacity modifiers and borders over adding one-off color variables.
+- Test all three themes, focus states, and reduced motion.
+- Pair terminal-flavored labels with plain-language descriptions when meaning would otherwise be
+  opaque.
 
-### Selection Color (`app.css`)
+## Adding or changing a theme
 
-```css
-::selection {
-  background-color: rgba(var(--color-accent), 0.3);
-  color: rgb(var(--color-text-base));
-}
-```
-
-### Terminal Blink Animation (`tailwind.config.cjs`)
-
-Used for cursor effects in the terminal-style navbar:
-```css
-animation: terminal-blink 1s step-end infinite;
-```
-
-## Typography Integration
-
-The `@tailwindcss/typography` prose classes are fully theme-aware. All `--tw-prose-*` variables in `tailwind.config.cjs` map to the CSS custom properties, so markdown content automatically adapts to the active theme. Headings use `font-mono` for the terminal aesthetic.
-
-## Adding a New Theme
-
-1. Add a new CSS variable block in `app.css` with a selector (e.g., `html[data-theme="newtheme"]`)
-2. Define all 8 color variables using RGB triplet format (e.g., `30, 30, 46`)
-3. Update `ThemeToggle.svelte` to include the new theme in the cycle
-4. Update the `app.html` inline script to handle the new theme on initial load
-5. Update scanlines opacity if needed
+1. Add a complete token block in `site/src/lib/styles/app.css`.
+2. Confirm page, muted, accent, and all status/contrast combinations meet their contrast targets.
+3. Update pre-hydration detection and `ThemeToggle.svelte` if the theme is new.
+4. Review scanline opacity, selection, prose, focus, dialogs, and print behavior.
+5. Run `pnpm run test:theme`, `pnpm run test:ui`, and the production build.

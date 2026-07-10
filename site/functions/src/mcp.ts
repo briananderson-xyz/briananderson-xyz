@@ -2,8 +2,9 @@
  * MCP (Model Context Protocol) server for briananderson.xyz.
  *
  * Exposes Brian's resume, projects, skills, chatbot, and fit-finder as MCP
- * tools so any MCP-capable agent can query them directly. Served over
- * Streamable HTTP at POST /mcp on the same Cloud Run service as the REST API.
+ * tools so any MCP-capable agent can query them directly. The application
+ * exposes Streamable HTTP at POST /mcp; which deployed API service publicly
+ * routes that endpoint is an external configuration concern.
  *
  * The tools reuse the existing logic rather than reimplementing it:
  * - get_resume fetches the deployed JSONResume endpoints

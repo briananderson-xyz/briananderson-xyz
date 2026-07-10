@@ -3,9 +3,10 @@
  * Centralizes event tracking with proper browser and key checks
  */
 
-import { browser } from '$app/environment';
-import { withPostHog } from './posthog-lazy';
-import { PUBLIC_POSTHOG_KEY } from '$env/static/public';
+import { browser } from "$app/environment";
+import { withPostHog } from "./posthog-lazy";
+import { PUBLIC_POSTHOG_KEY } from "$env/static/public";
+import { safeAiEventProperties, type AiEventName } from "./aiAnalytics";
 
 /**
  * Track an event if PostHog is configured and available
@@ -16,6 +17,10 @@ export function trackEvent(event: string, properties?: Record<string, unknown>):
   if (browser && PUBLIC_POSTHOG_KEY) {
     withPostHog((ph) => ph.capture(event, properties));
   }
+}
+
+export function trackAiEvent(event: AiEventName, properties: Record<string, unknown>): void {
+  trackEvent(event, safeAiEventProperties(event, properties));
 }
 
 /**
