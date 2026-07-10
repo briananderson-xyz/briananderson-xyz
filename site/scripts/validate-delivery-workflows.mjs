@@ -9,6 +9,7 @@ const automaticPath = join(repoRoot, ".github", "workflows", "build-and-deploy.y
 const productionPath = join(repoRoot, ".github", "workflows", "deploy-production.yml");
 const terraformPrPath = join(repoRoot, ".github", "workflows", "terraform-pr.yml");
 const terraformApplyPath = join(repoRoot, ".github", "workflows", "terraform-apply.yml");
+const uiValidatePath = join(repoRoot, ".github", "workflows", "validate-ui.yml");
 const failures = [];
 
 async function loadWorkflow(path) {
@@ -31,10 +32,12 @@ const automatic = await loadWorkflow(automaticPath);
 const production = await loadWorkflow(productionPath);
 const terraformPr = await loadWorkflow(terraformPrPath);
 const terraformApply = await loadWorkflow(terraformApplyPath);
+const uiValidate = await loadWorkflow(uiValidatePath);
 const automaticOn = automatic.workflow.on;
 const productionOn = production.workflow.on;
 const terraformPrOn = terraformPr.workflow.on;
 const terraformApplyOn = terraformApply.workflow.on;
+const uiValidateOn = uiValidate.workflow.on;
 
 expect(Boolean(automaticOn?.push), "automatic workflow must run on push");
 expect(!automaticOn?.workflow_dispatch, "automatic workflow must not expose workflow_dispatch");
@@ -259,7 +262,17 @@ expect(
   terraformPr.workflow.jobs?.gate?.name === "Terraform Gate",
   "Terraform aggregate gate must retain its stable name"
 );
+expect(
+  terraformPr.workflow.jobs?.validate?.name === "Terraform Validate",
+  "Terraform credential-free validation must have a unique stable check name"
+);
 const terraformValidate = JSON.stringify(terraformPr.workflow.jobs?.validate ?? {});
+expect(
+  terraformPr.workflow.jobs?.validate?.steps?.some(
+    (step) => step?.run === "pnpm run test:delivery-policy"
+  ),
+  "Terraform validation must gate on the parsed delivery workflow validator"
+);
 expect(
   !/id-token|google-github-actions\/auth|secrets\./.test(terraformValidate),
   "Terraform validation job must remain credential-free"
@@ -314,6 +327,26 @@ expect(
     terraformApply.source
   ),
   "Terraform apply must not consume PR artifacts or require a second manual gate"
+);
+
+expect(Boolean(uiValidateOn?.pull_request), "UI validation must run on pull requests");
+expect(
+  uiValidateOn?.pull_request?.paths === undefined,
+  "UI validation must not use pull-request path filters"
+);
+expect(
+  uiValidate.workflow.jobs?.validate?.name === "UI Validate",
+  "UI validation must have a unique stable check name"
+);
+expect(
+  uiValidate.workflow.jobs?.validate?.name !== terraformPr.workflow.jobs?.validate?.name,
+  "UI and Terraform validation check names must remain distinct"
+);
+expect(
+  uiValidate.workflow.jobs?.validate?.steps?.some(
+    (step) => step?.run === "pnpm run test:delivery-policy"
+  ),
+  "UI validation must gate on the parsed delivery workflow validator"
 );
 
 if (failures.length > 0) {

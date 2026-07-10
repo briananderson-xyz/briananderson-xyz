@@ -121,8 +121,11 @@ Populate values from Terraform outputs without printing them:
   application deployment workflow manual/protected.
 
 Do not configure legacy `GCP_WIF_PROVIDER` or `GCP_WIF_SA_EMAIL` fallbacks. Install branch
-protection only after observing the exact successful `Terraform Gate` context: require PRs,
-up-to-date checks, conversation resolution, and disallow force pushes/deletion.
+protection only after observing the exact successful `Terraform Gate` and `UI Validate` contexts:
+require PRs, up-to-date checks, conversation resolution, and disallow force pushes/deletion.
+`Terraform Validate` is deliberately distinct from `UI Validate`, so one workflow can never satisfy
+the other's required check. Both PR validation jobs execute the parsed delivery-workflow validator,
+so invalid trigger or job-name semantics fail before merge.
 
 Keep `DEV_DEPLOY_ENABLED` absent or false until planner/apply/publisher/dev authentication, negative
 cross-identity probes, dev DNS/origin routing, rollback digests, and public invoker policy are all

@@ -450,10 +450,13 @@ contains_regex '^    environment: dev$' "$workflows/build-and-deploy.yml"
 contains_regex '^    environment: prod$' "$workflows/deploy-production.yml"
 contains_regex '^    environment: terraform-apply$' "$workflows/terraform-apply.yml"
 
-contains_fixed 'name: Terraform Gate' "$workflows/terraform-pr.yml"
 contains_regex '^  pull_request:$' "$workflows/terraform-pr.yml"
 if report_regex '^[[:space:]]+paths:' "$workflows/terraform-pr.yml"; then
   echo "The stable Terraform PR gate must run for every pull request to main." >&2
+  exit 1
+fi
+if report_regex '^[[:space:]]+paths:' "$workflows/validate-ui.yml"; then
+  echo "The stable UI validation check must run for every pull request to main." >&2
   exit 1
 fi
 contains_fixed 'same_repository: ${{ steps.diff.outputs.same_repository }}' "$workflows/terraform-pr.yml"
@@ -466,10 +469,23 @@ validate_block="$(awk '
   /^  plan:/ { capture = 0 }
   capture { print }
 ' "$workflows/terraform-pr.yml")"
+contains_fixed '    name: Terraform Validate' <(printf '%s\n' "$validate_block")
+contains_fixed 'pnpm run test:delivery-policy' <(printf '%s\n' "$validate_block")
 if report_regex 'id-token|google-github-actions/auth|secrets\.' <(printf '%s\n' "$validate_block"); then
   echo "The always-running Terraform PR validation job must remain credential-free." >&2
   exit 1
 fi
+gate_block="$(awk '
+  /^  gate:/ { capture = 1 }
+  capture { print }
+' "$workflows/terraform-pr.yml")"
+contains_fixed '    name: Terraform Gate' <(printf '%s\n' "$gate_block")
+ui_validate_block="$(awk '
+  /^  validate:/ { capture = 1 }
+  capture { print }
+' "$workflows/validate-ui.yml")"
+contains_fixed '    name: UI Validate' <(printf '%s\n' "$ui_validate_block")
+contains_fixed 'pnpm run test:delivery-policy' <(printf '%s\n' "$ui_validate_block")
 contains_fixed '-lock=false' "$workflows/terraform-pr.yml"
 contains_fixed '-var="manage_deployment_service_iam=true"' "$workflows/terraform-pr.yml"
 contains_fixed '-var="manage_deployment_service_iam=true"' "$workflows/terraform-apply.yml"

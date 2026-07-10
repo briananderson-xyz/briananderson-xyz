@@ -78,5 +78,7 @@ expect_policy_failure cancelling-apply \
   "sed -i.bak 's/cancel-in-progress: false/cancel-in-progress: true/' \"\$1/.github/workflows/terraform-apply.yml\""
 expect_policy_failure implicit-service-iam \
   "sed -i.bak 's/manage_deployment_service_iam=true/manage_deployment_service_iam=false/g' \"\$1/.github/workflows/terraform-pr.yml\""
+expect_policy_failure terraform-job-name-shadowed-by-step \
+  "sed -i.bak 's/^    name: Terraform Validate$/    name: UI Validate/' \"\$1/.github/workflows/terraform-pr.yml\""
 
 echo "Terraform policy search portability tests passed."
