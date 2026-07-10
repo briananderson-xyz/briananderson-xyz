@@ -35,18 +35,25 @@ occur after partial mutation, so the next fresh plan is the recovery record.
 
 Each capability has a distinct pool, provider, service account, and exact OIDC subject:
 
-| Capability      | Exact subject                                                          | Intended authority                                                               |
-| --------------- | ---------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| PR plan         | `repo:briananderson-xyz/briananderson-xyz:pull_request`                | Metadata reads and `roles/storage.objectViewer` on the exact backend bucket only |
-| Image publish   | `repo:briananderson-xyz/briananderson-xyz:ref:refs/heads/main`         | Writer on the `site-functions` repository                                        |
-| Dev deploy      | `repo:briananderson-xyz/briananderson-xyz:environment:dev`             | Dev services, bucket, runtime `actAs`, and image reads                           |
-| Prod deploy     | `repo:briananderson-xyz/briananderson-xyz:environment:prod`            | Equivalent production-only resources                                             |
-| Terraform apply | `repo:briananderson-xyz/briananderson-xyz:environment:terraform-apply` | Infrastructure administration after a reviewed merge                             |
+| Capability      | Exact subject                                                          | Intended authority                                                   |
+| --------------- | ---------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| PR plan         | `repo:briananderson-xyz/briananderson-xyz:pull_request`                | Metadata reads, state-object reads, and bucket-IAM policy reads only |
+| Image publish   | `repo:briananderson-xyz/briananderson-xyz:ref:refs/heads/main`         | Writer on the `site-functions` repository                            |
+| Dev deploy      | `repo:briananderson-xyz/briananderson-xyz:environment:dev`             | Dev services, bucket, runtime `actAs`, and image reads               |
+| Prod deploy     | `repo:briananderson-xyz/briananderson-xyz:environment:prod`            | Equivalent production-only resources                                 |
+| Terraform apply | `repo:briananderson-xyz/briananderson-xyz:environment:terraform-apply` | Infrastructure administration after a reviewed merge                 |
 
 Provider conditions also require the exact repository, event type, branch where applicable, and
 allowed owner ID. Bindings use exact `principal://.../subject/...` members; repository-wide
 `principalSet` grants are forbidden. The planner has no project-level Storage role and no mutation
 role. Publisher, dev, prod, and apply cannot impersonate one another.
+
+Terraform refreshes the IAM resources on the production site, dev site, and state buckets during a
+remote plan. The planner therefore receives a custom role containing only
+`storage.buckets.getIamPolicy`, bound separately at those three managed buckets. It has no
+`storage.buckets.setIamPolicy`, object-write, object-delete, Storage Admin, or project-level binding.
+The state bucket separately grants `roles/storage.objectViewer` so the backend can read state
+objects at the exact backend bucket only.
 
 Dev/prod may read images only from `site-functions`; publisher alone writes them. Cloud Run rollout
 uses resource-level `roles/run.developer` and preserves service IAM. A trusted administrator must

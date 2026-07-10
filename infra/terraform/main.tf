@@ -206,6 +206,35 @@ resource "google_project_iam_member" "plan_secret_viewer" {
   member  = "serviceAccount:${google_service_account.plan.email}"
 }
 
+# Terraform refreshes bucket IAM resources during planning. This custom role
+# exposes only the IAM-policy read required for that refresh; it cannot change
+# bucket IAM or read/write objects.
+resource "google_project_iam_custom_role" "plan_bucket_iam_reader" {
+  project     = var.project_id
+  role_id     = "terraformPlanBucketIamReader"
+  title       = "Terraform Plan Bucket IAM Reader"
+  description = "Read bucket IAM policies required by the Terraform planner"
+  permissions = ["storage.buckets.getIamPolicy"]
+}
+
+resource "google_storage_bucket_iam_member" "plan_site_bucket_iam_reader" {
+  bucket = google_storage_bucket.site.name
+  role   = google_project_iam_custom_role.plan_bucket_iam_reader.name
+  member = "serviceAccount:${google_service_account.plan.email}"
+}
+
+resource "google_storage_bucket_iam_member" "plan_site_dev_bucket_iam_reader" {
+  bucket = google_storage_bucket.site_dev.name
+  role   = google_project_iam_custom_role.plan_bucket_iam_reader.name
+  member = "serviceAccount:${google_service_account.plan.email}"
+}
+
+resource "google_storage_bucket_iam_member" "plan_state_bucket_iam_reader" {
+  bucket = var.terraform_state_bucket
+  role   = google_project_iam_custom_role.plan_bucket_iam_reader.name
+  member = "serviceAccount:${google_service_account.plan.email}"
+}
+
 # Remote planning can read only the configured backend bucket. This must never
 # become a project-level Storage grant or a write-capable bucket role.
 resource "google_storage_bucket_iam_member" "plan_state_reader" {

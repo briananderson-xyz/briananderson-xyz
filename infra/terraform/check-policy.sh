@@ -220,6 +220,24 @@ if awk '
   exit 1
 fi
 
+assert_plan_project_iam_binding() {
+  local resource_name="$1"
+  local expected_role="$2"
+  local block
+
+  block="$(awk -v resource_name="$resource_name" '
+    $0 == "resource \"google_project_iam_member\" \"" resource_name "\" {" { capture = 1 }
+    capture { print }
+    /^}/ && capture { exit }
+  ' "$root/infra/terraform/main.tf")"
+  contains_fixed 'project = var.project_id' <(printf '%s\n' "$block")
+  contains_fixed "role    = \"$expected_role\"" <(printf '%s\n' "$block")
+  contains_fixed 'member  = "serviceAccount:${google_service_account.plan.email}"' <(printf '%s\n' "$block")
+}
+
+assert_plan_project_iam_binding plan_viewer roles/viewer
+assert_plan_project_iam_binding plan_secret_viewer roles/secretmanager.viewer
+
 contains_fixed 'variable "terraform_state_bucket"' "$root/infra/terraform/variables.tf"
 contains_fixed 'default     = "briananderson-xyz-tf-state"' "$root/infra/terraform/variables.tf"
 state_reader_block="$(awk '
@@ -230,6 +248,93 @@ state_reader_block="$(awk '
 contains_fixed 'bucket = var.terraform_state_bucket' <(printf '%s\n' "$state_reader_block")
 contains_fixed 'role   = "roles/storage.objectViewer"' <(printf '%s\n' "$state_reader_block")
 contains_fixed 'member = "serviceAccount:${google_service_account.plan.email}"' <(printf '%s\n' "$state_reader_block")
+
+bucket_iam_role_block="$(awk '
+  /^resource "google_project_iam_custom_role" "plan_bucket_iam_reader"/ { capture = 1 }
+  capture { print }
+  /^}/ && capture { exit }
+' "$root/infra/terraform/main.tf")"
+contains_fixed 'permissions = ["storage.buckets.getIamPolicy"]' <(printf '%s\n' "$bucket_iam_role_block")
+if report_regex 'storage\.buckets\.setIamPolicy|storage\.objects\.|roles/storage\.(admin|objectAdmin)' \
+  <(printf '%s\n' "$bucket_iam_role_block"); then
+  echo "The planner bucket-IAM custom role must remain read-only and object-blind." >&2
+  exit 1
+fi
+
+assert_plan_bucket_iam_binding() {
+  local resource_name="$1"
+  local expected_bucket="$2"
+  local block
+
+  block="$(awk -v resource_name="$resource_name" '
+    $0 == "resource \"google_storage_bucket_iam_member\" \"" resource_name "\" {" { capture = 1 }
+    capture { print }
+    /^}/ && capture { exit }
+  ' "$root/infra/terraform/main.tf")"
+  contains_fixed "bucket = $expected_bucket" <(printf '%s\n' "$block")
+  contains_fixed 'role   = google_project_iam_custom_role.plan_bucket_iam_reader.name' <(printf '%s\n' "$block")
+  contains_fixed 'member = "serviceAccount:${google_service_account.plan.email}"' <(printf '%s\n' "$block")
+}
+
+assert_plan_bucket_iam_binding plan_site_bucket_iam_reader google_storage_bucket.site.name
+assert_plan_bucket_iam_binding plan_site_dev_bucket_iam_reader google_storage_bucket.site_dev.name
+assert_plan_bucket_iam_binding plan_state_bucket_iam_reader var.terraform_state_bucket
+
+if [ "$(awk '/role[[:space:]]*= google_project_iam_custom_role\.plan_bucket_iam_reader\.name/ { count++ } END { print count + 0 }' "$root/infra/terraform/main.tf")" -ne 3 ]; then
+  echo "The planner bucket-IAM role must be bound to exactly the site, dev-site, and state buckets." >&2
+  exit 1
+fi
+
+# Inventory every Terraform resource block across every .tf file that grants
+# authority to the planner. Header allowlisting prevents an additive role,
+# resource type, bucket, or second custom-role binding from bypassing the
+# named-block assertions above.
+planner_iam_inventory="$(awk '
+  function brace_delta(line, copy, opens, closes) {
+    copy = line
+    opens = gsub(/{/, "{", copy)
+    copy = line
+    closes = gsub(/}/, "}", copy)
+    return opens - closes
+  }
+  function finish_block() {
+    if (block ~ /google_service_account\.plan\.email/) {
+      print header
+    }
+    capture = 0
+    depth = 0
+    header = ""
+    block = ""
+  }
+  /^resource "/ {
+    if (capture) finish_block()
+    capture = 1
+    header = $0
+    block = $0 ORS
+    depth = brace_delta($0)
+    if (depth == 0) finish_block()
+    next
+  }
+  capture {
+    block = block $0 ORS
+    depth += brace_delta($0)
+    if (depth == 0) finish_block()
+  }
+  END {
+    if (capture) finish_block()
+  }
+' "$root/infra/terraform"/*.tf | LC_ALL=C sort)"
+expected_planner_iam_inventory='resource "google_project_iam_member" "plan_secret_viewer" {
+resource "google_project_iam_member" "plan_viewer" {
+resource "google_storage_bucket_iam_member" "plan_site_bucket_iam_reader" {
+resource "google_storage_bucket_iam_member" "plan_site_dev_bucket_iam_reader" {
+resource "google_storage_bucket_iam_member" "plan_state_bucket_iam_reader" {
+resource "google_storage_bucket_iam_member" "plan_state_reader" {'
+if [ "$planner_iam_inventory" != "$expected_planner_iam_inventory" ]; then
+  echo "Planner IAM inventory differs from the exact six-grant allowlist." >&2
+  printf 'Observed planner IAM resources:\n%s\n' "$planner_iam_inventory" >&2
+  exit 1
+fi
 
 for identity_event in \
   'plan:pull_request' \
@@ -248,6 +353,8 @@ done
 for required in \
   'create-only targeted saved plan' \
   'roles/storage.objectViewer' \
+  'storage.buckets.getIamPolicy' \
+  'three managed buckets' \
   'exact backend bucket only' \
   'Terraform state can contain secrets' \
   'sanitized evidence' \
