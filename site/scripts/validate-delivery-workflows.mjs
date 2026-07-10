@@ -36,6 +36,22 @@ expect(!automaticOn?.pull_request && !automaticOn?.schedule, "automatic workflow
 expect(Boolean(automatic.workflow.jobs?.validate), "automatic workflow must retain validation");
 expect(Boolean(automatic.workflow.jobs?.["build-functions"]), "automatic workflow must test the container without credentials");
 
+const validationEnv = automatic.workflow.jobs?.validate?.steps?.find(
+  (step) => step?.name === "Validate site"
+)?.env;
+expect(
+  validationEnv?.PUBLIC_POSTHOG_KEY === "phc_ci_validation_only",
+  "automatic validation must provide the deterministic non-secret PostHog key placeholder"
+);
+expect(
+  validationEnv?.PUBLIC_POSTHOG_HOST === "https://posthog.invalid",
+  "automatic validation must provide the deterministic non-secret PostHog host placeholder"
+);
+expect(
+  !JSON.stringify(validationEnv ?? {}).includes("secrets."),
+  "automatic validation must remain credential-free"
+);
+
 for (const jobName of ["publish-functions", "deploy-functions-dev", "deploy-site-dev"]) {
   const job = automatic.workflow.jobs?.[jobName];
   expect(Boolean(job), `automatic workflow is missing ${jobName}`);
