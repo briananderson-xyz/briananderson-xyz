@@ -29,6 +29,8 @@ jobs:
         env:
           PUBLIC_SITE_URL: https://dev.briananderson.xyz
           PUBLIC_ENV: dev
+          PUBLIC_POSTHOG_KEY: phc_ci_validation_only
+          PUBLIC_POSTHOG_HOST: https://posthog.invalid
         run: pnpm run validate
 
   build-functions:
