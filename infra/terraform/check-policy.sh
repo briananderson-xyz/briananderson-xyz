@@ -8,7 +8,158 @@ legacy_identity="github""-ci-deployer"
 legacy_writer="google_project_iam_member.ci_""artifact_writer"
 legacy_run_admin="google_project_iam_member.ci_""run_admin"
 
-if rg -n 'principalSet://.*attribute\.repository' "$root/infra/terraform"; then
+grep_fallback() {
+  local options="$1"
+  local pattern="$2"
+  shift 2
+
+  local matched=1
+  local path
+  local file
+  local file_list
+  local status
+
+  for path in "$@"; do
+    if [ -d "$path" ]; then
+      if file_list="$(mktemp)"; then
+        :
+      else
+        status=$?
+        echo "Unable to create a temporary policy search file." >&2
+        return "$status"
+      fi
+      if find "$path" -type d -name '.*' -prune -o -type f -print0 >"$file_list"; then
+        :
+      else
+        status=$?
+        rm -f "$file_list"
+        return "$status"
+      fi
+
+      while IFS= read -r -d '' file; do
+        if grep "$options" -- "$pattern" "$file"; then
+          matched=0
+        else
+          status=$?
+          if [ "$status" -gt 1 ]; then
+            rm -f "$file_list"
+            return "$status"
+          fi
+        fi
+      done <"$file_list"
+      rm -f "$file_list"
+    elif grep "$options" -- "$pattern" "$path"; then
+      matched=0
+    else
+      status=$?
+      if [ "$status" -gt 1 ]; then
+        return "$status"
+      fi
+    fi
+  done
+
+  return "$matched"
+}
+
+contains_fixed() {
+  local status
+
+  if command -v rg >/dev/null 2>&1; then
+    if rg -Fq -- "$1" "${@:2}"; then
+      return 0
+    else
+      status=$?
+    fi
+  else
+    if grep_fallback -Fq "$@"; then
+      return 0
+    else
+      status=$?
+    fi
+  fi
+
+  if [ "$status" -gt 1 ]; then
+    echo "Policy search failed while checking for required text." >&2
+    exit "$status"
+  fi
+  return "$status"
+}
+
+contains_regex() {
+  local status
+
+  if command -v rg >/dev/null 2>&1; then
+    if rg -q -- "$1" "${@:2}"; then
+      return 0
+    else
+      status=$?
+    fi
+  else
+    if grep_fallback -Eq "$@"; then
+      return 0
+    else
+      status=$?
+    fi
+  fi
+
+  if [ "$status" -gt 1 ]; then
+    echo "Policy search failed while checking for required text." >&2
+    exit "$status"
+  fi
+  return "$status"
+}
+
+report_regex() {
+  local status
+
+  if command -v rg >/dev/null 2>&1; then
+    if rg -n -- "$1" "${@:2}"; then
+      return 0
+    else
+      status=$?
+    fi
+  else
+    if grep_fallback -En "$@"; then
+      return 0
+    else
+      status=$?
+    fi
+  fi
+
+  if [ "$status" -gt 1 ]; then
+    echo "Policy search failed while checking for forbidden text." >&2
+    exit "$status"
+  fi
+  return "$status"
+}
+
+report_tf_regex() {
+  local pattern="$1"
+  local directory="$2"
+  local status
+
+  if command -v rg >/dev/null 2>&1; then
+    if rg -n --glob '*.tf' -- "$pattern" "$directory"; then
+      return 0
+    else
+      status=$?
+    fi
+  else
+    if grep_fallback -En "$pattern" "$directory"/*.tf; then
+      return 0
+    else
+      status=$?
+    fi
+  fi
+
+  if [ "$status" -gt 1 ]; then
+    echo "Policy search failed while checking Terraform files." >&2
+    exit "$status"
+  fi
+  return "$status"
+}
+
+if report_regex 'principalSet://.*attribute\.repository' "$root/infra/terraform"; then
   echo "Repository-wide WIF principalSet bindings are forbidden." >&2
   exit 1
 fi
@@ -19,18 +170,18 @@ for subject in \
   'repo:${var.github_org}/${var.github_repo}:environment:dev' \
   'repo:${var.github_org}/${var.github_repo}:environment:prod' \
   'repo:${var.github_org}/${var.github_repo}:environment:terraform-apply'; do
-  rg -Fq "$subject" "$root/infra/terraform/main.tf"
+  contains_fixed "$subject" "$root/infra/terraform/main.tf"
 done
 
 for identity in plan publisher dev prod apply; do
-  rg -Fq "resource \"google_iam_workload_identity_pool\" \"${identity}\"" "$root/infra/terraform/main.tf"
-  rg -Fq "resource \"google_iam_workload_identity_pool_provider\" \"${identity}\"" "$root/infra/terraform/main.tf"
-  rg -Fq "resource \"google_service_account_iam_member\" \"wif_${identity}\"" "$root/infra/terraform/main.tf"
-  rg -q "attribute_condition.*local\\.wif_subjects\\.${identity}" "$root/infra/terraform/main.tf"
-  rg -q "member.*google_iam_workload_identity_pool\\.${identity}\\.name.*local\\.wif_subjects\\.${identity}" "$root/infra/terraform/main.tf"
+  contains_fixed "resource \"google_iam_workload_identity_pool\" \"${identity}\"" "$root/infra/terraform/main.tf"
+  contains_fixed "resource \"google_iam_workload_identity_pool_provider\" \"${identity}\"" "$root/infra/terraform/main.tf"
+  contains_fixed "resource \"google_service_account_iam_member\" \"wif_${identity}\"" "$root/infra/terraform/main.tf"
+  contains_regex "attribute_condition.*local\\.wif_subjects\\.${identity}" "$root/infra/terraform/main.tf"
+  contains_regex "member.*google_iam_workload_identity_pool\\.${identity}\\.name.*local\\.wif_subjects\\.${identity}" "$root/infra/terraform/main.tf"
 done
 
-if rg -n 'github_ci' "$root/infra/terraform" --glob '*.tf'; then
+if report_tf_regex 'github_ci' "$root/infra/terraform"; then
   echo "The legacy shared CI identity is forbidden." >&2
   exit 1
 fi
@@ -40,18 +191,18 @@ if [ -e "$root/infra/terraform/$legacy_import" ]; then
   exit 1
 fi
 
-if rg -n "${legacy_identity}|${legacy_writer}|${legacy_run_admin}" \
+if report_regex "${legacy_identity}|${legacy_writer}|${legacy_run_admin}" \
   "$root/infra/terraform/README.md" "$root/infra/terraform"/*.tf; then
   echo "Active infrastructure guidance contains a retired CI identity or resource address." >&2
   exit 1
 fi
 
-if rg -n 'run .?terraform apply|terraform apply[[:space:]]+-auto-approve' \
+if report_regex 'run .?terraform apply|terraform apply[[:space:]]+-auto-approve' \
   "$root/infra/terraform/README.md"; then
   echo "Bootstrap guidance cannot recommend an unreviewed direct apply." >&2
   exit 1
 fi
-rg -Fq 'apply that exact reviewed plan' "$root/infra/terraform/README.md"
+contains_fixed 'apply that exact reviewed plan' "$root/infra/terraform/README.md"
 
 if awk '
   /^resource "google_project_iam_(member|binding)"/ { capture = 1; block = $0 ORS; next }
@@ -77,13 +228,13 @@ for required in \
   'Terraform state can' \
   'contain secrets' \
   'externally `NOT_VERIFIED`'; do
-  rg -Fq "$required" "$root/infra/terraform/README.md"
+  contains_fixed "$required" "$root/infra/terraform/README.md"
 done
 
 # Project-wide Cloud Run administration is reserved for the manual Terraform
 # applier. Automatic publisher/dev/prod identities receive only narrow grants.
-rg -Fq '"roles/run.admin"' "$root/infra/terraform/main.tf"
-if rg -n 'roles/run\.admin' "$root/infra/terraform/cloud-run.tf"; then
+contains_fixed '"roles/run.admin"' "$root/infra/terraform/main.tf"
+if report_regex 'roles/run\.admin' "$root/infra/terraform/cloud-run.tf"; then
   echo "Application delivery identities cannot receive project-wide Cloud Run admin." >&2
   exit 1
 fi
@@ -101,9 +252,9 @@ artifact_reader_block() {
 
 for identity in dev prod; do
   block="$(artifact_reader_block "$identity")"
-  printf '%s\n' "$block" | rg -Fq 'repository = google_artifact_registry_repository.functions.repository_id'
-  printf '%s\n' "$block" | rg -Fq 'role       = "roles/artifactregistry.reader"'
-  printf '%s\n' "$block" | rg -Fq "member     = \"serviceAccount:\${google_service_account.${identity}.email}\""
+  contains_fixed 'repository = google_artifact_registry_repository.functions.repository_id' <(printf '%s\n' "$block")
+  contains_fixed 'role       = "roles/artifactregistry.reader"' <(printf '%s\n' "$block")
+  contains_fixed "member     = \"serviceAccount:\${google_service_account.${identity}.email}\"" <(printf '%s\n' "$block")
 done
 
 if awk '
@@ -127,35 +278,35 @@ if awk '
   exit 1
 fi
 
-if rg -n -- '--allow-unauthenticated' \
+if report_regex '--allow-unauthenticated' \
   "$workflows/build-and-deploy.yml" "$workflows/deploy-production.yml"; then
   echo "Developer-only deployers cannot mutate public Cloud Run invoker IAM." >&2
   exit 1
 fi
 
-rg -Fq 'roles/run.invoker' "$root/infra/terraform/README.md"
-rg -Fq 'separately grant' "$root/infra/terraform/README.md"
+contains_fixed 'roles/run.invoker' "$root/infra/terraform/README.md"
+contains_fixed 'separately grant' "$root/infra/terraform/README.md"
 
-if rg -n 'GCP_WIF_PROVIDER|GCP_WIF_SA_EMAIL' "$workflows"; then
+if report_regex 'GCP_WIF_PROVIDER|GCP_WIF_SA_EMAIL' "$workflows"; then
   echo "Automatic workflows cannot fall back to the legacy shared GCP identity." >&2
   exit 1
 fi
 
-if rg -n '^    environment: publisher$' "$workflows/build-and-deploy.yml"; then
+if report_regex '^    environment: publisher$' "$workflows/build-and-deploy.yml"; then
   echo "The publisher must retain the exact main-ref OIDC subject, not an environment subject." >&2
   exit 1
 fi
 
-rg -q '^    environment: dev$' "$workflows/build-and-deploy.yml"
-rg -q '^    environment: prod$' "$workflows/deploy-production.yml"
-rg -q '^    environment: terraform-apply$' "$workflows/terraform-apply.yml"
+contains_regex '^    environment: dev$' "$workflows/build-and-deploy.yml"
+contains_regex '^    environment: prod$' "$workflows/deploy-production.yml"
+contains_regex '^    environment: terraform-apply$' "$workflows/terraform-apply.yml"
 
-if rg -n '^[[:space:]]+(push|pull_request|schedule):' "$workflows/terraform-apply.yml"; then
+if report_regex '^[[:space:]]+(push|pull_request|schedule):' "$workflows/terraform-apply.yml"; then
   echo "Terraform apply must remain workflow_dispatch-only." >&2
   exit 1
 fi
 
-if rg -n 'id-token|google-github-actions/auth|secrets\.' "$workflows/terraform-pr.yml"; then
+if report_regex 'id-token|google-github-actions/auth|secrets\.' "$workflows/terraform-pr.yml"; then
   echo "Required Terraform PR validation must remain credential-free." >&2
   exit 1
 fi

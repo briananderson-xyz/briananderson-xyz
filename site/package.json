@@ -37,7 +37,7 @@
     "test:content": "tsx scripts/validate-content.ts && vitest run src/lib/schemas/content.test.ts src/lib/schemas/resume.test.ts",
     "test:workflow-policy": "node scripts/validate-workflow-policy.mjs",
     "test:delivery-policy": "node scripts/validate-delivery-workflows.mjs",
-    "test:infra-policy": "bash ../infra/terraform/check-policy.sh",
+    "test:infra-policy": "bash ../infra/terraform/test-check-policy.sh",
     "test:security-policy": "node scripts/validate-security-policy.mjs",
     "test:theme": "node scripts/validate-theme-tokens.mjs",
     "test:api": "node scripts/validate-api-endpoints.js",
