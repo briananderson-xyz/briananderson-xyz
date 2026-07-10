@@ -1,131 +1,132 @@
 # GCP infrastructure and GitHub trust
 
-This Terraform configuration manages the static-site buckets, API image repository, runtime
-service accounts and secrets, and the GitHub workload identity boundary.
+This directory manages the static-site buckets, API repository, runtime identities and secrets, and
+the GitHub workload identity boundary. Terraform state can contain secrets; never publish state,
+raw plan JSON, saved binary plans, outputs, or before/after values.
 
-## Release safety
+## Delivery contract
 
-- Pull requests run `fmt`, backend-disabled `init`, `validate`, and static policy checks without a
-  Google credential, repository secret, remote backend, saved plan, or write permission.
-- Merging Terraform changes does not run Terraform apply. The apply workflow is manual-only,
-  requires the exact current `main` SHA plus `APPLY_TERRAFORM`, and uses the protected
-  `terraform-apply` environment.
-- Apply creates and consumes one saved plan in one job. An `always()` step deletes the binary and
-  no workflow uploads it.
-- This source change does not modify live IAM. Remote planning and application deployment stay
-  disabled until a trusted administrator completes and verifies the bootstrap below.
+A reviewed pull request is the Terraform production gate:
+
+1. Every PR to `main` runs the stable `Terraform Gate`. Credential-free format, backend-disabled
+   initialization, validation, and policy tests always run, even when Terraform did not change.
+2. A same-repository PR that changes Terraform or its trust workflows also authenticates as the
+   read-only planner, reads the exact backend bucket with `-lock=false`, and creates a local plan.
+   Forked Terraform changes fail closed.
+3. PR evidence is a sanitized evidence manifest containing only the exact source SHA, backend
+   prefix, add/change/destroy counts, resource addresses, and action arrays. The job updates one bot
+   comment and its summary, then deletes the plan, raw JSON, and text files. Nothing is uploaded.
+4. Merging the reviewed PR to protected `main` automatically starts one non-cancelling,
+   backend-serialized apply job. It verifies that `GITHUB_SHA` is the current `origin/main`, creates
+   a fresh locked saved plan against current state, and applies that exact local file in the same
+   job. There is no dispatch input, confirmation string, downloaded PR plan, or second approval.
+5. Production application deployment remains a separate manual-only workflow. Terraform delivery
+   never dispatches it.
+
+The authenticated PR plan executes code from the branch with read access to sensitive state. This
+design assumes same-repository branches are controlled by the trusted owner. If write access is
+expanded, add a protected planning approval boundary before allowing those contributors to plan.
+
+If automatic apply fails, do not rerun blindly. Inspect state and live IAM, confirm the backend is
+unlocked, and submit a reviewed corrective or revert PR through this same path. A provider error can
+occur after partial mutation, so the next fresh plan is the recovery record.
 
 ## Trust domains
 
-Each capability has a separate pool, provider, service account, and exact GitHub OIDC subject:
+Each capability has a distinct pool, provider, service account, and exact OIDC subject:
 
-| Capability | Required subject | Maximum intended authority |
-| --- | --- | --- |
-| Review plan | `repo:briananderson-xyz/briananderson-xyz:pull_request` | Resource metadata reads; optional exact state-bucket object reads |
-| Image publish | `repo:briananderson-xyz/briananderson-xyz:ref:refs/heads/main` | Artifact Registry writer on `site-functions` |
-| Dev deploy | `repo:briananderson-xyz/briananderson-xyz:environment:dev` | Dev bucket objects, dev services, dev runtime `actAs`, `site-functions` image reads |
-| Prod deploy | `repo:briananderson-xyz/briananderson-xyz:environment:prod` | Prod bucket objects, prod services, prod runtime `actAs`, `site-functions` image reads |
-| Terraform apply | `repo:briananderson-xyz/briananderson-xyz:environment:terraform-apply` | Infrastructure administration |
+| Capability      | Exact subject                                                          | Intended authority                                                   |
+| --------------- | ---------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| PR plan         | `repo:briananderson-xyz/briananderson-xyz:pull_request`                | Metadata reads, state-object reads, and bucket-IAM policy reads only |
+| Image publish   | `repo:briananderson-xyz/briananderson-xyz:ref:refs/heads/main`         | Writer on the `site-functions` repository                            |
+| Dev deploy      | `repo:briananderson-xyz/briananderson-xyz:environment:dev`             | Dev services, bucket, runtime `actAs`, and image reads               |
+| Prod deploy     | `repo:briananderson-xyz/briananderson-xyz:environment:prod`            | Equivalent production-only resources                                 |
+| Terraform apply | `repo:briananderson-xyz/briananderson-xyz:environment:terraform-apply` | Infrastructure administration after a reviewed merge                 |
 
-Bindings use `principal://.../subject/...`, never a repository or pool-wide `principalSet`. The
-publisher cannot deploy; dev cannot act as the production runtime or update production storage;
-and no automatic workflow subject can impersonate the production deployer or Terraform applier.
-Dev and prod can read images only from the `site-functions` Artifact Registry repository; neither
-identity can publish images or receives a project-wide Artifact Registry role.
-Cloud Run deployer IAM is resource-level and source-disabled by default. Set
-`manage_deployment_service_iam=true` only after verifying that every configured service exists and
-reviewing the authenticated state-backed plan.
+Provider conditions also require the exact repository, event type, branch where applicable, and
+allowed owner ID. Bindings use exact `principal://.../subject/...` members; repository-wide
+`principalSet` grants are forbidden. The planner has no project-level Storage role and no mutation
+role. Publisher, dev, prod, and apply cannot impersonate one another.
 
-Routine Cloud Run image rollouts use `roles/run.developer` and preserve each service's existing IAM
-policy. They do not create or repair public access. A trusted administrator must separately grant
-`allUsers` the `roles/run.invoker` role on each intended public service as an explicitly reviewed
-service-IAM/bootstrap operation. Existing public invoker IAM and live service reachability remain
-externally `NOT_VERIFIED`; never add IAM-mutating deploy flags as a shortcut.
+Terraform refreshes the IAM resources on the production site, dev site, and state buckets during a
+remote plan. The planner therefore receives a custom role containing only
+`storage.buckets.getIamPolicy`, bound separately at those three managed buckets. It has no
+`storage.buckets.setIamPolicy`, object-write, object-delete, Storage Admin, or project-level binding.
+The state bucket separately grants `roles/storage.objectViewer` so the backend can read state
+objects at the exact backend bucket only.
 
-## Credential-free local validation
+Dev/prod may read images only from `site-functions`; publisher alone writes them. Cloud Run rollout
+uses resource-level `roles/run.developer` and preserves service IAM. A trusted administrator must
+separately grant `allUsers` `roles/run.invoker` for an intended public service. Both PR and apply
+pass `manage_deployment_service_iam=true` so they plan with identical, verified service-IAM inputs.
 
-This is the same class of check used on pull requests and does not contact the configured backend:
+## Credential-free validation
+
+Run from this directory:
 
 ```bash
+set -euo pipefail
 terraform fmt -check -recursive
-TF_DATA_DIR="$(mktemp -d)" terraform init -backend=false -lockfile=readonly
-TF_DATA_DIR="$(mktemp -d)" terraform validate -no-color
+TF_DATA_DIR="$(mktemp -d)"
+export TF_DATA_DIR
+trap 'rm -rf "$TF_DATA_DIR"' EXIT
+terraform init -backend=false -lockfile=readonly
+terraform validate -no-color
 ./check-policy.sh
+./test-check-policy.sh
 ```
 
-Run those commands from this directory. Provider installation may contact the Terraform Registry;
-it does not authenticate to GCP or inspect live state.
+Provider installation may contact the Terraform Registry but does not inspect GCP state.
 
-## Trusted-administrator bootstrap
+## One-time bootstrap
 
-Bootstrap is a separately approved infrastructure operation. Do not perform it as part of an
-application delivery or merely because these source files changed.
+The initial creation of the separated identities is the unavoidable local trust root because the
+new apply identity cannot create itself. Perform this once as a named administrator from reviewed
+source; it is not routine delivery authorization.
 
-1. Authenticate locally as a named administrator through the organization's approved GCP path.
-2. Confirm the active project and account. Initialize the real backend with the expected bucket and
-   `gcp/infra` prefix.
-3. Inspect current state and import any already-existing identity resources needed to prevent
-   replacement surprises. There is intentionally no generic import helper: derive every address and
-   provider ID from the reviewed current inventory. Review the migration away from the retired
-   shared pool and deployer.
-4. Create a saved, narrow trust-boundary plan using explicit values for project, region, repository,
-   and buckets. Do not use a GitHub workflow or an identity being created by that plan.
-5. Inspect the full state-backed plan. Confirm five distinct pools/providers/accounts, exact-subject
-   bindings, deletion of shared CI grants, resource-level deploy grants, and no unrelated change.
-6. Only after separate human approval, the administrator may apply that exact reviewed plan. This
-   repository change neither performs nor authorizes that apply.
-7. Populate environment/repository credentials from Terraform outputs:
-   - publisher: `GCP_WIF_PUBLISHER_PROVIDER`, `GCP_WIF_PUBLISHER_SA_EMAIL`
-   - dev: `GCP_WIF_DEV_PROVIDER`, `GCP_WIF_DEV_SA_EMAIL`
-   - prod: `GCP_WIF_PROD_PROVIDER`, `GCP_WIF_PROD_SA_EMAIL`
-   - apply environment: `GCP_WIF_APPLY_PROVIDER`, `GCP_WIF_APPLY_SA_EMAIL`
-   - optional review planning: `GCP_WIF_PLAN_PROVIDER`, `GCP_WIF_PLAN_SA_EMAIL`
-8. Protect `dev`, `prod`, and `terraform-apply` environments as appropriate. Keep production and
-   apply manual-only. Do not configure legacy `GCP_WIF_PROVIDER` / `GCP_WIF_SA_EMAIL` fallbacks.
-9. From representative PR, main, and dev OIDC subjects, verify impersonation of the production and
-   apply service accounts is denied. Verify the publisher cannot deploy and dev cannot mutate the
-   production bucket or act as the production runtime.
-10. Verify a dev-only deployment against the named dev services, then set the repository variable
-    `DEV_DEPLOY_ENABLED=true`. Until that proof exists, automatic cloud jobs must skip safely.
+1. Confirm the authenticated account, project `briananderson-xyz-468620`, state bucket
+   `briananderson-xyz-tf-state`, prefix `gcp/infra`, current `main`, and live resource inventory.
+   Keep a local state backup and all saved plans in a mode-`0700` directory outside the repository.
+2. Initialize the real backend and create a normal full saved plan with explicit project, region,
+   bucket, repository, state bucket, and `manage_deployment_service_iam=true` values.
+3. From its JSON, mechanically select only addresses whose action is exactly `create`. Generate a
+   second create-only targeted saved plan from those addresses. Abort unless it has zero update,
+   delete, replace, service-image, data, bucket, secret, or unrelated application actions.
+4. Review and apply that exact reviewed plan locally. This targeted bootstrap is the only exception;
+   routine plans must never use `-target`.
+5. After IAM propagation, run a complete non-applying plan. It may show only the separately reviewed
+   legacy identity/grant removals. Do not remove legacy access until the new PR plan and main apply
+   identities authenticate successfully.
 
-### Optional read-only remote planning
+Before the cleanup merge, rollback means removing the new GitHub settings while retaining legacy
+access. After cleanup, rollback is a reviewed revert PR; never recreate a broad shared identity ad
+hoc.
 
-Credential-free pull-request `fmt`, backend-disabled `init`, `validate`, and policy checks are the
-required merge checks. Authenticated remote planning is optional and manual. Terraform state can
-contain secrets, so the plan service account receives no project-level storage role in this
-configuration.
+## GitHub settings and activation order
 
-If remote planning is needed, use this separate **external bootstrap**:
+Populate values from Terraform outputs without printing them:
 
-1. A trusted administrator selects the exact existing GCS state bucket after confirming its project,
-   name, and backend prefix.
-2. At that bucket only, grant the plan service account `roles/storage.objectViewer`. Do not grant a
-   project-level storage role or access to any other bucket.
-3. Keep remote `terraform plan` read-only and use `-lock=false`; never apply from the planning
-   identity and never upload the resulting plan file as an artifact.
-4. Verify the plan service account can read the required state object but cannot list or read an
-   unrelated bucket and cannot create, replace, or delete state objects.
-5. Record the bucket-level IAM binding and those negative checks as provider evidence before enabling
-   a manual remote-plan workflow.
+- Repository secrets: `GCP_WIF_PLAN_PROVIDER`, `GCP_WIF_PLAN_SA_EMAIL`,
+  `GCP_WIF_PUBLISHER_PROVIDER`, `GCP_WIF_PUBLISHER_SA_EMAIL`, and `TF_STATE_BUCKET` for planning.
+- Repository variables: `GCP_PROJECT_ID`, `GCP_REGION`, and `SITE_BUCKET_NAME`.
+- `dev` secrets: `GCP_WIF_DEV_PROVIDER`, `GCP_WIF_DEV_SA_EMAIL`, and existing dev-only application
+  values. Restrict deployment branches to `main`.
+- `terraform-apply` secrets: `GCP_WIF_APPLY_PROVIDER`, `GCP_WIF_APPLY_SA_EMAIL`, and
+  `TF_STATE_BUCKET`. Restrict deployment branches to `main` and configure no reviewer gate.
+- `prod` secrets: `GCP_WIF_PROD_PROVIDER` and `GCP_WIF_PROD_SA_EMAIL`. Keep the environment and
+  application deployment workflow manual/protected.
 
-The exact state bucket, its object grant, remote state contents, and negative permission checks are
-externally `NOT_VERIFIED` until that evidence is recorded.
+Do not configure legacy `GCP_WIF_PROVIDER` or `GCP_WIF_SA_EMAIL` fallbacks. Install branch
+protection only after observing the exact successful `Terraform Gate` context: require PRs,
+up-to-date checks, conversation resolution, and disallow force pushes/deletion.
 
-The authenticated plan, live IAM bindings, environment protections, secret placement, negative
-impersonation tests, and actual dev deployment remain externally `NOT_VERIFIED` by source checks.
+Keep `DEV_DEPLOY_ENABLED` absent or false until planner/apply/publisher/dev authentication, negative
+cross-identity probes, dev DNS/origin routing, rollback digests, and public invoker policy are all
+verified. Then set it to `true` immediately before one controlled `main` proof. On failure, set it
+false and use the recorded prior digest/static build rollback. Production must remain untouched.
 
-## Provider decision
+## Provider baseline
 
-The reviewed baseline is Terraform `1.15.x` and `hashicorp/google` `5.45.2`. The lockfile records
-that exact provider. A Google provider 7 migration is deferred to a dedicated, authenticated
-infrastructure change because a provider-major upgrade requires remote-state schema review and a
-separately approved plan. Do not combine it with application delivery or run `init -upgrade`
-casually.
-
-## Manual apply mechanics
-
-The `Terraform Apply (manual)` workflow accepts only the 40-character SHA currently at the tip of
-`main` and the exact confirmation `APPLY_TERRAFORM`. The protected environment supplies backend,
-project, region, bucket, and apply-only WIF configuration. The job checks out that SHA, proves it is
-the current remote main tip, plans it, applies the same local binary, and deletes the binary even on
-failure. It never consumes PR output or an artifact from another run.
+Terraform is `1.15.x`; `hashicorp/google` is locked to `5.45.2`. A provider-major upgrade requires a
+separate authenticated state/schema review and PR. Never combine it with bootstrap or run
+`init -upgrade` casually.

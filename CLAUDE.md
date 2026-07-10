@@ -84,10 +84,12 @@ See [`docs/architecture/ai-features.md`](docs/architecture/ai-features.md).
 
 - Pin third-party GitHub Actions to full commit SHAs with readable version comments.
 - Use supported Node versions and least job permissions; keep policy validation blocking.
-- PR Terraform plans are review evidence only and are never apply input.
-- Main checks out exact `GITHUB_SHA`, creates a saved plan, and applies that same file.
+- Every PR runs credential-free Terraform validation; same-repository trust changes add a sanitized,
+  read-only remote plan. A protected `main` merge is the sole apply authorization.
+- Main verifies exact `GITHUB_SHA`, creates a fresh locked plan, and applies that same local file.
 - Terraform planning, apply, and application deployment use distinct WIF identities.
-- Apply runs behind the protected `production` GitHub environment.
+- Apply uses the main-only `terraform-apply` environment for scoped credentials, without a second
+  reviewer gate; production application deployment remains manual.
 - The API image is multi-stage, production-only, digest-pinned, and non-root.
 - Provider settings and production activation require external verification.
 

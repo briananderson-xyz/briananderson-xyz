@@ -7,6 +7,7 @@ standard_path="/usr/bin:/bin"
 
 # Exercise the preferred search implementation when ripgrep is installed.
 "$policy"
+"$root/infra/terraform/test-sanitize-plan-evidence.sh"
 
 # GitHub's Ubuntu runner does not guarantee ripgrep, so exercise the grep fallback too.
 PATH="$standard_path" "$policy"
@@ -30,4 +31,46 @@ if [ "$status" -ne 73 ]; then
 fi
 
 grep -Fq 'Policy search failed while checking for forbidden text.' "$test_dir/stderr"
+
+expect_policy_failure() {
+  local label="$1"
+  local mutation="$2"
+  local fixture="$test_dir/$label"
+
+  mkdir -p "$fixture/infra" "$fixture/.github"
+  cp -R "$root/infra/terraform" "$fixture/infra/terraform"
+  cp -R "$root/.github/workflows" "$fixture/.github/workflows"
+  sh -c "$mutation" sh "$fixture"
+
+  set +e
+  "$fixture/infra/terraform/check-policy.sh" >"$fixture/stdout" 2>"$fixture/stderr"
+  local status=$?
+  set -e
+  if [ "$status" -eq 0 ]; then
+    echo "Expected policy-negative fixture '$label' to fail closed." >&2
+    exit 1
+  fi
+}
+
+expect_policy_failure state-write-role \
+  "sed -i.bak 's/role   = \"roles\/storage.objectViewer\"/role   = \"roles\/storage.objectAdmin\"/' \"\$1/infra/terraform/main.tf\""
+expect_policy_failure bucket-iam-write-permission \
+  "sed -i.bak 's/storage.buckets.getIamPolicy/storage.buckets.setIamPolicy/' \"\$1/infra/terraform/main.tf\""
+expect_policy_failure additive-object-admin-binding \
+  "printf '\nresource \"google_storage_bucket_iam_member\" \"rogue_plan_object_admin\" {\n  bucket = google_storage_bucket.site.name\n  role = \"roles/storage.objectAdmin\"\n  member = \"serviceAccount:\${google_service_account.plan.email}\"\n}\n' >> \"\$1/infra/terraform/cloud-run.tf\""
+expect_policy_failure additive-custom-iam-writer \
+  "printf '\nresource \"google_project_iam_custom_role\" \"rogue_plan_iam_writer\" {\n  project = var.project_id\n  role_id = \"roguePlanIamWriter\"\n  title = \"Rogue planner IAM writer\"\n  permissions = [\"storage.buckets.setIamPolicy\"]\n}\nresource \"google_storage_bucket_iam_member\" \"rogue_plan_iam_writer\" {\n  bucket = google_storage_bucket.site.name\n  role = google_project_iam_custom_role.rogue_plan_iam_writer.name\n  member = \"serviceAccount:\${google_service_account.plan.email}\"\n}\n' >> \"\$1/infra/terraform/services.tf\""
+expect_policy_failure project-storage-role \
+  "printf '\nresource \"google_project_iam_member\" \"bad_plan_storage\" {\n  project = var.project_id\n  role = \"roles/storage.objectViewer\"\n  member = \"serviceAccount:\${google_service_account.plan.email}\"\n}\n' >> \"\$1/infra/terraform/main.tf\""
+expect_policy_failure repository-wide-pr-plan \
+  "sed -i.bak 's/ && needs.changes.outputs.same_repository == '\"'\"'true'\"'\"'//' \"\$1/.github/workflows/terraform-pr.yml\""
+expect_policy_failure plan-artifact-upload \
+  "printf '\n# actions/upload-artifact@forbidden\n' >> \"\$1/.github/workflows/terraform-pr.yml\""
+expect_policy_failure manual-apply-gate \
+  "sed -i.bak 's/^  push:/  workflow_dispatch:/' \"\$1/.github/workflows/terraform-apply.yml\""
+expect_policy_failure cancelling-apply \
+  "sed -i.bak 's/cancel-in-progress: false/cancel-in-progress: true/' \"\$1/.github/workflows/terraform-apply.yml\""
+expect_policy_failure implicit-service-iam \
+  "sed -i.bak 's/manage_deployment_service_iam=true/manage_deployment_service_iam=false/g' \"\$1/.github/workflows/terraform-pr.yml\""
+
 echo "Terraform policy search portability tests passed."

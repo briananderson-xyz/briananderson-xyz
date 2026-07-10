@@ -197,8 +197,7 @@ if report_regex "${legacy_identity}|${legacy_writer}|${legacy_run_admin}" \
   exit 1
 fi
 
-if report_regex 'run .?terraform apply|terraform apply[[:space:]]+-auto-approve' \
-  "$root/infra/terraform/README.md"; then
+if report_regex 'terraform apply[[:space:]]+-auto-approve' "$root/infra/terraform/README.md"; then
   echo "Bootstrap guidance cannot recommend an unreviewed direct apply." >&2
   exit 1
 fi
@@ -221,13 +220,145 @@ if awk '
   exit 1
 fi
 
+assert_plan_project_iam_binding() {
+  local resource_name="$1"
+  local expected_role="$2"
+  local block
+
+  block="$(awk -v resource_name="$resource_name" '
+    $0 == "resource \"google_project_iam_member\" \"" resource_name "\" {" { capture = 1 }
+    capture { print }
+    /^}/ && capture { exit }
+  ' "$root/infra/terraform/main.tf")"
+  contains_fixed 'project = var.project_id' <(printf '%s\n' "$block")
+  contains_fixed "role    = \"$expected_role\"" <(printf '%s\n' "$block")
+  contains_fixed 'member  = "serviceAccount:${google_service_account.plan.email}"' <(printf '%s\n' "$block")
+}
+
+assert_plan_project_iam_binding plan_viewer roles/viewer
+assert_plan_project_iam_binding plan_secret_viewer roles/secretmanager.viewer
+
+contains_fixed 'variable "terraform_state_bucket"' "$root/infra/terraform/variables.tf"
+contains_fixed 'default     = "briananderson-xyz-tf-state"' "$root/infra/terraform/variables.tf"
+state_reader_block="$(awk '
+  /^resource "google_storage_bucket_iam_member" "plan_state_reader"/ { capture = 1 }
+  capture { print }
+  /^}/ && capture { exit }
+' "$root/infra/terraform/main.tf")"
+contains_fixed 'bucket = var.terraform_state_bucket' <(printf '%s\n' "$state_reader_block")
+contains_fixed 'role   = "roles/storage.objectViewer"' <(printf '%s\n' "$state_reader_block")
+contains_fixed 'member = "serviceAccount:${google_service_account.plan.email}"' <(printf '%s\n' "$state_reader_block")
+
+bucket_iam_role_block="$(awk '
+  /^resource "google_project_iam_custom_role" "plan_bucket_iam_reader"/ { capture = 1 }
+  capture { print }
+  /^}/ && capture { exit }
+' "$root/infra/terraform/main.tf")"
+contains_fixed 'permissions = ["storage.buckets.getIamPolicy"]' <(printf '%s\n' "$bucket_iam_role_block")
+if report_regex 'storage\.buckets\.setIamPolicy|storage\.objects\.|roles/storage\.(admin|objectAdmin)' \
+  <(printf '%s\n' "$bucket_iam_role_block"); then
+  echo "The planner bucket-IAM custom role must remain read-only and object-blind." >&2
+  exit 1
+fi
+
+assert_plan_bucket_iam_binding() {
+  local resource_name="$1"
+  local expected_bucket="$2"
+  local block
+
+  block="$(awk -v resource_name="$resource_name" '
+    $0 == "resource \"google_storage_bucket_iam_member\" \"" resource_name "\" {" { capture = 1 }
+    capture { print }
+    /^}/ && capture { exit }
+  ' "$root/infra/terraform/main.tf")"
+  contains_fixed "bucket = $expected_bucket" <(printf '%s\n' "$block")
+  contains_fixed 'role   = google_project_iam_custom_role.plan_bucket_iam_reader.name' <(printf '%s\n' "$block")
+  contains_fixed 'member = "serviceAccount:${google_service_account.plan.email}"' <(printf '%s\n' "$block")
+}
+
+assert_plan_bucket_iam_binding plan_site_bucket_iam_reader google_storage_bucket.site.name
+assert_plan_bucket_iam_binding plan_site_dev_bucket_iam_reader google_storage_bucket.site_dev.name
+assert_plan_bucket_iam_binding plan_state_bucket_iam_reader var.terraform_state_bucket
+
+if [ "$(awk '/role[[:space:]]*= google_project_iam_custom_role\.plan_bucket_iam_reader\.name/ { count++ } END { print count + 0 }' "$root/infra/terraform/main.tf")" -ne 3 ]; then
+  echo "The planner bucket-IAM role must be bound to exactly the site, dev-site, and state buckets." >&2
+  exit 1
+fi
+
+# Inventory every Terraform resource block across every .tf file that grants
+# authority to the planner. Header allowlisting prevents an additive role,
+# resource type, bucket, or second custom-role binding from bypassing the
+# named-block assertions above.
+planner_iam_inventory="$(awk '
+  function brace_delta(line, copy, opens, closes) {
+    copy = line
+    opens = gsub(/{/, "{", copy)
+    copy = line
+    closes = gsub(/}/, "}", copy)
+    return opens - closes
+  }
+  function finish_block() {
+    if (block ~ /google_service_account\.plan\.email/) {
+      print header
+    }
+    capture = 0
+    depth = 0
+    header = ""
+    block = ""
+  }
+  /^resource "/ {
+    if (capture) finish_block()
+    capture = 1
+    header = $0
+    block = $0 ORS
+    depth = brace_delta($0)
+    if (depth == 0) finish_block()
+    next
+  }
+  capture {
+    block = block $0 ORS
+    depth += brace_delta($0)
+    if (depth == 0) finish_block()
+  }
+  END {
+    if (capture) finish_block()
+  }
+' "$root/infra/terraform"/*.tf | LC_ALL=C sort)"
+expected_planner_iam_inventory='resource "google_project_iam_member" "plan_secret_viewer" {
+resource "google_project_iam_member" "plan_viewer" {
+resource "google_storage_bucket_iam_member" "plan_site_bucket_iam_reader" {
+resource "google_storage_bucket_iam_member" "plan_site_dev_bucket_iam_reader" {
+resource "google_storage_bucket_iam_member" "plan_state_bucket_iam_reader" {
+resource "google_storage_bucket_iam_member" "plan_state_reader" {'
+if [ "$planner_iam_inventory" != "$expected_planner_iam_inventory" ]; then
+  echo "Planner IAM inventory differs from the exact six-grant allowlist." >&2
+  printf 'Observed planner IAM resources:\n%s\n' "$planner_iam_inventory" >&2
+  exit 1
+fi
+
+for identity_event in \
+  'plan:pull_request' \
+  'publisher:push' \
+  'dev:push' \
+  'prod:workflow_dispatch' \
+  'apply:push'; do
+  identity="${identity_event%%:*}"
+  event="${identity_event#*:}"
+  contains_regex "attribute_condition.*local\\.wif_subjects\\.${identity}.*assertion\\.repository ==.*assertion\\.event_name == '${event}'" "$root/infra/terraform/main.tf"
+done
+for identity in publisher dev prod apply; do
+  contains_regex "attribute_condition.*local\\.wif_subjects\\.${identity}.*assertion\\.ref == 'refs/heads/" "$root/infra/terraform/main.tf"
+done
+
 for required in \
-  'external bootstrap' \
+  'create-only targeted saved plan' \
   'roles/storage.objectViewer' \
-  'At that bucket only' \
-  'Terraform state can' \
-  'contain secrets' \
-  'externally `NOT_VERIFIED`'; do
+  'storage.buckets.getIamPolicy' \
+  'three managed buckets' \
+  'exact backend bucket only' \
+  'Terraform state can contain secrets' \
+  'sanitized evidence' \
+  'automatic apply'; do
   contains_fixed "$required" "$root/infra/terraform/README.md"
 done
 
@@ -301,13 +432,75 @@ contains_regex '^    environment: dev$' "$workflows/build-and-deploy.yml"
 contains_regex '^    environment: prod$' "$workflows/deploy-production.yml"
 contains_regex '^    environment: terraform-apply$' "$workflows/terraform-apply.yml"
 
-if report_regex '^[[:space:]]+(push|pull_request|schedule):' "$workflows/terraform-apply.yml"; then
-  echo "Terraform apply must remain workflow_dispatch-only." >&2
+contains_fixed 'name: Terraform Gate' "$workflows/terraform-pr.yml"
+contains_regex '^  pull_request:$' "$workflows/terraform-pr.yml"
+if report_regex '^[[:space:]]+paths:' "$workflows/terraform-pr.yml"; then
+  echo "The stable Terraform PR gate must run for every pull request to main." >&2
+  exit 1
+fi
+contains_fixed 'same_repository: ${{ steps.diff.outputs.same_repository }}' "$workflows/terraform-pr.yml"
+contains_fixed "HEAD_REPOSITORY: \${{ github.event.pull_request.head.repo.full_name }}" "$workflows/terraform-pr.yml"
+contains_fixed "if: needs.changes.outputs.terraform == 'true' && needs.changes.outputs.same_repository == 'true'" "$workflows/terraform-pr.yml"
+contains_fixed "test \"\$SAME_REPOSITORY\" = \"true\"" "$workflows/terraform-pr.yml"
+
+validate_block="$(awk '
+  /^  validate:/ { capture = 1 }
+  /^  plan:/ { capture = 0 }
+  capture { print }
+' "$workflows/terraform-pr.yml")"
+if report_regex 'id-token|google-github-actions/auth|secrets\.' <(printf '%s\n' "$validate_block"); then
+  echo "The always-running Terraform PR validation job must remain credential-free." >&2
+  exit 1
+fi
+contains_fixed '-lock=false' "$workflows/terraform-pr.yml"
+contains_fixed '-var="manage_deployment_service_iam=true"' "$workflows/terraform-pr.yml"
+contains_fixed '-var="manage_deployment_service_iam=true"' "$workflows/terraform-apply.yml"
+contains_fixed 'terraform -chdir=infra/terraform show -json tfplan.out > infra/terraform/tfplan.json' "$workflows/terraform-pr.yml"
+contains_fixed 'infra/terraform/sanitize-plan-evidence.sh' "$workflows/terraform-pr.yml"
+if report_regex '\.resource_changes|\.change\.actions|sort_by\(\.address\)' "$workflows/terraform-pr.yml"; then
+  echo "The PR workflow must use the behavior-tested sanitizer instead of an inline transformation." >&2
+  exit 1
+fi
+for executable in \
+  "$root/infra/terraform/check-policy.sh" \
+  "$root/infra/terraform/test-check-policy.sh" \
+  "$root/infra/terraform/sanitize-plan-evidence.sh" \
+  "$root/infra/terraform/test-sanitize-plan-evidence.sh"; do
+  if [ ! -x "$executable" ]; then
+    echo "Terraform policy and sanitizer scripts must be executable: $executable" >&2
+    exit 1
+  fi
+done
+contains_fixed 'Resource address | Actions' "$workflows/terraform-pr.yml"
+contains_fixed 'Source SHA:' "$workflows/terraform-pr.yml"
+contains_fixed 'Backend prefix:' "$workflows/terraform-pr.yml"
+contains_fixed 'Change counts:' "$workflows/terraform-pr.yml"
+contains_fixed 'Delete all plan material' "$workflows/terraform-pr.yml" "$workflows/terraform-apply.yml"
+
+if report_regex 'actions/(upload|download)-artifact|\.before|\.after|\.planned_values|\.prior_state' "$workflows/terraform-pr.yml"; then
+  echo "PR planning cannot publish binary plans, raw values, or state-shaped JSON." >&2
   exit 1
 fi
 
-if report_regex 'id-token|google-github-actions/auth|secrets\.' "$workflows/terraform-pr.yml"; then
-  echo "Required Terraform PR validation must remain credential-free." >&2
+contains_regex '^  push:$' "$workflows/terraform-apply.yml"
+if report_regex 'workflow_dispatch|inputs\.|APPLY_TERRAFORM|confirmation' "$workflows/terraform-apply.yml"; then
+  echo "A reviewed main merge must be the only Terraform apply gate." >&2
+  exit 1
+fi
+contains_fixed 'group: terraform-backend-gcp-infra' "$workflows/terraform-apply.yml"
+contains_fixed 'cancel-in-progress: false' "$workflows/terraform-apply.yml"
+contains_fixed 'SOURCE_SHA: ${{ github.sha }}' "$workflows/terraform-apply.yml"
+contains_fixed 'refs/remotes/origin/main' "$workflows/terraform-apply.yml"
+contains_fixed 'Create fresh locked plan for this main SHA' "$workflows/terraform-apply.yml"
+contains_fixed 'Apply the same fresh saved plan' "$workflows/terraform-apply.yml"
+if report_regex 'actions/(upload|download)-artifact|workflow_run' "$workflows/terraform-apply.yml"; then
+  echo "Automatic apply must create and consume its own local saved plan." >&2
+  exit 1
+fi
+
+contains_regex '^  workflow_dispatch:$' "$workflows/deploy-production.yml"
+if report_regex '^[[:space:]]+(push|pull_request|schedule):' "$workflows/deploy-production.yml"; then
+  echo "Production application deployment must remain manual-only." >&2
   exit 1
 fi
 
