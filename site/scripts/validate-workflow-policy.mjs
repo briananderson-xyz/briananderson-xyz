@@ -12,6 +12,9 @@ const shaPattern = /^[0-9a-f]{40}$/;
 const versionCommentPattern = /^v\d+(?:\.\d+){0,2}$/;
 const pnpmVersion = "10.33.0";
 const nodeMajor = "22";
+const setupTerraformAction = "hashicorp/setup-terraform";
+const setupTerraformSha = "dfe3c3f87815947d99a8997f908cb6525fc44e9e";
+const expectedSetupTerraformCount = 3;
 
 const workflowFiles = (await readdir(workflowsRoot)).filter((file) => /\.ya?ml$/.test(file)).sort();
 
@@ -19,6 +22,7 @@ const failures = [];
 let externalActionCount = 0;
 let nodeVersionCount = 0;
 let pnpmSetupCount = 0;
+const setupTerraformRefs = [];
 
 for (const file of workflowFiles) {
   const path = join(workflowsRoot, file);
@@ -51,6 +55,10 @@ for (const file of workflowFiles) {
       }
 
       for (const step of job?.steps ?? []) {
+        const action = String(step?.uses ?? "");
+        if (action.startsWith(`${setupTerraformAction}@`)) {
+          setupTerraformRefs.push({ file, jobName, ref: action.slice(action.lastIndexOf("@") + 1) });
+        }
         if (String(step?.uses ?? "").startsWith("pnpm/action-setup@")) {
           pnpmSetupCount += 1;
           if (String(step?.with?.version ?? "") !== pnpmVersion) {
@@ -110,6 +118,18 @@ for (const file of workflowFiles) {
 if (externalActionCount === 0) failures.push("no external GitHub Actions were inspected");
 if (nodeVersionCount === 0) failures.push("no node-version declarations were inspected");
 if (pnpmSetupCount === 0) failures.push("no pnpm/action-setup declarations were inspected");
+if (setupTerraformRefs.length !== expectedSetupTerraformCount) {
+  failures.push(
+    `${setupTerraformAction} must appear exactly ${expectedSetupTerraformCount} times, found ${setupTerraformRefs.length}`
+  );
+}
+for (const { file, jobName, ref } of setupTerraformRefs) {
+  if (ref !== setupTerraformSha) {
+    failures.push(
+      `${file}: job ${jobName} must pin ${setupTerraformAction} to ${setupTerraformSha}, found ${ref}`
+    );
+  }
+}
 
 const siteManifest = JSON.parse(await readFile(join(siteRoot, "package.json"), "utf8"));
 const functionsRoot = join(siteRoot, "functions");
