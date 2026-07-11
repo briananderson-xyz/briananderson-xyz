@@ -3,10 +3,12 @@ set -euo pipefail
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 policy="$root/infra/terraform/check-policy.sh"
+workflow_policy="$root/site/scripts/validate-workflow-policy.mjs"
 standard_path="/usr/bin:/bin"
 
 # Exercise the preferred search implementation when ripgrep is installed.
 "$policy"
+node "$workflow_policy"
 "$root/infra/terraform/test-sanitize-plan-evidence.sh"
 
 # GitHub's Ubuntu runner does not guarantee ripgrep, so exercise the grep fallback too.
@@ -51,6 +53,30 @@ expect_policy_failure() {
     exit 1
   fi
 }
+
+expect_workflow_policy_failure() {
+  local label="$1"
+  local mutation="$2"
+  local fixture="$test_dir/$label"
+
+  mkdir -p "$fixture/.github"
+  cp -R "$root/.github/workflows" "$fixture/.github/workflows"
+  sh -c "$mutation" sh "$fixture"
+
+  set +e
+  node "$workflow_policy" "$fixture/.github/workflows" >"$fixture/stdout" 2>"$fixture/stderr"
+  local status=$?
+  set -e
+  if [ "$status" -eq 0 ]; then
+    echo "Expected workflow-policy fixture '$label' to fail closed." >&2
+    exit 1
+  fi
+}
+
+expect_workflow_policy_failure stale-setup-terraform-pin \
+  "sed -i.bak 's/dfe3c3f87815947d99a8997f908cb6525fc44e9e/b9cd54a3c349d3f38e8881555d616ced269862dd/g' \"\$1/.github/workflows/terraform-pr.yml\""
+expect_workflow_policy_failure floating-setup-terraform-tag \
+  "sed -i.bak 's/dfe3c3f87815947d99a8997f908cb6525fc44e9e/v4/g' \"\$1/.github/workflows/terraform-pr.yml\""
 
 expect_policy_failure state-write-role \
   "sed -i.bak 's/role   = \"roles\/storage.objectViewer\"/role   = \"roles\/storage.objectAdmin\"/' \"\$1/infra/terraform/main.tf\""
