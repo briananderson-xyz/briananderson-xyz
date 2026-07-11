@@ -3,6 +3,8 @@ set -euo pipefail
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 workflows="$root/.github/workflows"
+setup_terraform_action="hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e"
+setup_terraform_declaration="$setup_terraform_action # v4"
 legacy_import="import""-resources.sh"
 legacy_identity="github""-ci-deployer"
 legacy_writer="google_project_iam_member.ci_""artifact_writer"
@@ -555,6 +557,26 @@ ui_validate_block="$(awk '
 ' "$workflows/validate-ui.yml")"
 contains_fixed '    name: UI Validate' <(printf '%s\n' "$ui_validate_block")
 contains_fixed 'pnpm run test:delivery-policy' <(printf '%s\n' "$ui_validate_block")
+
+setup_terraform_refs="$(awk '
+  /^        uses:[[:space:]]*hashicorp\/setup-terraform@/ ||
+  /^      - uses:[[:space:]]*hashicorp\/setup-terraform@/ {
+    line = $0
+    sub(/^        uses:[[:space:]]*/, "", line)
+    sub(/^      - uses:[[:space:]]*/, "", line)
+    print line
+  }
+' "$workflows/terraform-pr.yml" "$workflows/terraform-apply.yml")"
+setup_terraform_count="$(printf '%s\n' "$setup_terraform_refs" | awk 'NF { count += 1 } END { print count + 0 }')"
+if [ "$setup_terraform_count" -ne 3 ]; then
+  echo "Terraform workflows must contain exactly 3 executable setup-terraform uses; found $setup_terraform_count." >&2
+  exit 1
+fi
+if printf '%s\n' "$setup_terraform_refs" | grep -Fvx -- "$setup_terraform_declaration" >/dev/null; then
+  echo "Every setup-terraform use must pin $setup_terraform_action with the readable # v4 comment." >&2
+  exit 1
+fi
+
 contains_fixed '-lock=false' "$workflows/terraform-pr.yml"
 contains_fixed '-var="manage_deployment_service_iam=true"' "$workflows/terraform-pr.yml"
 contains_fixed '-var="manage_deployment_service_iam=true"' "$workflows/terraform-apply.yml"
