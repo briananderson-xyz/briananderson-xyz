@@ -67,6 +67,8 @@ export const ContentMetadataSchema = z
     title: nonEmpty,
     date: ContentDateSchema,
     updated: ContentDateSchema.optional(),
+    projectDate: ContentDateSchema.optional(),
+    eventPeriod: nonEmpty.optional(),
     period: nonEmpty.optional(),
     summary: nonEmpty,
     tags: z.array(nonEmpty).min(1),
@@ -99,6 +101,13 @@ export const ContentMetadataSchema = z
         code: "custom",
         path: ["updated"],
         message: "must not be earlier than date"
+      });
+    }
+    if (metadata.projectDate && metadata.eventPeriod) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["eventPeriod"],
+        message: "cannot be combined with projectDate; use the most honest available precision"
       });
     }
   });

@@ -1,7 +1,8 @@
 ---
 title: Smoke tests are not AI evals
 date: 2026-07-09
-updated: 2026-07-09
+updated: 2026-07-12
+projectDate: 2026-07-03
 summary: "An endpoint returning 200 proves that it is alive. It does not prove that an AI feature stayed grounded, resisted a prompt extraction attempt, or scored an unrelated role honestly. Those are different gates."
 tags: ["AgenticAI", "Evals", "CICD", "DevOps", "Trust"]
 keywords:

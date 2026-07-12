@@ -2,7 +2,7 @@ import type { ProofClaim } from "$lib/schemas/proofLedger";
 
 export const evidenceStatePresentation = {
   documented: {
-    label: "Documented",
+    label: "Brian's project documentation",
     explanation:
       "The quoted statement appears in the linked, author-maintained case study. That is traceability, not independent verification."
   },

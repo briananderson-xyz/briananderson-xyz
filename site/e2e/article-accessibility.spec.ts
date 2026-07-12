@@ -7,6 +7,19 @@ const mobileViewports = [
 ];
 
 test.describe("article accessibility", () => {
+  test("work chronology is primary without changing publication history", async ({ page }) => {
+    await page.goto("/blog/");
+
+    const mqttRow = page.getByRole("link", { name: /Building an MQTT DVR in Rust/i });
+    await expect(mqttRow.getByTestId("work-date")).toContainText("Work date");
+    await expect(mqttRow.getByTestId("work-date")).toContainText("Feb 9, 2026");
+    await expect(mqttRow.getByTestId("post-chronology")).toContainText("Published Jul 9, 2026");
+
+    await page.goto("/blog/building-an-mqtt-dvr-in-rust/");
+    await expect(page.getByTestId("article-work-date")).toHaveText("[WORK DATE] Feb 9, 2026");
+    await expect(page.getByTestId("article-published-date")).toHaveText("[PUBLISHED] Jul 9, 2026");
+  });
+
   for (const viewport of mobileViewports) {
     test(`long-form content does not overflow at ${viewport.width}px`, async ({ page }) => {
       await page.setViewportSize(viewport);

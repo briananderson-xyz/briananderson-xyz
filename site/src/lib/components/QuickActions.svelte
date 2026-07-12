@@ -50,24 +50,16 @@
     },
     {
       id: "proof",
-      title: "Proof Ledger",
-      description: "Trace selected portfolio claims to their published sources",
+      title: "Claims & Evidence",
+      description: "See the sources and limitations behind selected portfolio claims",
       category: "page",
       url: "/proof/",
       keywords: ["proof", "evidence", "claims", "sources", "ledger"]
     },
     {
-      id: "ai-evals",
-      title: "AI Evaluation Trends",
-      description: "View sanitized aggregate checks for the public AI features",
-      category: "page",
-      url: "/ai-evals/",
-      keywords: ["ai", "evals", "quality", "tests", "trends"]
-    },
-    {
       id: "trace-one-answer",
-      title: "Trace One AI Answer",
-      description: "Follow an AI request through the implemented architecture",
+      title: "How This Site's AI Works",
+      description: "Understand what leaves your browser and how answers are checked",
       category: "page",
       url: "/trace-one-answer/",
       keywords: ["ai", "trace", "architecture", "cloud run", "gemini"]

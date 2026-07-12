@@ -1,7 +1,8 @@
 ---
 title: "Scheduling agents on laptops that sleep"
 date: 2026-07-09
-updated: 2026-07-09
+updated: 2026-07-12
+projectDate: 2026-02-19
 summary: "Cron assumes the machine is awake. My laptop is not. Building Boo forced me to define what a scheduled agent should do after sleep, how missed runs should recover, and where local automation stops being reliable."
 tags: ["AgenticAI", "Rust", "Automation", "Scheduling", "Builder"]
 keywords: ["boo", "agent-scheduler", "sleep-wake", "missed-runs", "cron", "heartbeat", "kiro-cli"]
@@ -25,8 +26,11 @@ more interesting when the scheduled command is an agent task: prepare a morning 
 inbox, or assemble context before a meeting. The value of that work depends on time, but blindly
 running every missed occurrence after wake can be worse than dropping it.
 
-I built [Boo](/projects/boo-agent-scheduler/) because I wanted a scheduler that admitted the laptop
-was an unreliable host and made its recovery behavior explicit.
+The initial idea for [Boo](/projects/boo-agent-scheduler/) came from OpenClaw's heartbeat pattern. I
+liked the idea of a process waking up periodically to look for work, then adapted that prompt into a
+much narrower Rust scheduler for my laptop. This is inspiration, not shared code or a claim that the
+two tools have equivalent features. My version focuses on making sleep and missed-run behavior
+explicit.
 
 ## The timer is not the durable part
 

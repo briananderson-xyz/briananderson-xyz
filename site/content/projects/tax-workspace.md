@@ -1,7 +1,8 @@
 ---
 title: "Tax Workspace: Verify Every Number"
 date: 2026-06-30
-updated: 2026-07-09
+updated: 2026-07-12
+projectDate: 2026-04-20
 period: "2026 – Present"
 summary: "A personal, local-first workspace that turns tax documents into an auditable dataset, keeps conflicting candidates visible, and refuses to use a number downstream until it has been verified."
 tags: ["TypeScript", "MCP", "DataProvenance", "AgenticAI", "Builder", "SideProject"]

@@ -1,7 +1,8 @@
 ---
 title: Hardening a public AI endpoint
 date: 2026-07-09
-updated: 2026-07-09
+updated: 2026-07-12
+projectDate: 2026-07-01
 summary: "A public AI feature is an untrusted-input API with a variable bill attached. Here is the defense-in-depth contract behind this site's Chat, Fit Finder, and MCP endpoints, including what remains external or imperfect."
 tags: ["AgenticAI", "Security", "CloudRun", "Cloudflare", "GCP", "Builder"]
 keywords:

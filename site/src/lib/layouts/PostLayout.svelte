@@ -28,6 +28,15 @@
   function closeLightbox() {
     lightboxOpen = false;
   }
+
+  function displayDate(value: string): string {
+    return new Intl.DateTimeFormat("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      timeZone: "UTC"
+    }).format(new Date(`${value}T00:00:00.000Z`));
+  }
 </script>
 
 <article class="prose prose-zinc mx-auto w-full min-w-0 max-w-3xl px-4 py-16">
@@ -49,12 +58,21 @@
     <div
       class="flex min-w-0 flex-wrap items-center gap-x-4 gap-y-2 font-mono text-xs text-skin-muted"
     >
-      {#if metadata.date}
-        <span class="flex items-center gap-1">
-          <span class="text-skin-accent">[DATE]</span>
-          {new Date(metadata.date).toISOString().split("T")[0]}
+      {#if metadata.projectDate}
+        <span class="flex items-center gap-1 text-skin-base" data-testid="article-work-date">
+          <span class="text-skin-accent">[WORK DATE]</span>
+          {displayDate(metadata.projectDate)}
+        </span>
+      {:else if metadata.eventPeriod}
+        <span class="flex items-center gap-1 text-skin-base" data-testid="article-work-date">
+          <span class="text-skin-accent">[WORK FROM]</span>
+          {metadata.eventPeriod}
         </span>
       {/if}
+      <span class="flex items-center gap-1 text-skin-muted/80" data-testid="article-published-date">
+        <span>[PUBLISHED]</span>
+        {displayDate(metadata.date)}
+      </span>
       {#if metadata.readingTime}
         <span class="flex items-center gap-1">
           <span class="text-skin-accent">[TIME]</span>

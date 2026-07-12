@@ -11,6 +11,15 @@
   const posts = $derived(data.posts);
 
   const variant = $derived(browser ? getVariant($page.url) : null);
+
+  function displayDate(value: string): string {
+    return new Intl.DateTimeFormat("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      timeZone: "UTC"
+    }).format(new Date(`${value}T00:00:00.000Z`));
+  }
 </script>
 
 <SEO
@@ -29,47 +38,66 @@
   </p>
 
   <div class="flex flex-col gap-1 font-mono">
-    <div
-      class="grid grid-cols-12 text-xs text-skin-muted uppercase tracking-wider mb-2 px-4"
-    >
-      <div class="col-span-3 md:col-span-2">Date</div>
+    <div class="grid grid-cols-12 text-xs text-skin-muted uppercase tracking-wider mb-2 px-4">
+      <div class="col-span-3 md:col-span-2">Timeline</div>
       <div class="col-span-9 md:col-span-10">Title / Description</div>
     </div>
 
     {#each posts as post, i}
       <div use:reveal={{ delay: i * 50 }}>
-      <a
-        href={addVariant(post.route, variant)}
-        class="group grid grid-cols-12 gap-4 items-start p-4 hover:bg-skin-base/5 border-l-2 border-transparent hover:border-skin-accent transition-all rounded-r-lg"
-      >
-        <div class="col-span-3 md:col-span-2 text-xs text-skin-muted pt-1">
-          {new Date(post.metadata.date).toISOString().split("T")[0]}
-        </div>
-        <div class="col-span-9 md:col-span-10">
-          {#if post.metadata.featuredImage}
-            <div class="mb-3">
-              <img
-                src={post.metadata.featuredImage}
-                alt={post.metadata.featuredImageAlt || post.metadata.title}
-                loading="lazy"
-                decoding="async"
-                class="w-[65%] aspect-video my-2 mx-auto rounded border border-skin-border object-contain"
-              />
-            </div>
-          {/if}
-          <h2
-            class="text-base text-skin-base group-hover:text-skin-accent font-bold transition-colors mb-1"
-            style:view-transition-name={titleTransitionName(post.metadata.title)}
+        <a
+          href={addVariant(post.route, variant)}
+          class="group grid grid-cols-12 gap-4 items-start p-4 hover:bg-skin-base/5 border-l-2 border-transparent hover:border-skin-accent transition-all rounded-r-lg"
+        >
+          <div
+            class="col-span-3 md:col-span-2 text-xs text-skin-muted pt-1"
+            data-testid="post-chronology"
           >
-            {post.metadata.title}
-          </h2>
-          {#if post.metadata.summary}
-            <p class="text-sm text-skin-muted line-clamp-2">
-              {post.metadata.summary}
-            </p>
-          {/if}
-        </div>
-      </a>
+            {#if post.metadata.projectDate}
+              <div class="font-semibold text-skin-base" data-testid="work-date">
+                Work date<br />{displayDate(post.metadata.projectDate)}
+              </div>
+              <div class="mt-1 text-[0.68rem]">
+                Published {displayDate(post.metadata.date)}
+              </div>
+            {:else if post.metadata.eventPeriod}
+              <div class="font-semibold text-skin-base" data-testid="work-date">
+                Work from<br />{post.metadata.eventPeriod}
+              </div>
+              <div class="mt-1 text-[0.68rem]">
+                Published {displayDate(post.metadata.date)}
+              </div>
+            {:else}
+              <div class="font-semibold text-skin-base">
+                Published<br />{displayDate(post.metadata.date)}
+              </div>
+            {/if}
+          </div>
+          <div class="col-span-9 md:col-span-10">
+            {#if post.metadata.featuredImage}
+              <div class="mb-3">
+                <img
+                  src={post.metadata.featuredImage}
+                  alt={post.metadata.featuredImageAlt || post.metadata.title}
+                  loading="lazy"
+                  decoding="async"
+                  class="w-[65%] aspect-video my-2 mx-auto rounded border border-skin-border object-contain"
+                />
+              </div>
+            {/if}
+            <h2
+              class="text-base text-skin-base group-hover:text-skin-accent font-bold transition-colors mb-1"
+              style:view-transition-name={titleTransitionName(post.metadata.title)}
+            >
+              {post.metadata.title}
+            </h2>
+            {#if post.metadata.summary}
+              <p class="text-sm text-skin-muted line-clamp-2">
+                {post.metadata.summary}
+              </p>
+            {/if}
+          </div>
+        </a>
       </div>
     {/each}
   </div>

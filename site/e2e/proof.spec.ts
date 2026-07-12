@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-test.describe("Proof Ledger", () => {
+test.describe("Claims & evidence", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/proof/");
   });
@@ -8,9 +8,9 @@ test.describe("Proof Ledger", () => {
   test("renders every validated claim with its source, excerpt, state, and freshness", async ({
     page
   }) => {
-    await expect(page.getByRole("heading", { level: 1, name: "./proof-ledger" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "Claims & evidence" })).toBeVisible();
     await expect(page.locator("article")).toHaveCount(8);
-    await expect(page.getByText("Exact supporting excerpt").first()).toBeVisible();
+    await expect(page.getByText("Supporting excerpt from the source").first()).toBeVisible();
     await expect(page.getByText("Ledger reviewed").first()).toBeVisible();
     await expect(page.locator('a[href="/projects/discover-trident/"]')).toHaveCount(2);
     await expect(page.locator("time").first()).toHaveAttribute("datetime", /^\d{4}-\d{2}-\d{2}$/);
@@ -18,7 +18,7 @@ test.describe("Proof Ledger", () => {
 
   test("uses cautious evidence language", async ({ page }) => {
     await expect(page.locator("main header p")).toContainText(
-      "a listed source does not, by itself, independently verify a claim"
+      "Most sources are Brian's own project documentation, not independent verification."
     );
     await expect(
       page.getByText(/traceability, not independent verification/i).first()

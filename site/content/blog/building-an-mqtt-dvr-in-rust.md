@@ -1,8 +1,9 @@
 ---
 title: "Building an MQTT DVR in Rust"
 date: 2026-07-09
-updated: 2026-07-09
-summary: "I wanted to capture an MQTT stream, replay its behavior later, and mirror it into a safe local broker. The hard part was preserving protocol meaning, handling binary payloads, and verifying what actually arrived."
+updated: 2026-07-12
+projectDate: 2026-02-09
+summary: "A generic MQTT recorder, passthrough, and replay tool that began when I needed three ProveIT demo streams to keep working locally after their remote source went offline."
 tags: ["Rust", "MQTT", "SystemsEngineering", "IoT", "Builder"]
 keywords:
   [
@@ -23,17 +24,17 @@ links:
     type: "github"
 ---
 
-I wanted a DVR for MQTT.
+The first use case came from the ProveIT demonstration, but the tool itself is a generic MQTT DVR.
 
-Not just a script that prints messages to a file. I wanted to point a tool at a broker, capture a slice
-of real behavior, take it somewhere safer, and replay it with enough fidelity that a local system
-would experience something recognizable. I also wanted to mirror live traffic into an embedded
-broker so I could develop against the shape of a system without attaching every local consumer to the
-source.
+We had realistic Unified Namespace data for three simulated factory scenarios, but the remote streams
+were not always available when I needed to work locally. I wanted to record a useful slice while they
+were online, pass it through during a connected session, and replay it later into my local
+[EdgeMind](https://github.com/briananderson1222/EdgeMind) dashboard.
 
-That became [mqtt-recorder](/projects/mqtt-recorder/), a Rust command-line tool with record, replay,
-mirror, and standalone-broker modes. The commands are the easy part. The interesting work is deciding
-what a recording has to preserve before it deserves to be called a replay.
+That became [mqtt-recorder](/projects/mqtt-recorder/), a Rust command-line tool with record,
+passthrough/mirror, replay, and standalone-broker modes. A basic TUI made those controls easier to
+operate during demo development. It was also my first experiment using AI to help build something in
+Rust; I have never claimed to have fully learned the language.
 
 ## A message is more than its text
 
@@ -102,15 +103,14 @@ This is not a formal proof of end-to-end equivalence. Timing, broker configurati
 behavior, and protocol-version differences can still matter. But observing the output side is a much
 stronger check than incrementing a counter beside the publish call.
 
-## Why Rust fit the problem
+## Why I tried Rust
 
-This tool has several things happening at once: network event loops, an embedded broker, filesystem
-writes, playback timing, terminal rendering, and graceful shutdown. Rust gave me a single binary and a
-type system that made the boundaries between those pieces harder to blur. It also made the payload
-problem impossible to ignore; bytes and text are different things, and the compiler keeps reminding
-you.
+The tool has several things happening at once: network event loops, an embedded broker, filesystem
+writes, playback timing, terminal rendering, and graceful shutdown. Rust offered a single binary and
+clear byte-versus-text boundaries. Building it with AI assistance let me test whether I could make a
+useful systems tool in a language I had not fully learned, while the tests and actual demo workflow
+kept that experiment grounded.
 
-mqtt-recorder is deliberately not an AI project. It is the kind of plumbing AI projects eventually
-depend on: capture the real signal, preserve its meaning, create a safe place to experiment, and check
-that the other side received what you thought you sent. The DVR metaphor was the starting point. The
-actual product is a controlled seam in a message-driven system.
+ProveIT and EdgeMind supplied the motivating use case, not the tool's boundary. mqtt-recorder accepts
+arbitrary MQTT inputs and keeps recording, passthrough, and playback independent of any one dashboard
+or topic hierarchy. The demo gave me a concrete way to test whether that reusable contract was useful.

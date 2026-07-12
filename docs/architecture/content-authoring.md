@@ -18,13 +18,19 @@ keywords: ["lowercase", "search-phrase"]
 ---
 ```
 
-Dates use `YYYY-MM-DD`. Add `updated` only after materially revising and verifying the page; it must
-not precede `date`. RSS, sitemap, and other freshness consumers prefer `updated`, then `date`, and do
-not substitute build time.
+Dates use `YYYY-MM-DD`. `date` is the real publication date and must not be backdated to make a batch
+of posts look older. Add `updated` only after materially revising and verifying the page; it must not
+precede `date`. RSS, sitemap, JSON-LD, and other publication/freshness consumers prefer `updated`,
+then `date`, and do not substitute build time.
+
+For a retrospective post, use `projectDate` when repository history or another source supports an
+exact work milestone. Use `eventPeriod` instead when only an honest coarse period is known, such as
+`Early 2026`. These fields are mutually exclusive and are displayed separately from publication
+history. Never invent day-level precision or use either field as a freshness signal.
 
 Optional shared fields are:
 
-- `updated`, `period`, `readingTime`, and `showTableOfContents`;
+- `updated`, `projectDate`, `eventPeriod`, `period`, `readingTime`, and `showTableOfContents`;
 - `links` for rendered source/live/documentation buttons;
 - `skills` containing canonical resume skill IDs;
 - `proof` containing stable IDs from `proof-ledger.yaml`;
@@ -77,6 +83,11 @@ images, each with meaningful alt text. They do not use `visualArchive`.
 Use `updated` for a verified material revision, not for typo-only edits or the current build date. For
 posts describing a live system, check configured versions and service boundaries in source before
 naming them.
+
+Credit identifiable inspiration and collaborators directly. Describe what the implementation actually
+borrowed without implying code lineage or feature equivalence that the source does not establish.
+Retrospectives must distinguish a prototype or event from ongoing work and production use. Pages about
+current focus require Brian's explicit review; repository activity alone is not enough to infer priorities.
 
 ## Links
 

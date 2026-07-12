@@ -1,6 +1,7 @@
 ---
 title: "Kontour AI: Show the work behind AI"
 date: 2026-04-24
+updated: 2026-07-12
 period: "2026 – Present"
 summary: "The company I started to make AI-assisted work inspectable. A suite of small, open, local-first tools that capture what an agent claimed, what evidence backs it, which gates it passed, and what is still uncertain, so people and systems can decide what to trust before acting on it."
 tags: ["AgenticAI", "DataProvenance", "DeveloperTooling", "Trust", "Builder", "OpenSource"]
@@ -59,7 +60,7 @@ Underneath the headline products sit a few foundational libraries: an extraction
 
 This is the platform version of a conviction that shows up in everything else I build. [CampFit](/projects/campfit/) uses the same trust machinery to decide which crawled camp data is safe to show a parent. My [tax workspace](/blog/taxes-verify-every-number/) uses it to refuse to trust a number until it is verified. Those projects are not just adjacent to Kontour, they run on it, consuming `@kontourai/survey` and `@kontourai/surface` directly.
 
-I wrote more about the thinking behind all of this in [don't trust your agents, make them prove it](/blog/make-agents-prove-their-facts/). Kontour is what happens when you take that idea seriously enough to turn it into infrastructure.
+I wrote more about one concrete example in [what CampFit taught me about reviewing AI facts](/blog/make-agents-prove-their-facts/). Kontour applies related review and provenance ideas to infrastructure.
 
 ## Status
 

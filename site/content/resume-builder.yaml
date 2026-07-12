@@ -89,13 +89,13 @@ experience:
     location: Denver, CO
     description: Building Agentic AI platforms, developer tooling, and customer-facing prototypes.
     highlights:
-      - "Industrial Data Platform (ProveIT): Built a full-stack prototype for manufacturing environments that ingested MQTT data streams via a Unified Namespace (UNS) architecture, categorized and standardized stream contents into a time-series database, and integrated an Agentic AI layer using AgentCore and Bedrock for anomaly detection. Delivered persona-specific dashboards (OEE, equipment state) and natural-language querying of production line status."
       - text: "Agentic AI Platform (Stallion): Built a full-stack AI agent platform from scratch with a React/TypeScript UI, Hono API layer, Tauri desktop wrapper, manifest-driven plugins, and MCP tool orchestration. Added OpenTelemetry and Prometheus/Grafana instrumentation so agent behavior, cost, and reliability could be observed instead of guessed."
         link: /projects/stallion-agent-platform/
-      - text: "Agentic Developer Tooling (Kiro): Ranked in the top 0.03% of 280k+ Amazon Kiro CLI users by activity. Built agent workflows that standardized ideation, implementation, and verification loops, reduced personal admin overhead by ~4 hours/week, and used promptfoo evals to harden prompts before release."
+      - text: "Agentic Developer Tooling (Kiro): Top 0.03% of global Kiro CLI usage, as of April 2026. Built agent workflows that standardized ideation, implementation, and verification loops, reduced personal admin overhead by ~4 hours/week, and used promptfoo evals to harden prompts before release."
         link: /projects/kiro-agent-workflows/
       - "Enterprise Architecture (SAP Integration): Guided a global manufacturer through architecting AWS infrastructure for a Document Management System integrated with SAP ERP, implementing infrastructure as code, private VPC with VPC endpoints, and S3 gateway patterns for scalability, resiliency, and cost efficiency."
       - "Customer Solution Prototyping (Amazon Connect): Built a working prototype for a global manufacturer demonstrating Amazon Connect's extensibility, including a secure SMS image-upload integration and multi-threaded conversation support to address visual troubleshooting and extended support hour requirements."
+      - "Industrial Data Prototype (ProveIT, early 2026): Helped build a one-time Concept Reply conference demonstration using simulated manufacturing streams, MQTT/UNS, and Bedrock/AgentCore for persona-specific dashboards and SOP-grounded troubleshooting."
     start_date: September 2024
   - role: Technical Director
     company: Valtech | Kin + Carta
