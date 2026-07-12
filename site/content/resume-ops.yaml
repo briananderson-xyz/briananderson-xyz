@@ -88,13 +88,13 @@ experience:
     location: Denver, CO
     description: Specializing in cloud-native transformation, infrastructure modernization, and platform reliability.
     highlights:
-      - "Industrial IoT & Observability (ProveIT): Built a prototype for manufacturing environments that ingested MQTT data streams via a Unified Namespace (UNS) architecture, categorized and standardized stream contents into a time-series database, and integrated an Agentic AI layer using AgentCore and Bedrock for anomaly detection. Delivered persona-specific dashboards (OEE, equipment state) and natural-language querying of production line status."
       - "Customer Support Automation (Amazon Connect): Identified an operational gap for a global manufacturer and built a working prototype demonstrating multi-threaded conversation support and extended customer support hours. Personally engineered a secure SMS image-upload integration to showcase the platform's extensibility for visual troubleshooting workflows."
       - "Enterprise Infrastructure & Migration (SAP Integration): Guided a global manufacturer through architecting secure AWS infrastructure for a Document Management System integrated with SAP ERP. Established best practices for infrastructure as code, private VPC architecture with VPC endpoints, and S3 gateway patterns for scalability, resiliency, and cost efficiency at scale. Led architectural discovery to establish migration roadmaps for broader legacy-to-cloud transitions."
       - text: "AI Agent Observability (Stallion): Built a local-first AI agent platform and instrumented it with OpenTelemetry plus Prometheus/Grafana to trace agent behavior, surface cost and reliability signals, and make tool-driven workflows debuggable."
         link: /projects/stallion-agent-platform/
-      - text: "Agentic Developer Tooling (Kiro): Ranked in the top 0.03% of 280k+ Amazon Kiro CLI users by activity. Built agent workflows for Kiro that standardized ideation-to-verification loops and used promptfoo-based evals to harden prompts and improve reliability before release."
+      - text: "Agentic Developer Tooling (Kiro): Top 0.03% of global Kiro CLI usage, as of April 2026. Built agent workflows for Kiro that standardized ideation-to-verification loops and used promptfoo-based evals to harden prompts and improve reliability before release."
         link: /projects/kiro-agent-workflows/
+      - "Industrial IoT Prototype (ProveIT, early 2026): Helped build a one-time Concept Reply conference demonstration using simulated manufacturing data, MQTT/UNS, and a Bedrock/AgentCore layer for dashboards and SOP-grounded troubleshooting."
     start_date: September 2024
   - role: Technical Director
     company: Valtech | Kin + Carta

@@ -27,14 +27,16 @@
     </div>
 
     <nav
-      aria-label="Evidence and contact links"
+      aria-label="Site and contact links"
       class="flex flex-wrap items-center justify-center gap-4"
     >
-      <a href="/proof/" class="hover:text-skin-accent transition-colors">[ proof ]</a>
-      <a href="/ai-evals/" class="hover:text-skin-accent transition-colors">[ ai evals ]</a>
-      <a href="/trace-one-answer/" class="hover:text-skin-accent transition-colors">[ ai trace ]</a>
-      <a href="/now/" class="hover:text-skin-accent transition-colors">[ now ]</a>
-      <a href="/uses/" class="hover:text-skin-accent transition-colors">[ uses ]</a>
+      <a href="/now/" class="hover:text-skin-accent transition-colors">[ current focus ]</a>
+      <a href="/trace-one-answer/" class="hover:text-skin-accent transition-colors"
+        >[ how ai works ]</a
+      >
+      <a href="/proof/" class="hover:text-skin-accent transition-colors"
+        >[ claims &amp; evidence ]</a
+      >
       <a
         href="https://github.com/briananderson1222"
         target="_blank"

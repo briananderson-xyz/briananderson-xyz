@@ -1,8 +1,10 @@
 ---
 title: "Boo: A Scheduler Daemon for AI Agents"
 date: 2026-03-09
+updated: 2026-07-12
+projectDate: 2026-02-19
 period: "2026 – Present"
-summary: "A cross-platform scheduler daemon, written in Rust, that fires AI agent prompts on cron schedules. Heartbeat-based, it survives sleep/wake cycles and catches up on runs it missed while the machine was off."
+summary: "A Rust scheduler for personal AI tasks, inspired by OpenClaw's heartbeat pattern and adapted to handle laptop sleep, missed runs, and inspectable local history."
 tags: ["AgenticAI", "Rust", "Automation", "Builder", "SideProject", "OpenSource"]
 keywords: ["boo", "agent-scheduler", "cron", "rust", "kiro-cli", "ai-automation", "daemon"]
 outcome: "Developer productivity"
@@ -19,7 +21,10 @@ links:
 
 ## The Goal
 
-I wanted my AI agents to do things while I was not sitting in front of them. A morning brief before the workday, an inbox triage every 30 minutes, a reminder that fires once and then deletes itself. Plain cron can run a command, but it has no idea an agent exists: no notion of which agent or model to use, no capture of the response, no recovery when the laptop was asleep at 9am. Boo is the missing layer between a schedule and an agent.
+The initial idea was inspired by OpenClaw's heartbeat pattern: wake up periodically and check whether
+there is work to do. I adapted that idea into a narrower Rust scheduler for personal AI tasks on a
+laptop. Boo does not share OpenClaw code, and this is not a claim of feature equivalence. It adds the
+job state, response capture, and missed-run behavior I wanted for a machine that regularly sleeps.
 
 ## What I Built
 
@@ -30,4 +35,8 @@ I wanted my AI agents to do things while I was not sitting in front of them. A m
 
 ## What It Demonstrates
 
-Boo is systems programming in service of agentic workflows: process supervision, signal handling, cron and interval math, persistence across reboots, and OS integration for notifications and auto-start, all in Rust. It has shipped through five tagged releases (v0.5.1 at last count) and is the scheduler I actually use to run my own proactive AI tasks. It is the concrete answer to a question I care about: what does it take to make an agent reliable enough to trust unattended?
+Boo is systems programming in service of agentic workflows: process supervision, signal handling,
+cron and interval math, persistence across reboots, and OS integration for notifications and
+auto-start, all in Rust. I use it for a small set of my own scheduled tasks. It is an experiment in
+making local automation easier to inspect and recover, not a claim of high availability or unattended
+reliability for every workload.

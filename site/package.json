@@ -63,6 +63,7 @@
     "globals": "^17.7.0",
     "js-yaml": "^4.3.0",
     "mdsvex": "^0.12.7",
+    "pdfjs-dist": "5.4.624",
     "postcss": "^8.5.16",
     "prettier": "^3.9.5",
     "prettier-plugin-svelte": "^3.5.2",

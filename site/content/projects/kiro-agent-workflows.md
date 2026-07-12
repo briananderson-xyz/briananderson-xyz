@@ -1,6 +1,7 @@
 ---
 title: "Kiro Agent Workflows & Eval Harnesses"
 date: 2024-09-01
+updated: 2026-07-12
 period: "2024 – Present"
 summary: "Structured AI workflows for ideation, implementation, and verification, backed by prompt evaluation before release."
 tags: ["AgenticAI", "DeveloperProductivity", "Evals", "PromptEngineering", "Builder"]
@@ -26,7 +27,7 @@ I wanted repeatable AI workflows that improved engineering output instead of cre
 
 ## Results
 
-- Ranked in the **top 0.03% of 280k+ Amazon Kiro CLI users** by activity.
+- **Top 0.03% of global Kiro CLI usage, as of April 2026.**
 - Reduced my own administrative overhead by roughly **4 hours per week**.
 - Created a more reliable personal workflow for using AI as a systems-thinking partner rather than an autocomplete layer.
 

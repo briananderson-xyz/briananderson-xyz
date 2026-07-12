@@ -1,7 +1,9 @@
 ---
 title: Agents on the factory floor (ProveIT)
-date: 2026-05-20
-summary: How we turned raw plant telemetry into an agent that flags anomalies, walks operators through fixes, and files the work order. Built for glass and pharma manufacturing, shown in a partner keynote, and then torn apart in a workshop the next day.
+date: 2026-07-02
+updated: 2026-07-12
+eventPeriod: "Early 2026"
+summary: "A retrospective on a one-time industrial AI prototype we built with Concept Reply using simulated glass and pharma scenarios, followed by a workshop on what worked and what remained a demo."
 tags: ["AgenticAI", "AWS", "Bedrock", "Manufacturing", "IoT", "Builder"]
 keywords:
   [
@@ -17,44 +19,62 @@ keywords:
 showTableOfContents: true
 ---
 
-Most "AI for manufacturing" demos stop at a dashboard. Someone shows you a chart of sensor data, points at a spike, and says the model noticed it. That is the easy 20%. The hard part, the part that actually changes a shift, is what happens after the spike: who gets told, what they should do about it, and whether the system can take the boring next step on its own.
+Many manufacturing AI demos stop at a dashboard: a chart shows a sensor spike and the model points it
+out. For an early-2026 event, our team explored what a next step might look like after detection: who
+gets told, what approved procedure applies, and which routine action the prototype can demonstrate.
 
-ProveIT was my attempt to build the whole loop, end to end, for glass and pharma manufacturing.
+ProveIT was a one-time prototype we built with Concept Reply around simulated glass and pharma
+manufacturing scenarios. It was not a production deployment or an ongoing product.
 
 ## The setup
 
 Factories already produce an enormous amount of telemetry. The problem is that it is fragmented across machines, protocols, and vendors, and most of it never reaches anyone who could act on it. So the foundation was not AI at all. It was plumbing.
 
-I pulled plant telemetry over MQTT into a **Unified Namespace**, which is the pattern where every machine, line, and sensor publishes to one consistently structured hierarchy instead of a tangle of point-to-point integrations. From there the streams were categorized, standardized, and landed in a time-series store. Boring on purpose. If the data model is not honest, nothing you build on top of it will be either.
+We modeled plant telemetry over MQTT in a **Unified Namespace**, where machines, lines, and sensors
+publish to a consistently structured hierarchy rather than a set of point-to-point integrations. The
+demonstration streams were categorized, standardized, and landed in a time-series store. That data
+plumbing made the rest of the prototype possible.
+
+When the remote streams were unavailable, I built
+[mqtt-recorder](/projects/mqtt-recorder/) to capture, pass through, and replay the three simulated UNS
+scenarios into my local EdgeMind dashboard. It was continuity tooling for the demo, not a connection
+to production factory data.
 
 ## The agent layer
 
-Once the data was trustworthy, I put an agent layer on top of it using **Bedrock** and **AgentCore**. It did three things:
+We put an agent layer on top using **Bedrock** and **AgentCore**. In the demonstration it could:
 
-- **Watched for anomalies** in the live streams, per line and per piece of equipment.
-- **Walked operators through the fix** in natural language, grounded in the actual SOPs, rather than dumping a stack trace and wishing them luck.
-- **Took the next step** when it made sense: filing a work order, pulling up the maintenance procedure, routing the issue to the right persona.
+- **Flag anomalies** in the simulated streams, per line and per piece of equipment.
+- **Walk through a troubleshooting path** in natural language, grounded in the demonstration SOPs.
+- **Demonstrate a next step** such as preparing a work order, pulling up a maintenance procedure, or routing an issue to the right persona.
 
-On top of that were persona-specific dashboards, so an operator saw OEE and equipment state the way an operator thinks about them, and you could just ask the system, in plain language, what a production line was doing right now.
+Persona-specific dashboards presented OEE and equipment state, with natural-language questions over
+the demonstration data. We did not test this against the operational conditions of a live plant.
 
-The thing I care about is that middle bullet. An anomaly detector that only detects is a smoke alarm. What makes it an agent is that it closes the distance between "something is wrong" and "here is the fix, and I have already started it."
+The useful design question was the distance between "something looks wrong" and a grounded procedure
+someone could inspect. The prototype let us explore that question without claiming it had resolved
+the safety, integration, and approval work a production system would require.
 
 ## Keynote, then the workshop
 
-Our partner, **Concept Reply**, featured the demo in a conference keynote and ran it at their booth. That was the flashy day, and it went well.
+Our partner, **Concept Reply**, featured the demo in a conference keynote and ran it at their booth.
 
-The day I actually enjoyed was the one after. I ran a workshop that pulled the whole thing apart. Not the polished demo, the build: how the UNS and MQTT ingestion was structured, why we standardized the streams the way we did, how the agent stayed grounded in SOPs instead of hallucinating a procedure, and where the honest limits were. We spent as much time on how we approached the problem as on the result.
+I later ran a workshop that pulled apart the build: how the UNS and MQTT ingestion was structured, why
+we standardized the streams, how we grounded responses in SOPs, and where the demo stopped. We spent
+as much time on the approach as on the result.
 
-That is usually the more valuable session. A keynote convinces people something is possible. A workshop shows them the seams, and the seams are where they learn whether they can build it themselves.
+The workshop gave us room to discuss the seams and the work a polished demonstration can hide.
 
 ## What I took from it
 
 A few things stuck with me:
 
-- **The data model is the product.** The agent was only as good as the Unified Namespace under it. Almost all of the leverage came from getting the boring foundation right.
-- **"Detect" is not "resolve."** The value was in the last mile, translating a signal into a grounded, SOP-backed action a real person could trust and a system could partly execute.
+- **The data model comes first.** The agent was only as useful as the Unified Namespace under it.
+- **"Detect" is not "resolve."** A signal still needs a grounded, SOP-backed handoff and human judgment.
 - **Grounding beats fluency.** On a factory floor, a confident wrong answer is worse than no answer. Tying the agent to real procedures mattered more than making it sound smart.
 
-ProveIT was a prototype, not a product. But it was the clearest version I have built of the thing I keep coming back to: an agent earns its place not by being impressive, but by doing the next real step and being right about it.
+ProveIT was a bounded event prototype, not a product or my continuing focus. Its useful lesson was
+more modest: an impressive interface matters less than the quality of the data, procedures, and
+handoffs underneath it.
 
 The [ProveIT project case study](/projects/proveit-industrial-ai/) maps the architecture, trust model, constraints, and outcome in a more structured format.

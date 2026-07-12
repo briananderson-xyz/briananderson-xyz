@@ -48,9 +48,8 @@ Personal portfolio and professional site for Brian Anderson - Technical Director
 - **Blog Markdown Mirrors:** ${PUBLIC_SITE_URL}/blog/{slug}.md - Raw Markdown source of each post
 - **Projects:** ${PUBLIC_SITE_URL}/projects/ - Portfolio of software development work
 - **Project Markdown Mirrors:** ${PUBLIC_SITE_URL}/projects/{slug}.md - Raw Markdown source of each project
-- **Proof Ledger:** ${PUBLIC_SITE_URL}/proof/ - Selected portfolio claims mapped to published sources, freshness, and evidence state
-- **AI Evaluation Trends:** ${PUBLIC_SITE_URL}/ai-evals/ - Sanitized aggregate quality signals; no prompts, job descriptions, answers, or judge text
-- **Trace One AI Answer:** ${PUBLIC_SITE_URL}/trace-one-answer/ - Repository-grounded request flow and explicit external verification limits
+- **Claims & Evidence:** ${PUBLIC_SITE_URL}/proof/ - Sources and limitations behind selected portfolio claims
+- **How This Site's AI Works:** ${PUBLIC_SITE_URL}/trace-one-answer/ - Request flow, privacy boundaries, aggregate checks, and explicit external verification limits
 - **Interests:** ${PUBLIC_SITE_URL}/interests/ - Personal interests, values, and hobbies
 - **RSS Feed:** ${PUBLIC_SITE_URL}/rss.xml - Blog posts in RSS format
 - **Content Index:** ${PUBLIC_SITE_URL}/content-index.json - Structured JSON index of skills, experience, projects, and blog posts for agent tooling

@@ -1,6 +1,8 @@
 ---
 title: A tax workspace that won't trust a number until it's verified
 date: 2026-06-30
+updated: 2026-07-12
+projectDate: 2026-04-20
 summary: "I built a local-first tool that turns a household's pile of tax paperwork into a checked, source-attributed dataset. The interesting part is not the parsing. It is that nothing gets trusted until it earns it, and every derived number remembers where it came from."
 tags: ["Builder", "DataProvenance", "TypeScript", "MCP", "AgenticAI"]
 keywords: ["taxes", "provenance", "verification", "mcp", "trust", "local-first", "kontourai"]
@@ -39,10 +41,12 @@ I gave the tax _rules_ the same treatment. Standard deductions, brackets, and th
 
 None of this uses an LLM to read your forms, on purpose. Guessing is the one thing you do not want near a tax return. The parsing is deterministic. Where AI comes in is that the whole workspace is exposed as [MCP](https://modelcontextprotocol.io/) tools, so an agent can drive the workflow, and when it does, it operates inside the exact same verification gates a human does. An agent can move things forward. It cannot skip the part where a number has to be verified.
 
-## Same idea, third time
+## Where this approach helps
 
 This is a personal, local-first tool. It covers US federal and Colorado, it runs on my own machine against my own documents, and it is nobody's product. I am not going to pretend it saved me a quantified number of hours.
 
-But it runs on the same trust-and-provenance machinery as [CampFit](/projects/campfit/), and it is built on the same conviction as the guardrails work I do at enterprise scale: you do not trust a system because it is confident, you build it so that every number can show its work. A camp directory, a factory floor, a tax return. Different stakes, identical spine.
+It shares some provenance ideas with [CampFit](/projects/campfit/): keep the source attached, expose
+conflicts, and require review before a value moves downstream. The stakes and implementation are
+different, so this is a useful comparison rather than a claim that one pattern solves every domain.
 
 The [Tax Workspace project case study](/projects/tax-workspace/) maps the architecture, trust boundary, and constraints in a more structured format.

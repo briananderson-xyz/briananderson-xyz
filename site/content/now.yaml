@@ -1,35 +1,12 @@
 title: "Now"
-description: "What I'm focused on right now."
-updated: "2026-07-03"
+description: "A future home for a personally reviewed snapshot of what I'm focused on."
+updated: "2026-07-12"
 intro: >
-  This is a now page: a snapshot of what has my attention at the moment,
-  rather than a resume of everything I have done. It goes stale on purpose,
-  and I update it when the focus shifts.
+  I have not written the current snapshot yet. I am keeping this page as a
+  place for a candid, dated update once I have reviewed what belongs here.
 focus:
-  - heading: "Industrial Agentic AI at AWS"
+  - heading: "Why this page is intentionally brief"
     body: >
-      My day job is agentic AI and cloud-native work with AWS customers. Most
-      of my energy goes to ProveIT, a manufacturing demo that turns real-time
-      plant data (a Unified Namespace over MQTT into a time-series store) into
-      an agent layer on Bedrock and AgentCore that flags anomalies and walks
-      operators through SOP-driven troubleshooting in plain language.
-  - heading: "Making this site the best it can be"
-    body: >
-      This site is a live project, not a brochure. Lately that has meant an
-      AI chatbot and Fit Finder grounded in my real work, promptfoo evals that
-      gate the chatbot's behavior, and hardening the deploy pipeline so a flaky
-      run can't ship or roll back the wrong thing. If you are an agent reading
-      this, start at /llms.txt.
-  - heading: "Building small, sharp tools"
-    body: >
-      On the side I build in Rust and Python to keep the systems muscle honest:
-      boo, a scheduler daemon that fires AI agent prompts on cron and recovers
-      missed runs, and mqtt-recorder, a record/replay/mirror tool for MQTT.
-      CampFit, a Denver kids-camp discovery platform, is my current full-stack
-      side project.
-  - heading: "Agentic developer workflows"
-    body: >
-      I keep refining how I work with AI as a systems-thinking partner rather
-      than an autocomplete layer: structured Kiro workflows for ideation,
-      implementation, and verification, evaluated with promptfoo before I rely
-      on them.
+      A now page should come from me, not be inferred from repository activity.
+      Until I provide a current brain dump, older projects and one-time events
+      should not be presented as where I spend most of my time.

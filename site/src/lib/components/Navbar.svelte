@@ -91,24 +91,16 @@
     },
     {
       id: "proof",
-      label: "cat proof-ledger",
-      description: "Trace selected portfolio claims to their published sources",
+      label: "claims & evidence",
+      description: "See the sources and limitations behind selected portfolio claims",
       icon: "✓",
       aliases: ["proof", "evidence", "claims", "sources"],
       action: () => goto("/proof/")
     },
     {
-      id: "ai-evals",
-      label: "cat ai-evals",
-      description: "View sanitized aggregate checks for the public AI features",
-      icon: "✓",
-      aliases: ["ai", "evals", "quality", "tests"],
-      action: () => goto("/ai-evals/")
-    },
-    {
       id: "trace-one-answer",
-      label: "trace ai-answer",
-      description: "Follow an AI request through the implemented architecture",
+      label: "how this site's ai works",
+      description: "Understand what leaves your browser and how answers are checked",
       icon: "→",
       aliases: ["ai", "trace", "architecture", "gemini"],
       action: () => goto("/trace-one-answer/")

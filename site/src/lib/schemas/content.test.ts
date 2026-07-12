@@ -21,6 +21,25 @@ describe("ContentMetadataSchema", () => {
     expect(result.date).toBe("2026-07-01");
   });
 
+  it("keeps publication chronology separate from the work being discussed", () => {
+    const exact = ContentMetadataSchema.parse({ ...valid, projectDate: "2026-02-19" });
+    const coarse = ContentMetadataSchema.parse({ ...valid, eventPeriod: "Early 2026" });
+
+    expect(exact.date).toBe("2026-07-01");
+    expect(exact.projectDate).toBe("2026-02-19");
+    expect(coarse.eventPeriod).toBe("Early 2026");
+  });
+
+  it("rejects competing work-date fields", () => {
+    expect(
+      ContentMetadataSchema.safeParse({
+        ...valid,
+        projectDate: "2026-02-19",
+        eventPeriod: "Early 2026"
+      }).success
+    ).toBe(false);
+  });
+
   it("normalizes the serialized dates exposed by mdsvex modules", () => {
     const result = ContentMetadataSchema.parse({
       ...valid,

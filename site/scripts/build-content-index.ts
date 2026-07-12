@@ -20,8 +20,6 @@ const CONTENT_DIR = path.join(process.cwd(), "content");
 const STATIC_DIR = path.join(process.cwd(), "static");
 const OUTPUT_FILE = path.join(STATIC_DIR, "content-index.json");
 const VERSIONED_INDEX_PATTERN = /^content-index\.[a-f0-9]{8}\.json$/;
-// This is the last pre-retention-policy index and remains available for cached legacy pointers.
-const LEGACY_VERSIONED_FALLBACK = "content-index.c2cd0c88.json";
 
 // --- Types ---
 
@@ -75,6 +73,8 @@ interface ProjectEntry {
   tags: string[];
   keywords: string[];
   date: string;
+  projectDate?: string;
+  eventPeriod?: string;
   contentExcerpt: string;
 }
 
@@ -86,6 +86,8 @@ interface BlogEntry {
   tags: string[];
   keywords: string[];
   date: string;
+  projectDate?: string;
+  eventPeriod?: string;
 }
 
 // --- Parsing ---
@@ -161,6 +163,8 @@ function buildProjectEntries(): ProjectEntry[] {
       tags: frontmatter.tags || [],
       keywords: frontmatter.keywords || [],
       date: frontmatter.updated || frontmatter.date,
+      projectDate: frontmatter.projectDate,
+      eventPeriod: frontmatter.eventPeriod,
       contentExcerpt: extractContentExcerpt(content)
     }))
     .sort((a, b) => b.date.localeCompare(a.date));
@@ -177,7 +181,9 @@ function buildBlogEntries(): BlogEntry[] {
       summary: frontmatter.summary || "",
       tags: frontmatter.tags || [],
       keywords: frontmatter.keywords || [],
-      date: frontmatter.updated || frontmatter.date
+      date: frontmatter.updated || frontmatter.date,
+      projectDate: frontmatter.projectDate,
+      eventPeriod: frontmatter.eventPeriod
     }))
     .sort((a, b) => b.date.localeCompare(a.date));
 }
@@ -305,7 +311,7 @@ function sourceDate(projects: ProjectEntry[], blog: BlogEntry[]): string {
 async function buildContentIndex(): Promise<void> {
   console.log("Building content index...");
 
-  // All hashed files except the current index and legacy compatibility fallback are stale.
+  // Every hashed file except the current index is stale. The pointer is the compatibility boundary.
   const pointerFile = path.join(STATIC_DIR, "content-index-latest.json");
 
   // Parse resume (leader variant is the canonical one)
@@ -397,7 +403,7 @@ async function buildContentIndex(): Promise<void> {
   );
   console.log(`Pointer file: content-index-latest.json → ${versionedFilename}`);
 
-  const retainedVersionedFiles = new Set([versionedFilename, LEGACY_VERSIONED_FALLBACK]);
+  const retainedVersionedFiles = new Set([versionedFilename]);
   for (const filename of fs.readdirSync(STATIC_DIR).sort((a, b) => a.localeCompare(b))) {
     if (VERSIONED_INDEX_PATTERN.test(filename) && !retainedVersionedFiles.has(filename)) {
       fs.rmSync(path.join(STATIC_DIR, filename));

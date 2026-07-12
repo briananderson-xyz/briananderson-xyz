@@ -26,8 +26,8 @@
 </script>
 
 <SEO
-  title="Proof Ledger | Brian Anderson"
-  description="A traceable index of portfolio claims, their exact supporting excerpts, source case studies, evidence states, and review dates."
+  title="Claims & Evidence | Brian Anderson"
+  description="See which selected portfolio claims can be traced to Brian's project documentation, outside corroboration, or self-reported context."
   canonical={getCanonicalUrl("/proof/")}
 />
 
@@ -35,14 +35,15 @@
   <header class="mb-10">
     <div class="mb-4 flex items-center gap-2 font-mono text-skin-accent">
       <span aria-hidden="true">></span>
-      <h1 class="text-3xl font-bold tracking-tight">./proof-ledger</h1>
+      <h1 class="text-3xl font-bold tracking-tight">Claims &amp; evidence</h1>
     </div>
     <p
       class="max-w-3xl border-l-2 border-skin-border pl-4 font-mono leading-relaxed text-skin-muted"
     >
-      This ledger connects selected portfolio claims to the exact text in their source case studies.
-      It makes the site easier to audit; a listed source does not, by itself, independently verify a
-      claim.
+      Which claims on this portfolio can you trace, and what kind of support is available? This page
+      links selected claims to their sources so recruiters, collaborators, and technical readers can
+      inspect them. Most sources are Brian's own project documentation, not independent
+      verification.
     </p>
   </header>
 
@@ -51,7 +52,7 @@
     class="mb-10 rounded-lg border border-skin-border bg-skin-base/5 p-5"
   >
     <h2 id="how-to-read-proof" class="mb-3 font-mono text-lg font-bold text-skin-base">
-      How to read this ledger
+      What the labels mean
     </h2>
     <dl class="grid gap-4 md:grid-cols-3">
       {#each Object.values(evidenceStatePresentation) as presentation}
@@ -113,7 +114,7 @@
                 <h4
                   class="mb-2 font-mono text-xs font-bold uppercase tracking-wide text-skin-muted"
                 >
-                  Exact supporting excerpt
+                  Supporting excerpt from the source
                 </h4>
                 <blockquote
                   class="border-l-2 border-skin-accent pl-4 leading-relaxed text-skin-base"

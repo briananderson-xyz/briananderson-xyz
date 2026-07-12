@@ -1,7 +1,8 @@
 ---
 title: "When Boo became evidence for Java"
 date: 2026-07-09
-updated: 2026-07-09
+updated: 2026-07-12
+projectDate: 2026-07-09
 summary: "A portfolio audit found that my content index treated Boo, a Rust scheduler, as evidence for Java because 'boo' appears inside 'Spring Boot.' The fix was to replace fuzzy inference with canonical IDs, explicit aliases, and a negative regression check."
 tags: ["DataProvenance", "TypeScript", "Testing", "AgenticAI", "Builder"]
 keywords:

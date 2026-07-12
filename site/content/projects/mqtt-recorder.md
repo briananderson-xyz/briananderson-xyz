@@ -1,8 +1,10 @@
 ---
 title: "mqtt-recorder: Record, Replay, and Mirror MQTT"
 date: 2026-02-13
+updated: 2026-07-12
+projectDate: 2026-02-09
 period: "2026"
-summary: "A Rust command-line tool for recording, replaying, and mirroring MQTT message streams, with an embedded broker, an interactive terminal dashboard, and independent verification of mirrored traffic."
+summary: "A generic Rust MQTT recorder, passthrough, and replay tool with a CLI and basic TUI, first used to keep local ProveIT demo work moving when remote streams were unavailable."
 tags: ["Rust", "SystemsEngineering", "IoT", "Builder", "SideProject", "OpenSource"]
 keywords: ["mqtt", "mqtt-recorder", "rust", "iot", "message-broker", "record-replay", "tui"]
 outcome: "Systems reliability"
@@ -15,11 +17,23 @@ links:
   - label: "Releases"
     url: "https://github.com/briananderson1222/mqtt-recorder/releases"
     type: "website"
+  - label: "ProveIT case study"
+    url: "/projects/proveit-industrial-ai/"
+    type: "case-study"
+  - label: "EdgeMind dashboard"
+    url: "https://github.com/briananderson1222/EdgeMind"
+    type: "github"
 ---
 
 ## The Goal
 
-Working with MQTT systems, I kept wanting the equivalent of a DVR for a message bus: capture what a broker is publishing, replay it later with the original timing, and mirror a live broker into a local one so I could develop against real traffic without touching production. The existing options were either language-specific libraries or scripts that fell apart on binary payloads and protocol differences. I wanted one fast, self-contained binary that did all of it.
+The motivating use case came from the [ProveIT demonstration](/projects/proveit-industrial-ai/). We had
+realistic Unified Namespace data for three simulated factory scenarios, but the remote streams went
+offline. I needed to keep developing against my local
+[EdgeMind](https://github.com/briananderson1222/EdgeMind) dashboard, so I built a way to record the
+streams when available, pass them through, and replay them later. That was demonstration continuity,
+not access to live production factories. I kept the tool generic: it accepts arbitrary MQTT inputs and
+does not depend on ProveIT, EdgeMind, or a particular topic hierarchy.
 
 ## What I Built
 
@@ -30,4 +44,7 @@ Working with MQTT systems, I kept wanting the equivalent of a DVR for a message 
 
 ## What It Demonstrates
 
-This one is deliberately not an AI project. It is proof of the systems-engineering half of how I build: an embedded broker, real-time stream handling, protocol version negotiation, TLS, binary-safe serialization, and a terminal UI, packaged as a single cross-platform Rust binary with CI and prebuilt releases for Linux, macOS, and Windows. Good agentic systems rest on this kind of foundation, and mqtt-recorder is where I keep that muscle honest.
+This was my first foray into using AI to help build a Rust tool; I have never fully learned Rust. The
+result was useful beyond its first setting: a CLI and basic TUI around generic recording, passthrough,
+and replay, plus an embedded broker and checks around message handling. The original demo proved the
+contract against a real need without implying production use or broader Rust expertise.

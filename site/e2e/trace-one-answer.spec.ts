@@ -1,13 +1,16 @@
 import { expect, test } from "@playwright/test";
 
-test.describe("Trace One Answer", () => {
+test.describe("How this site's AI works", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/trace-one-answer/");
   });
 
   test("renders a semantic, candid architecture flow", async ({ page }) => {
-    await expect(page).toHaveTitle(/Trace One AI Answer/);
-    await expect(page.getByRole("heading", { level: 1, name: "./trace-one-answer" })).toBeVisible();
+    await expect(page).toHaveTitle(/How This Site's AI Works/);
+    await expect(
+      page.getByRole("heading", { level: 1, name: "How this site's AI works" })
+    ).toBeVisible();
+    await expect(page.getByRole("heading", { name: "How answers are checked" })).toBeVisible();
 
     const flow = page.getByRole("list").filter({
       has: page.getByRole("heading", { name: "Browser client prepares the request" })
@@ -16,6 +19,12 @@ test.describe("Trace One Answer", () => {
     await expect(page.getByText("External contract", { exact: true }).last()).toBeVisible();
     await expect(page.getByText(/in-memory limiter is per Cloud Run instance/i)).toBeVisible();
     await expect(page.getByText(/sanitized in the browser before rendering/i)).toBeVisible();
+  });
+
+  test("keeps the old evaluation URL as a canonical forwarding page", async ({ page }) => {
+    await page.goto("/ai-evals/");
+    await expect(page).toHaveURL(/\/trace-one-answer\/#answer-checks-heading$/);
+    await expect(page.getByRole("heading", { name: "How answers are checked" })).toBeVisible();
   });
 
   test("is prerendered with canonical metadata and limitations", async ({ request }) => {

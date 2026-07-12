@@ -40,21 +40,17 @@
     hasPart: [
       {
         "@type": "WebPage",
-        name: "Proof Ledger",
+        name: "Claims & Evidence",
         url: `${siteUrl}/proof/`,
-        description: "Selected portfolio claims mapped to published sources and evidence state."
+        description:
+          "Selected portfolio claims mapped to Brian's documentation, outside corroboration, or self-reported context."
       },
       {
         "@type": "WebPage",
-        name: "AI Evaluation Trends",
-        url: `${siteUrl}/ai-evals/`,
-        description: "Sanitized aggregate quality signals for the site's public AI features."
-      },
-      {
-        "@type": "WebPage",
-        name: "Trace One AI Answer",
+        name: "How This Site's AI Works",
         url: `${siteUrl}/trace-one-answer/`,
-        description: "A repository-grounded trace of the public AI request architecture."
+        description:
+          "A plain-language architecture, privacy, and evaluation walkthrough for the site's AI features."
       }
     ]
   };

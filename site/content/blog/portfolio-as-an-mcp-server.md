@@ -1,7 +1,8 @@
 ---
 title: I turned my portfolio into an MCP server
 date: 2026-07-09
-updated: 2026-07-09
+updated: 2026-07-12
+projectDate: 2026-07-03
 summary: "A portfolio should not make an agent scrape a page and guess. Mine now publishes the same work as human pages, structured files, a content index, and a small MCP interface, with the limits stated plainly."
 tags: ["MCP", "AgenticAI", "SvelteKit", "DataProvenance", "Builder"]
 keywords:

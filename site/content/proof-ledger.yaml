@@ -40,14 +40,14 @@
   homepageOrder:
     leader: 4
     builder: 1
-  text: "Top 0.03% of 280k+ Amazon Kiro CLI users by activity"
+  text: "Top 0.03% of global Kiro CLI usage, as of April 2026"
   caseStudyRoute: /projects/kiro-agent-workflows/
   source:
     path: projects/kiro-agent-workflows.md
-    excerpt: "Ranked in the top 0.03% of 280k+ Amazon Kiro CLI users by activity."
+    excerpt: "Top 0.03% of global Kiro CLI usage, as of April 2026."
   evidenceState: self-reported
   freshness:
-    reviewedAt: 2026-07-09
+    reviewedAt: 2026-07-12
 
 - id: gfs-zero-downtime
   homepageOrder:
@@ -84,7 +84,7 @@
     excerpt: "Evaluation before release: Used promptfoo to test prompts and workflow behavior before publishing changes, specifically looking for contradictions, weak instructions, and brittle behavior."
   evidenceState: documented
   freshness:
-    reviewedAt: 2026-07-09
+    reviewedAt: 2026-07-12
 
 - id: stallion-mcp-orchestration
   homepageOrder:

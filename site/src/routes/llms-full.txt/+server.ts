@@ -31,9 +31,8 @@ This is a single, complete text export of briananderson.xyz for AI agents and cr
 
 ## Evidence and AI Architecture
 
-- **Proof Ledger:** ${PUBLIC_SITE_URL}/proof/ - Selected claims mapped to published sources, freshness, and evidence state.
-- **AI Evaluation Trends:** ${PUBLIC_SITE_URL}/ai-evals/ - Sanitized aggregate checks only; no prompts, answers, job descriptions, or judge text.
-- **Trace One AI Answer:** ${PUBLIC_SITE_URL}/trace-one-answer/ - The implemented request path, privacy boundaries, and external verification limits.
+- **Claims & Evidence:** ${PUBLIC_SITE_URL}/proof/ - Sources and limitations behind selected portfolio claims.
+- **How This Site's AI Works:** ${PUBLIC_SITE_URL}/trace-one-answer/ - The implemented request path, privacy boundaries, aggregate checks, and external verification limits.
 
 ## About Brian
 
